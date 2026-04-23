@@ -172,8 +172,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
       <div class="nav-item" onclick="goSec(this,'pendientes')">⏳ Pendientes</div>
       <div class="nav-item" onclick="goSec(this,'comisiones')">💰 Comisiones</div>
       <div class="nav-group" style="margin-top:10px">Gestión</div>
-      <div class="nav-item" onclick="goSec(this,'presupuesto')">🎯 Presupuesto</div>
-      <div class="nav-item" onclick="goSec(this,'historial')">📋 Historial</div>
+      <div class="nav-item" onclick="goSec(this,'historial')">📋 Historial de cierres</div>
+      <div class="nav-item" onclick="goSec(this,'configuracion')">⚙ Configuración</div>
     </div>
 
     <div class="main">
@@ -579,6 +579,14 @@ window.fbLoadPresConfig = async () => {
   const snap = await gd(doc(db,'presupuestos_config','main'));
   return snap.exists() ? snap.data() : null;
 };
+window.fbSaveDropdownConfig = async (data) => {
+  await setDoc(doc(db,'dropdown_config','main'), JSON.parse(JSON.stringify(data)));
+};
+window.fbLoadDropdownConfig = async () => {
+  const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const snap = await gd(doc(db,'dropdown_config','main'));
+  return snap.exists() ? snap.data() : null;
+};
 
 window.fbLoad = async () => {
   const s = await getDocs(collection(db,'cierres'));
@@ -613,7 +621,16 @@ const DEFAULT_CATS = {
   comisiones:['COMISIÓN','PUBLICIDAD','FACEBOOK','GOOGLE','INSTAGRAM','OTRO'],
   estados_pago:['P','PAGADO','PENDIENTE']
 };
-let CATS = loadClosureCats();
+function normalizeDropdownObject(src={}){
+  const out = {};
+  Object.keys(DEFAULT_CATS).forEach(k=>{
+    const arr = Array.isArray(src[k]) ? src[k] : DEFAULT_CATS[k];
+    out[k] = [...new Set(arr.map(v=>String(v||'').trim().toUpperCase()).filter(Boolean))];
+  });
+  return out;
+}
+function buildDefaultCats(){ return normalizeDropdownObject(DEFAULT_CATS); }
+let CATS = buildDefaultCats();
 const COLORS = {
   FALABELLA:{b:'#c0392b',f:'#fff'},MERCADOLIBRE:{b:'#f39c12',f:'#000'},
   CHEQUE:{b:'#e67e22',f:'#fff'},SCOTIA:{b:'#c0392b',f:'#fff'},
@@ -665,6 +682,7 @@ window._boot = boot;
 async function boot(){
   showLoader(true);
   try{
+    await loadClosureCatsFromFirebase();
     if(window.fbLoad){ const ls=await window.fbLoad(); ls.forEach(c=>{S.data[c._id]=c;}); }
     await loadPresupuesto();
     if(!Object.keys(S.data).length){ const n=new Date(); const id=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; S.data[id]=mkEmpty(id); await save(id); }
@@ -755,17 +773,26 @@ function estadoOptions(selected=''){
 const g  = id => ($( id)||{value:''}).value;
 const gn = id => parseFloat(g(id))||0;
 
-function loadClosureCats(){
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem('gbisness_dropdown_config') || '{}'); } catch(e){ saved = {}; }
-  const merged = {};
-  Object.keys(DEFAULT_CATS).forEach(k=>{
-    const arr = Array.isArray(saved[k]) ? saved[k] : DEFAULT_CATS[k];
-    merged[k] = [...new Set(arr.map(v=>String(v||'').trim().toUpperCase()).filter(Boolean))];
-  });
-  return merged;
+async function loadClosureCatsFromFirebase(){
+  try {
+    const remote = window.fbLoadDropdownConfig ? await window.fbLoadDropdownConfig() : null;
+    if (remote && typeof remote === 'object') {
+      CATS = normalizeDropdownObject({ ...DEFAULT_CATS, ...remote });
+      return CATS;
+    }
+    CATS = buildDefaultCats();
+    if (window.fbSaveDropdownConfig) await window.fbSaveDropdownConfig(CATS);
+    return CATS;
+  } catch(e) {
+    console.error('[DropdownConfig load]', e);
+    CATS = buildDefaultCats();
+    return CATS;
+  }
 }
-function saveClosureCats(){ localStorage.setItem('gbisness_dropdown_config', JSON.stringify(CATS)); }
+async function saveClosureCats(){
+  CATS = normalizeDropdownObject(CATS);
+  if (window.fbSaveDropdownConfig) await window.fbSaveDropdownConfig(CATS).catch(e=>console.error('[DropdownConfig save]', e));
+}
 function getDropdownItems(type){
   if (DEFAULT_CATS[type]) return (CATS[type] || DEFAULT_CATS[type] || []).slice();
   if (type==='proveedores') return (presState.config.proveedores || []).slice();
@@ -1298,6 +1325,7 @@ function presTab(el, tab) {
 async function bootPresupuesto() {
   showLoader(true);
   try {
+    await loadClosureCatsFromFirebase();
     await loadPresupuesto();
     buildMesSel2();
     const mes = Object.keys(presState.compras).sort().reverse()[0]
