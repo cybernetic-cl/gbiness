@@ -186,7 +186,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
             <div class="page-title">RESUMEN <span>FINANCIERO</span></div>
             <div class="page-sub">// Estado consolidado · se actualiza en tiempo real</div>
           </div>
-          <button class="btn-primary" onclick="exportResumenPDF()">⬇ Exportar PDF</button>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <button class="btn-primary" onclick="exportResumenPDF()">⬇ Exportar PDF</button>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">El archivo se descarga en tu navegador</div>
+          </div>
         </div>
         <div class="kpi-grid" id="kpiGrid"></div>
         <div class="section-card">
@@ -545,8 +548,21 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
   </div>
 </div>
 
-<div id="appCredits" style="position:fixed;left:12px;bottom:8px;z-index:50;font-family:var(--font-mono);font-size:9px;letter-spacing:0.5px;color:rgba(160,168,200,0.75);pointer-events:none">
-  Creado con Inteligencia Artificial ChatGPT, Claude e Inteligencia Humana Rich GPT
+<!-- MODAL VERSIONES -->
+<div class="overlay" id="versionOverlay">
+  <div class="modal" style="max-width:760px">
+    <button class="close-btn" onclick="closeOv('versionOverlay')">✕</button>
+    <div class="modal-title">Historial de versiones</div>
+    <div class="modal-sub" id="versionModalSub">Registro de cambios del sistema</div>
+    <div id="versionLogBody"></div>
+  </div>
+</div>
+
+<div id="appCreditsWrap" style="position:fixed;left:12px;bottom:8px;z-index:50;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+  <div id="appCredits" style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.5px;color:rgba(160,168,200,0.75)">
+    Cargando versión...
+  </div>
+  <button type="button" class="btn-secondary" style="padding:5px 9px;font-size:9px" onclick="openVersionLog()">Ver cambios</button>
 </div>
 
 <div id="toast"></div>
@@ -657,6 +673,134 @@ const COLORS = {
 
 const S = { mes:null, data:{}, cur:'resumen', ctx:null };
 
+
+// ── VERSIONADO ──
+const RELEASE_DATE = '23/04/2026';
+const VERSION_RULES = {
+  major: 'Cambios grandes o rediseños importantes',
+  minor: 'Nuevas funciones o mejoras visibles',
+  patch: 'Correcciones, ajustes o fixes'
+};
+const RELEASE_CONFIG = {
+  previousVersion: '5.1.1',
+  changeType: 'minor', // major | minor | patch
+  codename: 'Rich GPT',
+  credits: 'Creado con Inteligencia Artificial ChatGPT, Claude e Inteligencia Humana Rich GPT',
+  currentChanges: [
+    'Sistema de versionado visible en la app',
+    'Botón "Ver cambios" con historial de versiones',
+    'Créditos con versión y fecha de subida',
+    'Registro de release notes dentro del sistema'
+  ],
+  history: [
+    {
+      version: 'v5.1.1',
+      date: '23/04/2026',
+      type: 'patch',
+      title: 'Fix exportación PDF',
+      changes: [
+        'Corrección en descarga del PDF del resumen',
+        'Créditos agregados en la app y en el PDF'
+      ]
+    },
+    {
+      version: 'v5.1.0',
+      date: '23/04/2026',
+      type: 'minor',
+      title: 'Configuración solo cierre mensual',
+      changes: [
+        'Se removieron tarjetas del módulo presupuesto en configuración',
+        'Se mantuvo intacto el resto del sistema'
+      ]
+    },
+    {
+      version: 'v5.0.0',
+      date: '23/04/2026',
+      type: 'major',
+      title: 'Base full Firebase',
+      changes: [
+        'Persistencia principal conectada a Firebase',
+        'Mejoras generales de estructura y navegación'
+      ]
+    }
+  ]
+};
+
+function computeNextVersion(prev, type){
+  const parts = String(prev || '1.0.0').split('.').map(n => parseInt(n,10) || 0);
+  let [major, minor, patch] = [parts[0] || 0, parts[1] || 0, parts[2] || 0];
+  if(type === 'major'){ major += 1; minor = 0; patch = 0; }
+  else if(type === 'minor'){ minor += 1; patch = 0; }
+  else { patch += 1; }
+  return `v${major}.${minor}.${patch}`;
+}
+const APP_VERSION = computeNextVersion(RELEASE_CONFIG.previousVersion, RELEASE_CONFIG.changeType);
+
+function getVersionHistory(){
+  const current = {
+    version: APP_VERSION,
+    date: RELEASE_DATE,
+    type: RELEASE_CONFIG.changeType,
+    title: 'Release actual',
+    changes: RELEASE_CONFIG.currentChanges.slice()
+  };
+  const items = [current].concat(RELEASE_CONFIG.history || []);
+  const seen = new Set();
+  return items.filter(item => {
+    const key = `${item.version}-${item.date}`;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+function renderAppCredits(){
+  const el = $('appCredits');
+  if(!el) return;
+  el.textContent = `${APP_VERSION} · ${RELEASE_DATE} · ${RELEASE_CONFIG.credits}`;
+}
+function typeColor(type){
+  return type === 'major' ? 'var(--red)' : type === 'minor' ? 'var(--teal)' : 'var(--amber)';
+}
+function openVersionLog(){
+  const body = $('versionLogBody');
+  const sub = $('versionModalSub');
+  const history = getVersionHistory();
+  if(sub) sub.textContent = `Versión actual ${APP_VERSION} · ${VERSION_RULES[RELEASE_CONFIG.changeType] || ''}`;
+  if(body){
+    body.innerHTML = `
+      <div class="section-card" style="margin:0 0 14px 0">
+        <div class="card-body">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+            <span class="cbadge" style="background:var(--teal);color:#000">${APP_VERSION}</span>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${RELEASE_DATE}</span>
+            <span class="cbadge" style="background:${typeColor(RELEASE_CONFIG.changeType)};color:#000">${RELEASE_CONFIG.changeType.toUpperCase()}</span>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">Codename: ${RELEASE_CONFIG.codename}</span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">Para futuras subidas solo cambia <b>previousVersion</b>, <b>changeType</b> y <b>currentChanges</b>. La app calcula automáticamente la nueva versión.</div>
+        </div>
+      </div>
+      ${history.map(item => `
+        <div class="section-card" style="margin:0 0 12px 0">
+          <div class="card-hdr">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <div style="font-family:var(--font-display);font-size:18px;letter-spacing:1px">${item.version}</div>
+              <span class="cbadge" style="background:${typeColor(item.type)};color:#000">${String(item.type || 'patch').toUpperCase()}</span>
+              <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${item.date || ''}</span>
+            </div>
+            <div class="card-title">${item.title || 'Release'}</div>
+          </div>
+          <div class="card-body">
+            ${(item.changes || []).length
+              ? `<div style="display:grid;gap:8px">${item.changes.map(ch => `<div style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--teal)">•</span><span style="font-size:13px;color:var(--text2)">${ch}</span></div>`).join('')}</div>`
+              : `<div style="font-size:13px;color:var(--text3)">Sin detalles</div>`}
+          </div>
+        </div>
+      `).join('')}
+    `;
+  }
+  $('versionOverlay').classList.add('open');
+}
+
 // ── AUTH ──
 async function sha(s){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
 function doLogin(){
@@ -667,10 +811,12 @@ function doLogin(){
       if(activeModule==='cierre'){
         document.getElementById('app').style.display='block';
         document.getElementById('app-presupuesto').style.display='none';
+        renderAppCredits();
         boot();
       } else {
         document.getElementById('app').style.display='none';
         document.getElementById('app-presupuesto').style.display='block';
+        renderAppCredits();
         bootPresupuesto();
       }
     } else {
@@ -1137,8 +1283,32 @@ function exportResumenPDF(){
     }
 
     const safeMonth = monthLabel.toLowerCase().replace(/\s+/g,'_');
-    doc.save(`cierre_${safeMonth}.pdf`);
-    showToast('PDF exportado correctamente');
+    const filename = `cierre_${safeMonth}.pdf`;
+
+    try{
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1500);
+      showToast('PDF exportado correctamente');
+    }catch(downloadErr){
+      console.error('[PDF download fallback]', downloadErr);
+      try{
+        doc.save(filename);
+        showToast('PDF exportado correctamente');
+      }catch(saveErr){
+        console.error('[PDF save failed]', saveErr);
+        showToast('El navegador bloqueó la descarga del PDF', true);
+      }
+    }
   }catch(e){
     console.error(e);
     showToast('No se pudo exportar el PDF', true);
