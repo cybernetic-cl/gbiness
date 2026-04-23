@@ -128,7 +128,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
     <div class="login-sub">// Cybernetic SpA · Selecciona el módulo</div>
 
     <!-- Module cards -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
       <div id="mod-cierre" class="module-card active" onclick="selectModule('cierre')">
         <div class="module-icon">💰</div>
         <div class="module-name">Cierre Mensual</div>
@@ -138,6 +138,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         <div class="module-icon">🎯</div>
         <div class="module-name">Presupuesto</div>
         <div class="module-sub">Compras y gastos</div>
+      </div>
+      <div id="mod-anual" class="module-card" onclick="selectModule('anual')">
+        <div class="module-icon">📆</div>
+        <div class="module-name">Cierre Anual</div>
+        <div class="module-sub">Año y resumen</div>
       </div>
     </div>
 
@@ -181,16 +186,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 
       <!-- RESUMEN -->
       <div id="sec-resumen">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-          <div>
-            <div class="page-title">RESUMEN <span>FINANCIERO</span></div>
-            <div class="page-sub">// Estado consolidado · se actualiza en tiempo real</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-            <button class="btn-primary" onclick="exportResumenPDF()">⬇ Exportar PDF</button>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">El archivo se descarga en tu navegador</div>
-          </div>
-        </div>
+        <div class="page-title">RESUMEN <span>FINANCIERO</span></div>
+        <div class="page-sub">// Estado consolidado · se actualiza en tiempo real</div>
         <div class="kpi-grid" id="kpiGrid"></div>
         <div class="section-card">
           <div class="card-hdr"><div class="card-title">// Desglose de gastos del mes</div></div>
@@ -378,6 +375,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
             <div class="card-hdr"><div class="card-title">// Comisiones</div><button class="btn-secondary" onclick="openDropdownManager('comisiones')">+ Agregar</button></div>
             <div class="card-body" id="cfg_comisiones"></div>
           </div>
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Presupuesto</div><button class="btn-secondary" onclick="openDropdownManager('proveedores')">+ Agregar</button></div>
+            <div class="card-body" id="cfg_presupuesto_extra"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -500,6 +501,144 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
   </div>
 </div>
 
+
+<!-- APP CIERRE ANUAL -->
+
+<div id="app-anual" style="display:none;min-height:100vh;background:var(--bg)">
+  <div class="topbar">
+    <div class="topbar-logo">📆 GBISNESS · CIERRE ANUAL</div>
+    <select id="yearSel" class="month-select" onchange="onAnnualYearChange()"></select>
+    <button class="btn-primary" onclick="openNewYear()">+ Nuevo Año</button>
+    <button class="btn-logout" onclick="doLogout()">SALIR</button>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-group">Módulos</div>
+      <div class="nav-item active" id="anav-resumen" onclick="goAnnualSec(this,'resumen')">◈ Resumen anual</div>
+      <div class="nav-item" id="anav-meses" onclick="goAnnualSec(this,'meses')">🗓️ Mes a mes</div>
+      <div class="nav-item" id="anav-config" onclick="goAnnualSec(this,'config')">⚙ Configuración</div>
+      <div class="nav-item" id="anav-historial" onclick="goAnnualSec(this,'historial')">📋 Historial anual</div>
+    </div>
+    <div class="main">
+      <div id="annualYearLabel" class="mes-label"></div>
+
+      <div id="asec-resumen">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div>
+            <div class="page-title">CIERRE <span>ANUAL</span></div>
+            <div class="page-sub">// Consolidado anual por empresa, armado mes por mes con cálculo automático de IVA, PPM, sueldos y utilidad por socio</div>
+          </div>
+          <div style="min-width:240px">
+            <label class="fl">Empresa</label>
+            <select id="annualCompanySel" class="fi" onchange="onAnnualCompanyChange()"></select>
+          </div>
+        </div>
+        <div class="kpi-grid" id="annualKpiGrid"></div>
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Resumen estructural del año</div></div>
+          <div class="card-body" id="annualSummaryTable"></div>
+        </div>
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Utilidad por socio y remuneración estimada</div></div>
+          <div class="card-body" id="annualSociosTable"></div>
+        </div>
+      </div>
+
+      <div id="asec-meses" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div>
+            <div class="page-title">ARMADO <span>MENSUAL</span></div>
+            <div class="page-sub">// Completa cada mes por empresa y el resumen anual se actualiza automáticamente</div>
+          </div>
+          <div style="min-width:240px">
+            <label class="fl">Empresa</label>
+            <select id="annualMonthCompanySel" class="fi" onchange="onAnnualMonthCompanyChange()"></select>
+          </div>
+        </div>
+        <div id="annualMonthTabs" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px"></div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title" id="annualComprasTitle">// Compras</div></div>
+            <div class="card-body" id="annualComprasForm"></div>
+          </div>
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Ventas</div></div>
+            <div class="card-body" id="annualVentasForm"></div>
+          </div>
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Impuestos y resultado</div></div>
+            <div class="card-body" id="annualFiscalForm"></div>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top:18px">
+          <button class="btn-secondary" onclick="resetAnnualMonth()">Limpiar mes</button>
+          <button class="btn-primary" onclick="saveAnnualMonth()">Guardar mes</button>
+        </div>
+      </div>
+
+      <div id="asec-config" style="display:none">
+        <div class="page-title">CONFIGURACIÓN <span>ANUAL</span></div>
+        <div class="page-sub">// Cada empresa puede tener sus propios socios y porcentaje accionario</div>
+        <div class="kpi-grid" id="annualConfigKpi"></div>
+        <div class="section-card">
+          <div class="card-hdr">
+            <div class="card-title">// Empresa seleccionada</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="annualCompanyConfigSel" class="fi" style="width:220px" onchange="annualOnConfigCompanyChange()"></select>
+              <button class="btn-secondary" onclick="annualAddEmpresa()">+ Agregar empresa</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">Configura los socios por empresa. Ejemplo: Cybernetic → Richard 51% / Ivone 49%.</div>
+          </div>
+        </div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Empresas</div></div>
+            <div class="card-body" id="annualEmpresasList"></div>
+          </div>
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Socios y % accionario de la empresa</div><button class="btn-secondary" onclick="annualAddSocio()">+ Agregar socio</button></div>
+            <div class="card-body" id="annualSociosList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="asec-historial" style="display:none">
+        <div class="page-title">HISTORIAL <span>ANUAL</span></div>
+        <div class="page-sub">// Años creados y sus principales cifras</div>
+        <div class="section-card"><div class="card-body" id="annualHistoryBody"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL NUEVO AÑO -->
+<div class="overlay" id="newYearOv">
+  <div class="modal">
+    <button class="close-btn" onclick="closeOv('newYearOv')">✕</button>
+    <div class="modal-title">Nuevo Cierre Anual</div>
+    <div class="modal-sub">Crea la estructura anual para trabajar mes por mes</div>
+    <div class="fw"><label class="fl">Año</label><input type="number" id="nyVal" class="fi" min="2020" max="2100" placeholder="2026"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeOv('newYearOv')">Cancelar</button>
+      <button class="btn-primary" onclick="doNewYear()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIOS -->
+<div class="overlay" id="versionOv">
+  <div class="modal" style="max-width:620px">
+    <button class="close-btn" onclick="closeOv('versionOv')">✕</button>
+    <div class="modal-title">Historial de cambios</div>
+    <div class="modal-sub">Versionado visible del sistema</div>
+    <div id="versionHistoryBody" style="max-height:60vh;overflow:auto"></div>
+  </div>
+</div>
+
+
 <!-- MODAL NUEVA COMPRA -->
 <div class="overlay" id="compraOverlay">
   <div class="modal" style="max-width:480px">
@@ -546,23 +685,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
       <button class="btn-primary" id="catSaveBtn" onclick="saveCatItem()">Guardar</button>
     </div>
   </div>
-</div>
-
-<!-- MODAL VERSIONES -->
-<div class="overlay" id="versionOverlay">
-  <div class="modal" style="max-width:760px">
-    <button class="close-btn" onclick="closeOv('versionOverlay')">✕</button>
-    <div class="modal-title">Historial de versiones</div>
-    <div class="modal-sub" id="versionModalSub">Registro de cambios del sistema</div>
-    <div id="versionLogBody"></div>
-  </div>
-</div>
-
-<div id="appCreditsWrap" style="position:fixed;left:12px;bottom:8px;z-index:50;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-  <div id="appCredits" style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.5px;color:rgba(160,168,200,0.75)">
-    Cargando versión...
-  </div>
-  <button type="button" class="btn-secondary" style="padding:5px 9px;font-size:9px" onclick="openVersionLog()">Ver cambios</button>
 </div>
 
 <div id="toast"></div>
@@ -613,25 +735,37 @@ window.fbLoad = async () => {
   const s = await getDocs(collection(db,'cierres'));
   return s.docs.map(d=>({_id:d.id,...d.data()}));
 };
+window.fbSaveAnnual = async (yearId, data) => {
+  await setDoc(doc(db,'cierres_anuales',yearId), JSON.parse(JSON.stringify(data)));
+};
+window.fbLoadAnnual = async () => {
+  const s = await getDocs(collection(db,'cierres_anuales'));
+  return s.docs.map(d=>({_id:d.id,...d.data()}));
+};
+window.fbSaveAnnualConfig = async (data) => {
+  await setDoc(doc(db,'annual_config','main'), JSON.parse(JSON.stringify(data)));
+};
+window.fbLoadAnnualConfig = async () => {
+  const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const snap = await gd(doc(db,'annual_config','main'));
+  return snap.exists() ? snap.data() : null;
+};
 
 document.addEventListener('DOMContentLoaded', () => { /* espera login */ });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
-
 <!-- APP JS -->
-
 <script>
 const HASH_CIERRE = 'cf270c49b23a2dbc737575b4e7b8d447eb5d10fc9b0309b4fd9e7da0fa559d0e'; // Cy207980
 const HASH_PRES   = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f';   // Cy1234
+const HASH_ANUAL = 'cf270c49b23a2dbc737575b4e7b8d447eb5d10fc9b0309b4fd9e7da0fa559d0e'; // misma clave de cierre mensual
 let activeModule = 'cierre';
 
 function selectModule(mod) {
   activeModule = mod;
   document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
   document.getElementById('mod-'+mod).classList.add('active');
-  const labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto' };
+  const labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual' };
   document.getElementById('login-module-label').textContent = labels[mod];
   document.getElementById('loginError').style.display = 'none';
   document.getElementById('loginPass').value = '';
@@ -673,151 +807,25 @@ const COLORS = {
 
 const S = { mes:null, data:{}, cur:'resumen', ctx:null };
 
-
-// ── VERSIONADO ──
-const RELEASE_DATE = '23/04/2026';
-const VERSION_RULES = {
-  major: 'Cambios grandes o rediseños importantes',
-  minor: 'Nuevas funciones o mejoras visibles',
-  patch: 'Correcciones, ajustes o fixes'
-};
-const RELEASE_CONFIG = {
-  previousVersion: '5.1.1',
-  changeType: 'minor', // major | minor | patch
-  codename: 'Rich GPT',
-  credits: 'Creado con Inteligencia Artificial ChatGPT, Claude e Inteligencia Humana Rich GPT',
-  currentChanges: [
-    'Sistema de versionado visible en la app',
-    'Botón "Ver cambios" con historial de versiones',
-    'Créditos con versión y fecha de subida',
-    'Registro de release notes dentro del sistema'
-  ],
-  history: [
-    {
-      version: 'v5.1.1',
-      date: '23/04/2026',
-      type: 'patch',
-      title: 'Fix exportación PDF',
-      changes: [
-        'Corrección en descarga del PDF del resumen',
-        'Créditos agregados en la app y en el PDF'
-      ]
-    },
-    {
-      version: 'v5.1.0',
-      date: '23/04/2026',
-      type: 'minor',
-      title: 'Configuración solo cierre mensual',
-      changes: [
-        'Se removieron tarjetas del módulo presupuesto en configuración',
-        'Se mantuvo intacto el resto del sistema'
-      ]
-    },
-    {
-      version: 'v5.0.0',
-      date: '23/04/2026',
-      type: 'major',
-      title: 'Base full Firebase',
-      changes: [
-        'Persistencia principal conectada a Firebase',
-        'Mejoras generales de estructura y navegación'
-      ]
-    }
-  ]
-};
-
-function computeNextVersion(prev, type){
-  const parts = String(prev || '1.0.0').split('.').map(n => parseInt(n,10) || 0);
-  let [major, minor, patch] = [parts[0] || 0, parts[1] || 0, parts[2] || 0];
-  if(type === 'major'){ major += 1; minor = 0; patch = 0; }
-  else if(type === 'minor'){ minor += 1; patch = 0; }
-  else { patch += 1; }
-  return `v${major}.${minor}.${patch}`;
-}
-const APP_VERSION = computeNextVersion(RELEASE_CONFIG.previousVersion, RELEASE_CONFIG.changeType);
-
-function getVersionHistory(){
-  const current = {
-    version: APP_VERSION,
-    date: RELEASE_DATE,
-    type: RELEASE_CONFIG.changeType,
-    title: 'Release actual',
-    changes: RELEASE_CONFIG.currentChanges.slice()
-  };
-  const items = [current].concat(RELEASE_CONFIG.history || []);
-  const seen = new Set();
-  return items.filter(item => {
-    const key = `${item.version}-${item.date}`;
-    if(seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-function renderAppCredits(){
-  const el = $('appCredits');
-  if(!el) return;
-  el.textContent = `${APP_VERSION} · ${RELEASE_DATE} · ${RELEASE_CONFIG.credits}`;
-}
-function typeColor(type){
-  return type === 'major' ? 'var(--red)' : type === 'minor' ? 'var(--teal)' : 'var(--amber)';
-}
-function openVersionLog(){
-  const body = $('versionLogBody');
-  const sub = $('versionModalSub');
-  const history = getVersionHistory();
-  if(sub) sub.textContent = `Versión actual ${APP_VERSION} · ${VERSION_RULES[RELEASE_CONFIG.changeType] || ''}`;
-  if(body){
-    body.innerHTML = `
-      <div class="section-card" style="margin:0 0 14px 0">
-        <div class="card-body">
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
-            <span class="cbadge" style="background:var(--teal);color:#000">${APP_VERSION}</span>
-            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${RELEASE_DATE}</span>
-            <span class="cbadge" style="background:${typeColor(RELEASE_CONFIG.changeType)};color:#000">${RELEASE_CONFIG.changeType.toUpperCase()}</span>
-            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">Codename: ${RELEASE_CONFIG.codename}</span>
-          </div>
-          <div style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">Para futuras subidas solo cambia <b>previousVersion</b>, <b>changeType</b> y <b>currentChanges</b>. La app calcula automáticamente la nueva versión.</div>
-        </div>
-      </div>
-      ${history.map(item => `
-        <div class="section-card" style="margin:0 0 12px 0">
-          <div class="card-hdr">
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-              <div style="font-family:var(--font-display);font-size:18px;letter-spacing:1px">${item.version}</div>
-              <span class="cbadge" style="background:${typeColor(item.type)};color:#000">${String(item.type || 'patch').toUpperCase()}</span>
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${item.date || ''}</span>
-            </div>
-            <div class="card-title">${item.title || 'Release'}</div>
-          </div>
-          <div class="card-body">
-            ${(item.changes || []).length
-              ? `<div style="display:grid;gap:8px">${item.changes.map(ch => `<div style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--teal)">•</span><span style="font-size:13px;color:var(--text2)">${ch}</span></div>`).join('')}</div>`
-              : `<div style="font-size:13px;color:var(--text3)">Sin detalles</div>`}
-          </div>
-        </div>
-      `).join('')}
-    `;
-  }
-  $('versionOverlay').classList.add('open');
-}
-
 // ── AUTH ──
 async function sha(s){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
 function doLogin(){
   sha(document.getElementById('loginPass').value).then(h=>{
-    const expectedHash = activeModule==='cierre' ? HASH_CIERRE : HASH_PRES;
+    const expectedHash = activeModule==='cierre' ? HASH_CIERRE : activeModule==='presupuesto' ? HASH_PRES : HASH_ANUAL;
     if(h===expectedHash){
       document.getElementById('loginScreen').style.display='none';
+      document.getElementById('app').style.display='none';
+      document.getElementById('app-presupuesto').style.display='none';
+      if(document.getElementById('app-anual')) document.getElementById('app-anual').style.display='none';
       if(activeModule==='cierre'){
         document.getElementById('app').style.display='block';
-        document.getElementById('app-presupuesto').style.display='none';
-        renderAppCredits();
         boot();
-      } else {
-        document.getElementById('app').style.display='none';
+      } else if(activeModule==='presupuesto'){
         document.getElementById('app-presupuesto').style.display='block';
-        renderAppCredits();
         bootPresupuesto();
+      } else {
+        document.getElementById('app-anual').style.display='block';
+        bootAnnual();
       }
     } else {
       document.getElementById('loginError').style.display='block';
@@ -828,6 +836,7 @@ function doLogin(){
 function doLogout(){
   document.getElementById('app').style.display='none';
   document.getElementById('app-presupuesto').style.display='none';
+  if(document.getElementById('app-anual')) document.getElementById('app-anual').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('loginPass').value='';
 }
@@ -998,325 +1007,18 @@ function renderDropdownConfigSec(){
   renderListItems('cfg_remuneraciones','remuneraciones');
   renderListItems('cfg_pendientes','pendientes');
   renderListItems('cfg_comisiones','comisiones');
-}
-
-
-
-function pdfMoney(n){
-  return '$' + Math.round(Number(n||0)).toLocaleString('es-CL');
-}
-function buildResumenMetrics(){
-  const d = cur();
-  const tBNeg = d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
-  const tBPos = d.bancos.reduce((s,r)=>s+(r.positivo||0),0);
-  const tR = d.remuneraciones.reduce((s,r)=>s+(r.monto||0),0);
-  const tP = d.pendientes.reduce((s,r)=>s+(r.monto||0),0);
-  const tC = d.comisiones.reduce((s,r)=>s+(r.monto||0),0);
-  const totalGastos = tBNeg + tR + tP + tC;
-  const totalSaldos = d.saldos.reduce((s,r)=>s+(r.liberado||0)+(r.pendiente||0),0);
-  const totalLiberado = d.saldos.reduce((s,r)=>s+(r.liberado||0),0);
-  const totalPendCobro = d.saldos.reduce((s,r)=>s+(r.pendiente||0),0);
-  const totalIngresos = totalSaldos + tBPos;
-  const disponible = totalIngresos - totalGastos;
-  return { d, tBNeg, tBPos, tR, tP, tC, totalGastos, totalSaldos, totalLiberado, totalPendCobro, totalIngresos, disponible };
-}
-function getMesTituloPDF(){
-  if(!S.mes) return 'Cierre mensual';
-  const [y,m] = S.mes.split('-');
-  return `${MESES[+m-1]} ${y}`;
-}
-function exportResumenPDF(){
-  try{
-    const jspdfNS = window.jspdf || window.jsPDF;
-    const JsPDFCtor = jspdfNS?.jsPDF || window.jsPDF;
-    if(!JsPDFCtor){
-      showToast('No se pudo cargar la librería PDF', true);
-      return;
-    }
-
-    const doc = new JsPDFCtor({orientation:'p', unit:'pt', format:'a4'});
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
-    const margin = 42;
-    const contentW = pageW - margin*2;
-    const colors = {
-      bg:'#0d0f1a',
-      card:'#141728',
-      teal:'#00d4aa',
-      green:'#00e5a0',
-      amber:'#f5a623',
-      red:'#ff4757',
-      text:'#e8eaf6',
-      muted:'#7f88aa',
-      line:'#23283d'
-    };
-    const m = buildResumenMetrics();
-    const monthLabel = getMesTituloPDF();
-
-    const hasAutoTable = typeof doc.autoTable === 'function';
-
-    function addPageBg(){
-      doc.setFillColor(colors.bg);
-      doc.rect(0,0,pageW,pageH,'F');
-    }
-    function addHeader(){
-      addPageBg();
-      doc.setFillColor(20,23,40);
-      doc.roundedRect(margin, margin, contentW, 64, 8, 8, 'F');
-
-      doc.setFont('helvetica','bold');
-      doc.setTextColor(colors.teal);
-      doc.setFontSize(24);
-      doc.text('GBISNESS', margin+18, margin+28);
-
-      doc.setFont('helvetica','bold');
-      doc.setTextColor(colors.text);
-      doc.setFontSize(18);
-      doc.text('Resumen de cierre mensual', margin+18, margin+50);
-
-      doc.setFont('helvetica','normal');
-      doc.setTextColor(colors.muted);
-      doc.setFontSize(10);
-      doc.text(`Periodo: ${monthLabel}`, pageW - margin - 120, margin+28);
-      doc.text(`Generado: ${new Date().toLocaleString('es-CL')}`, pageW - margin - 170, margin+50);
-      return margin + 86;
-    }
-
-    function drawKpi(y, x, w, h, label, value, sub, accent){
-      doc.setFillColor(20,23,40);
-      doc.roundedRect(x, y, w, h, 8, 8, 'F');
-      doc.setFillColor(accent);
-      doc.roundedRect(x, y, w, 4, 4, 4, 'F');
-      doc.setFont('helvetica','bold');
-      doc.setTextColor(colors.muted);
-      doc.setFontSize(9);
-      doc.text(label.toUpperCase(), x+12, y+18);
-      doc.setTextColor(colors.text);
-      doc.setFontSize(18);
-      doc.text(value, x+12, y+40);
-      doc.setFont('helvetica','normal');
-      doc.setTextColor(colors.muted);
-      doc.setFontSize(8);
-      const lines = doc.splitTextToSize(sub, w-24);
-      doc.text(lines, x+12, y+55);
-    }
-
-    function addSimpleTable(startY, title, headers, rows){
-      let y = startY;
-      doc.setFont('helvetica','bold');
-      doc.setTextColor(colors.text);
-      doc.setFontSize(12);
-      if(title){
-        doc.text(title, margin, y);
-        y += 14;
-      }
-
-      const availableW = contentW;
-      const cols = headers.length;
-      const colW = availableW / cols;
-      const headerH = 20;
-      const rowH = 18;
-
-      doc.setFillColor(20,23,40);
-      doc.rect(margin, y, availableW, headerH, 'F');
-      doc.setDrawColor(35,40,61);
-      doc.setLineWidth(0.5);
-      doc.rect(margin, y, availableW, headerH);
-
-      doc.setFont('helvetica','bold');
-      doc.setTextColor(colors.text);
-      doc.setFontSize(8);
-      headers.forEach((h, i) => {
-        doc.text(String(h), margin + i*colW + 6, y + 13);
-        if(i>0){
-          doc.line(margin + i*colW, y, margin + i*colW, y + headerH);
-        }
-      });
-      y += headerH;
-
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(8);
-      rows.forEach((row, ridx) => {
-        if(y + rowH > pageH - margin){
-          doc.addPage();
-          addPageBg();
-          y = margin;
-        }
-        doc.setFillColor(ridx % 2 === 0 ? 13 : 17, ridx % 2 === 0 ? 15 : 20, ridx % 2 === 0 ? 26 : 32);
-        doc.rect(margin, y, availableW, rowH, 'F');
-        doc.setDrawColor(35,40,61);
-        doc.rect(margin, y, availableW, rowH);
-
-        row.forEach((cell, i) => {
-          const text = String(cell ?? '');
-          doc.setTextColor(colors.text);
-          const isMoneyCol = i > 1 || headers[i]?.toLowerCase().includes('monto') || headers[i]?.toLowerCase().includes('total') || headers[i]?.toLowerCase().includes('negativo') || headers[i]?.toLowerCase().includes('positivo');
-          const tx = isMoneyCol ? margin + (i+1)*colW - 6 : margin + i*colW + 6;
-          doc.text(text, tx, y + 12, {align: isMoneyCol ? 'right' : 'left', maxWidth: colW - 12});
-          if(i>0){
-            doc.line(margin + i*colW, y, margin + i*colW, y + rowH);
-          }
-        });
-        y += rowH;
-      });
-      return y + 8;
-    }
-
-    let y = addHeader();
-
-    const gap = 12;
-    const kpiW = (contentW - gap) / 2;
-    const kpiH = 78;
-    drawKpi(y, margin, kpiW, kpiH, 'Total ingresos', pdfMoney(m.totalIngresos), `Saldos: ${pdfMoney(m.totalSaldos)} · Bancos(+): ${pdfMoney(m.tBPos)}`, colors.teal);
-    drawKpi(y, margin + kpiW + gap, kpiW, kpiH, 'Total gastos', pdfMoney(m.totalGastos), `Bancos(-), remuneraciones, pendientes y comisiones`, colors.red);
-    y += kpiH + 12;
-    drawKpi(y, margin, kpiW, kpiH, 'Disponible', pdfMoney(m.disponible), m.disponible >= 0 ? 'Saldo disponible del cierre del mes' : 'El cierre del mes quedó en negativo', m.disponible >= 0 ? colors.green : colors.red);
-    drawKpi(y, margin + kpiW + gap, kpiW, kpiH, 'Pendiente de cobro', pdfMoney(m.totalPendCobro), `Liberado: ${pdfMoney(m.totalLiberado)} · Pendiente por liberar`, colors.amber);
-    y += kpiH + 22;
-
-    const executiveRows = [
-      ['Bancos y servicios (-)', pdfMoney(m.tBNeg), 'Salidas bancarias del mes'],
-      ['Bancos y servicios (+)', pdfMoney(m.tBPos), 'Ingresos registrados en bancos'],
-      ['Remuneraciones e impuestos', pdfMoney(m.tR), 'Sueldos, Previred y SII'],
-      ['Pendientes', pdfMoney(m.tP), 'Pagos por operador y cuentas por pagar'],
-      ['Comisiones y publicidad', pdfMoney(m.tC), 'Plataformas y marketing'],
-    ];
-
-    if(hasAutoTable){
-      doc.setFont('helvetica','bold');
-      doc.setTextColor(colors.text);
-      doc.setFontSize(12);
-      doc.text('Desglose ejecutivo', margin, y);
-      y += 10;
-      doc.autoTable({
-        startY: y,
-        theme: 'grid',
-        margin: {left: margin, right: margin},
-        headStyles: {fillColor: [20,23,40], textColor: [232,234,246], lineColor:[35,40,61], lineWidth:0.5, fontSize:9},
-        bodyStyles: {fillColor: [13,15,26], textColor: [232,234,246], lineColor:[35,40,61], lineWidth:0.5, fontSize:9},
-        alternateRowStyles: {fillColor: [17,20,32]},
-        columnStyles: {1: {halign:'right'}, 2:{halign:'left'}},
-        head: [['Categoría','Monto','Detalle']],
-        body: executiveRows
-      });
-    } else {
-      addSimpleTable(y, 'Desglose ejecutivo', ['Categoría','Monto','Detalle'], executiveRows);
-    }
-
-    function rowsSaldos(){
-      return (m.d.saldos||[]).map(r=>[
-        String(r.cuenta||''),
-        String(r.empresa||''),
-        pdfMoney(r.liberado||0),
-        pdfMoney(r.pendiente||0),
-        pdfMoney((r.liberado||0)+(r.pendiente||0))
-      ]);
-    }
-    function rowsBancos(){
-      return (m.d.bancos||[]).map(r=>[
-        String(r.categoria||''),
-        String(r.descripcion||''),
-        pdfMoney(r.negativo||0),
-        pdfMoney(r.positivo||0),
-        String(r.estado||'')
-      ]);
-    }
-    function rowsSimple(arr){
-      return (arr||[]).map(r=>[
-        String(r.categoria || r.plataforma || ''),
-        String(r.descripcion || r.responsable || ''),
-        pdfMoney(r.monto||0),
-        String(r.estado||'')
-      ]);
-    }
-
-    const sections = [
-      {title:'Saldos por cuenta', head:[['Cuenta','Empresa','Liberado','Pendiente','Total']], body: rowsSaldos()},
-      {title:'Bancos y servicios', head:[['Categoría','Descripción','Negativo','Positivo','Estado']], body: rowsBancos()},
-      {title:'Remuneraciones e impuestos', head:[['Categoría','Detalle','Monto','Estado']], body: rowsSimple(m.d.remuneraciones)},
-      {title:'Pagos pendientes', head:[['Categoría','Detalle','Monto','Estado']], body: rowsSimple(m.d.pendientes)},
-      {title:'Comisiones y publicidad', head:[['Plataforma','Responsable','Monto','Estado']], body: rowsSimple(m.d.comisiones)}
-    ];
-
-    sections.forEach(sec => {
-      doc.addPage();
-      addPageBg();
-
-      doc.setFont('helvetica','bold');
-      doc.setTextColor(colors.teal);
-      doc.setFontSize(18);
-      doc.text('GBISNESS', margin, margin+8);
-      doc.setTextColor(colors.text);
-      doc.setFontSize(14);
-      doc.text(sec.title, margin, margin+32);
-      doc.setFont('helvetica','normal');
-      doc.setTextColor(colors.muted);
-      doc.setFontSize(9);
-      doc.text(`Periodo: ${monthLabel}`, pageW - margin - 100, margin+8);
-
-      const normalizedBody = sec.body.length ? sec.body : [Array.from({length: sec.head[0].length}, (_,i)=>i===0?'Sin registros':'')];
-
-      if(hasAutoTable){
-        doc.autoTable({
-          startY: margin + 46,
-          theme: 'grid',
-          margin: {left: margin, right: margin},
-          headStyles: {fillColor: [20,23,40], textColor: [232,234,246], lineColor:[35,40,61], lineWidth:0.5, fontSize:9},
-          bodyStyles: {fillColor: [13,15,26], textColor: [232,234,246], lineColor:[35,40,61], lineWidth:0.5, fontSize:9},
-          alternateRowStyles: {fillColor: [17,20,32]},
-          head: sec.head,
-          body: normalizedBody
-        });
-      } else {
-        addSimpleTable(margin + 46, '', sec.head[0], normalizedBody);
-      }
-    });
-
-    const lastPage = doc.getNumberOfPages();
-    for(let i=1;i<=lastPage;i++){
-      doc.setPage(i);
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(8);
-      doc.setTextColor(colors.muted);
-      doc.text('Creado con Inteligencia Artificial ChatGPT, Claude e Inteligencia Humana Rich GPT', margin, pageH - 16);
-      doc.text(`Página ${i} de ${lastPage}`, pageW - margin - 45, pageH - 16);
-    }
-
-    const safeMonth = monthLabel.toLowerCase().replace(/\s+/g,'_');
-    const filename = `cierre_${safeMonth}.pdf`;
-
-    try{
-      const blob = doc.output('blob');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 1500);
-      showToast('PDF exportado correctamente');
-    }catch(downloadErr){
-      console.error('[PDF download fallback]', downloadErr);
-      try{
-        doc.save(filename);
-        showToast('PDF exportado correctamente');
-      }catch(saveErr){
-        console.error('[PDF save failed]', saveErr);
-        showToast('El navegador bloqueó la descarga del PDF', true);
-      }
-    }
-  }catch(e){
-    console.error(e);
-    showToast('No se pudo exportar el PDF', true);
+  const extra = $('cfg_presupuesto_extra');
+  if (extra) {
+    extra.innerHTML = `
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Proveedores</div><button class="btn-secondary" onclick="openDropdownManager('proveedores')">Gestionar</button></div>${(getDropdownItems('proveedores').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'proveedores')">✎</button><button class="btn-del" onclick="delCatItem('proveedores',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin proveedores</div>'}</div>
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Responsables</div><button class="btn-secondary" onclick="openDropdownManager('responsables_pres')">Gestionar</button></div>${(getDropdownItems('responsables_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'responsables_pres')">✎</button><button class="btn-del" onclick="delCatItem('responsables_pres',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin responsables</div>'}</div>
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Bancos</div><button class="btn-secondary" onclick="openDropdownManager('bancos_pres')">Gestionar</button></div>${(getDropdownItems('bancos_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'bancos_pres')">✎</button><button class="btn-del" onclick="delCatItem('bancos_pres',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin bancos</div>'}</div>
+      <div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Tipos de pago</div><button class="btn-secondary" onclick="openDropdownManager('tiposPago')">Gestionar</button></div>${(getDropdownItems('tiposPago').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'tiposPago')">✎</button><button class="btn-del" onclick="delCatItem('tiposPago',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin tipos de pago</div>'}</div>`;
   }
 }
 
-// ── RESUMEN ──
 
+// ── RESUMEN ──
 function renderResumen(){
   const d=cur();
   const tBNeg=d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
@@ -2037,6 +1739,720 @@ function renderReporte2() {
       </div>`;
     }).join('')}`;
 }
+
+
+// ════════════════════════════════════
+// CIERRE ANUAL
+// ════════════════════════════════════
+
+const ANNUAL_MONTH_KEYS = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+const ANNUAL_EDITABLE_FIELDS = ['compras_factura','compras_exenta','compras_din','compras_nd','compras_nc','ventas_factura','ventas_boleta','ventas_liquidacion','ventas_nd','ventas_nc','sueldos','pendiente_facturar'];
+const annualState = { year:null, data:{}, curSec:'resumen', curMonth:'01', company:'' };
+const annualConfigDefault = {
+  empresas:[
+    {
+      nombre:'Cybernetic',
+      socios:[
+        { nombre:'Richard', porcentaje:51 },
+        { nombre:'Ivone', porcentaje:49 }
+      ]
+    },
+    {
+      nombre:'Mascokits',
+      socios:[]
+    },
+    {
+      nombre:'Mini Mall',
+      socios:[]
+    }
+  ]
+};
+let annualConfig = JSON.parse(JSON.stringify(annualConfigDefault));
+
+function normalizeEmpresaSocios(list){
+  return (Array.isArray(list) ? list : [])
+    .map(s => ({
+      nombre: String((s||{}).nombre || '').trim(),
+      porcentaje: Number((s||{}).porcentaje || 0)
+    }))
+    .filter(s => s.nombre);
+}
+function normalizeAnnualConfig(src={}){
+  const empresasSrc = Array.isArray(src.empresas) ? src.empresas : annualConfigDefault.empresas;
+  const empresas = empresasSrc
+    .map(e => {
+      if(typeof e === 'string'){
+        return { nombre: String(e).trim(), socios: [] };
+      }
+      return {
+        nombre: String((e||{}).nombre || '').trim(),
+        socios: normalizeEmpresaSocios((e||{}).socios)
+      };
+    })
+    .filter(e => e.nombre);
+
+  const unique = [];
+  const seen = new Set();
+  empresas.forEach(e => {
+    const key = e.nombre.toLowerCase();
+    if(!seen.has(key)){
+      seen.add(key);
+      unique.push(e);
+    }
+  });
+
+  return { empresas: unique };
+}
+async function loadAnnualConfig(){
+  try{
+    const remote = window.fbLoadAnnualConfig ? await window.fbLoadAnnualConfig() : null;
+    annualConfig = normalizeAnnualConfig(remote || annualConfigDefault);
+    if ((!remote || !remote.empresas || !remote.socios) && window.fbSaveAnnualConfig){
+      await window.fbSaveAnnualConfig(annualConfig);
+    }
+  }catch(e){
+    console.error('[Annual config load]', e);
+    annualConfig = normalizeAnnualConfig(annualConfigDefault);
+  }
+}
+async function saveAnnualConfig(){
+  annualConfig = normalizeAnnualConfig(annualConfig);
+  if(window.fbSaveAnnualConfig) await window.fbSaveAnnualConfig(annualConfig).catch(e=>console.error('[Annual config save]', e));
+}
+function mkAnnualMonth(){
+  return {
+    compras_factura:0, compras_exenta:0, compras_din:0, compras_nd:0, compras_nc:0,
+    compras_total:0, compras_afectas:0,
+    ventas_factura:0, ventas_boleta:0, ventas_liquidacion:0, ventas_nd:0, ventas_nc:0,
+    ventas_total:0,
+    remanente_anterior:0, credito_fiscal:0, debito_fiscal:0, remanente:0,
+    a_pagar_iva:0, a_pagar_ppm:0, total_impuesto:0,
+    sueldos:0, pendiente_facturar:0, ganancia_mes:0
+  };
+}
+function mkAnnualYear(year){
+  return {_id:String(year), companies:{}};
+}
+function ensureAnnualCompanyYear(yearObj, companyName){
+  if(!yearObj.companies) yearObj.companies = {};
+  if(!yearObj.companies[companyName]){
+    const months = {};
+    ANNUAL_MONTH_KEYS.forEach(m=>months[m]=mkAnnualMonth());
+    yearObj.companies[companyName] = { months };
+  }
+  if(!yearObj.companies[companyName].months) yearObj.companies[companyName].months = {};
+  ANNUAL_MONTH_KEYS.forEach(m=>{
+    yearObj.companies[companyName].months[m] = annualMonthMerged(yearObj.companies[companyName].months[m] || {});
+  });
+  return yearObj.companies[companyName];
+}
+function annualMonthMerged(raw={}){
+  return { ...mkAnnualMonth(), ...(raw||{}) };
+}
+function annualParseMoney(val){
+  if(typeof val === 'number') return Math.round(val || 0);
+  const clean = String(val || '').replace(/[^\d-]/g,'');
+  return clean ? parseInt(clean,10) : 0;
+}
+function annualMoney(n){
+  return 'CLP$ ' + Math.round(Number(n||0)).toLocaleString('es-CL');
+}
+function annualSetFormattedValue(id, value){
+  const el = $(id);
+  if(el) el.value = annualMoney(value);
+}
+function annualField(label,id,val,ro=false){
+  return `<div class="fw">
+    <label class="fl">${label}</label>
+    <input ${ro?'readonly':''} type="text" inputmode="numeric" id="${id}" class="fi annual-money-field" value="${annualMoney(val)}" ${ro?'style="background:rgba(255,255,255,0.04);color:var(--teal)"':''} oninput="${ro?'':"annualMoneyInput(this);annualRecalc()"}">
+  </div>`;
+}
+function annualMoneyInput(el){
+  const num = annualParseMoney(el.value);
+  el.value = annualMoney(num);
+}
+function annualVal(id){
+  return annualParseMoney((($(id)||{}).value)||0);
+}
+function calcAnnualMonth(m){
+  const comprasFactura = Number(m.compras_factura||0);
+  const comprasExenta = Number(m.compras_exenta||0);
+  const comprasDin = Number(m.compras_din||0);
+  const comprasND = Number(m.compras_nd||0);
+  const comprasNC = Number(m.compras_nc||0);
+  const ventasFactura = Number(m.ventas_factura||0);
+  const ventasBoleta = Number(m.ventas_boleta||0);
+  const ventasLiqui = Number(m.ventas_liquidacion||0);
+  const ventasND = Number(m.ventas_nd||0);
+  const ventasNC = Number(m.ventas_nc||0);
+  const pendiente = Number(m.pendiente_facturar||0);
+  const sueldos = Number(m.sueldos||0);
+  const remanenteAnterior = Number(m.remanente_anterior||0);
+
+  // Excel base:
+  // Total compras = Factura + Exenta + DIN + ND - NC
+  // Total ventas  = Factura + Boleta + Liquidación + ND - NC
+  // Crédito fiscal = (Total compras - Exenta) * 19%
+  // Débito fiscal  = (Total ventas + Pendiente por facturar) * 19%
+  // IVA a pagar    = Débito - Crédito - Remanente anterior
+  // Si IVA queda negativo, ese remanente pasa al próximo mes
+  // PPM            = (Total ventas + Pendiente por facturar) * 1%
+  // Ganancia       = Total ventas + Pendiente por facturar - Total compras
+
+  const comprasTotal = comprasFactura + comprasExenta + comprasDin + comprasND - comprasNC;
+  const comprasAfectas = Math.max(comprasTotal - comprasExenta, 0);
+  const ventasTotal = ventasFactura + ventasBoleta + ventasLiqui + ventasND - ventasNC;
+  const ventasBaseFiscal = ventasTotal + pendiente;
+
+  const creditoFiscal = Math.round(comprasAfectas * 0.19);
+  const debitoFiscal = Math.round(ventasBaseFiscal * 0.19);
+  const ivaNeto = debitoFiscal - creditoFiscal - remanenteAnterior;
+  const ivaPagado = ivaNeto > 0 ? ivaNeto : 0;
+  const remanente = ivaNeto < 0 ? Math.abs(ivaNeto) : 0;
+  const ppmPagado = Math.round(ventasBaseFiscal * 0.01);
+  const totalImpuesto = ivaPagado + ppmPagado;
+  const gananciaMes = ventasTotal + pendiente - comprasTotal;
+
+  return {
+    ...annualMonthMerged(m),
+    compras_total: comprasTotal,
+    compras_afectas: comprasAfectas,
+    ventas_total: ventasTotal,
+    credito_fiscal: creditoFiscal,
+    debito_fiscal: debitoFiscal,
+    a_pagar_iva: ivaPagado,
+    remanente: remanente,
+    a_pagar_ppm: ppmPagado,
+    total_impuesto: totalImpuesto,
+    ganancia_mes: gananciaMes,
+    sueldos: sueldos,
+    pendiente_facturar: pendiente,
+    remanente_anterior: remanenteAnterior
+  };
+}
+function recalcAnnualCompany(companyData){
+  let carry = 0;
+  ANNUAL_MONTH_KEYS.forEach(m=>{
+    const merged = annualMonthMerged((companyData.months||{})[m]);
+    merged.remanente_anterior = carry;
+    const calc = calcAnnualMonth(merged);
+    companyData.months[m] = calc;
+    carry = Number(calc.remanente || 0);
+  });
+  return companyData;
+}
+function recalcAnnualYear(yearObj){
+  const names = Object.keys(yearObj.companies || {});
+  names.forEach(name => recalcAnnualCompany(ensureAnnualCompanyYear(yearObj, name)));
+  return yearObj;
+}
+function calcAnnualYearTotals(yearObj, companyName=''){
+  recalcAnnualYear(yearObj);
+  const totals = {compras:0, ventas:0, iva_pagado:0, ppm_pagado:0, sueldos:0, ganancia:0, pendiente:0, remanente_final:0};
+
+  const companies = companyName
+    ? [ensureAnnualCompanyYear(yearObj, companyName)]
+    : Object.keys(yearObj.companies || {}).map(name => ensureAnnualCompanyYear(yearObj, name));
+
+  companies.forEach(companyData => {
+    ANNUAL_MONTH_KEYS.forEach(k=>{
+      const m = annualMonthMerged(companyData.months[k]);
+      totals.compras += Number(m.compras_total||0);
+      totals.ventas += Number(m.ventas_total||0);
+      totals.iva_pagado += Number(m.a_pagar_iva||0);
+      totals.ppm_pagado += Number(m.a_pagar_ppm||0);
+      totals.sueldos += Number(m.sueldos||0);
+      totals.ganancia += Number(m.ganancia_mes||0);
+      totals.pendiente += Number(m.pendiente_facturar||0);
+      totals.remanente_final = Number(m.remanente||0);
+    });
+  });
+  return totals;
+}
+function getAnnualCompanyIndex(name){
+  return (annualConfig.empresas || []).findIndex(e => e.nombre === name);
+}
+function getAnnualCompanyConfig(name){
+  const idx = getAnnualCompanyIndex(name);
+  if(idx === -1) return null;
+  return annualConfig.empresas[idx];
+}
+function annualSociosProjection(ganancia, companyName){
+  const cfg = getAnnualCompanyConfig(companyName);
+  return (cfg.socios || []).map(s => {
+    const utilidad = Math.round((ganancia || 0) * (Number(s.porcentaje||0) / 100));
+    return {
+      nombre: s.nombre,
+      porcentaje: Number(s.porcentaje||0),
+      utilidad,
+      remuneracion: Math.round(utilidad / 12)
+    };
+  });
+}
+async function loadAnnualData(){
+  try{
+    if(window.fbLoadAnnual){
+      const rows = await window.fbLoadAnnual();
+      rows.forEach(r=>{
+        const yearObj = { _id:r._id, companies:{} };
+        if(r.companies && typeof r.companies === 'object'){
+          Object.keys(r.companies).forEach(name => {
+            const companyData = ensureAnnualCompanyYear(yearObj, name);
+            ANNUAL_MONTH_KEYS.forEach(m=> companyData.months[m] = annualMonthMerged((((r.companies||{})[name]||{}).months||{})[m] || {}));
+          });
+        } else if(r.months && typeof r.months === 'object'){
+          const fallback = getAnnualCompanyNames()[0] || 'General';
+          const companyData = ensureAnnualCompanyYear(yearObj, fallback);
+          ANNUAL_MONTH_KEYS.forEach(m=> companyData.months[m] = annualMonthMerged((r.months||{})[m] || {}));
+        }
+        annualState.data[r._id] = recalcAnnualYear(yearObj);
+      });
+    }
+  }catch(e){
+    console.error('[Annual load]', e);
+  }
+}
+async function saveAnnualYear(year){
+  recalcAnnualYear(annualState.data[year]);
+  if(window.fbSaveAnnual) await window.fbSaveAnnual(year, annualState.data[year]).catch(e=>console.error('[Annual save]', e));
+}
+function buildAnnualCompanySelectors(){
+  const names = getAnnualCompanyNames();
+  const sels = [$('annualCompanySel'), $('annualCompanyConfigSel'), $('annualMonthCompanySel')];
+  sels.forEach(sel => {
+    if(!sel) return;
+    const current = sel.value || annualState.company || '';
+    sel.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
+    if(current && names.includes(current)) sel.value = current;
+  });
+  annualState.company = names.includes(annualState.company) ? annualState.company : (names[0] || '');
+  if($('annualCompanySel')) $('annualCompanySel').value = annualState.company;
+  if($('annualCompanyConfigSel')) $('annualCompanyConfigSel').value = annualState.company;
+}
+function onAnnualCompanyChange(){
+  annualState.company = $('annualCompanySel').value;
+  buildAnnualCompanySelectors();
+  renderAnnualApp();
+}
+function annualOnConfigCompanyChange(){
+  annualState.company = $('annualCompanyConfigSel').value;
+  buildAnnualCompanySelectors();
+  renderAnnualConfig();
+  renderAnnualResumen();
+}
+function onAnnualMonthCompanyChange(){
+  annualState.company = $('annualMonthCompanySel').value;
+  buildAnnualCompanySelectors();
+  renderAnnualMeses();
+  renderAnnualResumen();
+}
+function buildYearSel(){
+  const sel = $('yearSel');
+  if(!sel) return;
+  const current = sel.value;
+  const years = Object.keys(annualState.data).sort().reverse();
+  sel.innerHTML = '';
+  years.forEach(y=>{
+    const o = document.createElement('option');
+    o.value = y;
+    o.textContent = y;
+    sel.appendChild(o);
+  });
+  if(current && annualState.data[current]) sel.value = current;
+}
+function setAnnualLabel(){
+  if(!$('annualYearLabel')) return;
+  const company = getSelectedAnnualCompany();
+  $('annualYearLabel').textContent = annualState.year ? `AÑO ${annualState.year}${company ? ' · ' + company.toUpperCase() : ''}` : 'CIERRE ANUAL';
+}
+function getAnnualCompanyNames(){
+  return (annualConfig.empresas || []).map(e => e.nombre).filter(Boolean);
+}
+function getSelectedAnnualCompany(){
+  const names = getAnnualCompanyNames();
+  if(!annualState.company || !names.includes(annualState.company)){
+    annualState.company = names[0] || '';
+  }
+  return annualState.company;
+}
+function annualCurYear(){
+  if(!annualState.year || !annualState.data[annualState.year]) annualState.data[annualState.year] = mkAnnualYear(annualState.year || new Date().getFullYear());
+  const yearObj = annualState.data[annualState.year];
+  const company = getSelectedAnnualCompany();
+  if(company) ensureAnnualCompanyYear(yearObj, company);
+  return yearObj;
+}
+function annualCurCompanyData(){
+  const yearObj = annualCurYear();
+  const company = getSelectedAnnualCompany();
+  return company ? ensureAnnualCompanyYear(yearObj, company) : { months:{} };
+}
+function annualCurMonth(){
+  return annualCurCompanyData().months[annualState.curMonth];
+}
+function openNewYear(){
+  const y = new Date().getFullYear();
+  $('nyVal').value = y;
+  $('newYearOv').classList.add('open');
+}
+async function doNewYear(){
+  const year = String($('nyVal').value || '').trim();
+  if(!year) return;
+  if(annualState.data[year]){ showToast('Ese año ya existe', true); return; }
+  annualState.data[year] = mkAnnualYear(year);
+  annualState.year = year;
+  await saveAnnualYear(year);
+  buildYearSel();
+  $('yearSel').value = year;
+  setAnnualLabel();
+  closeOv('newYearOv');
+  renderAnnualApp();
+  showToast('Año creado');
+}
+function onAnnualYearChange(){
+  annualState.year = $('yearSel').value;
+  recalcAnnualYear(annualCurYear());
+  setAnnualLabel();
+  renderAnnualApp();
+}
+function goAnnualSec(el, sec){
+  document.querySelectorAll('[id^="asec-"]').forEach(x=>x.style.display='none');
+  document.querySelectorAll('#app-anual .nav-item').forEach(x=>x.classList.remove('active'));
+  $('asec-'+sec).style.display = 'block';
+  el.classList.add('active');
+  annualState.curSec = sec;
+  if(sec==='resumen') renderAnnualResumen();
+  if(sec==='meses') renderAnnualMeses();
+  if(sec==='config') renderAnnualConfig();
+  if(sec==='historial') renderAnnualHistorial();
+}
+function bootAnnual(){
+  showLoader(true);
+  Promise.resolve().then(async()=>{
+    await loadAnnualConfig();
+    await loadAnnualData();
+    if(!Object.keys(annualState.data).length){
+      const y = String(new Date().getFullYear());
+      annualState.data[y] = mkAnnualYear(y);
+      await saveAnnualYear(y);
+    }
+    buildYearSel();
+    annualState.year = Object.keys(annualState.data).sort().reverse()[0];
+    annualState.company = getAnnualCompanyNames()[0] || '';
+    $('yearSel').value = annualState.year;
+    buildAnnualCompanySelectors();
+    setAnnualLabel();
+    renderAnnualApp();
+  }).catch(e=>{
+    console.error(e);
+    showToast('Error cargando cierre anual', true);
+  }).finally(()=>showLoader(false));
+}
+function renderAnnualApp(){
+  buildAnnualCompanySelectors();
+  setAnnualLabel();
+  recalcAnnualYear(annualCurYear());
+  renderAnnualResumen();
+  renderAnnualMeses();
+  renderAnnualConfig();
+  renderAnnualHistorial();
+  ['resumen','meses','config','historial'].forEach(sec=>{
+    const el = $('asec-'+sec);
+    if(el) el.style.display = sec===annualState.curSec?'block':'none';
+  });
+}
+function renderAnnualMeses(){
+  const tabs = $('annualMonthTabs');
+  if(tabs){
+    tabs.innerHTML = ANNUAL_MONTH_KEYS.map(m=>`<button class="ptab ${annualState.curMonth===m?'active':''}" onclick="selectAnnualMonth('${m}')">${MESES[+m-1]}</button>`).join('');
+  }
+  const month = annualCurMonth();
+  const calc = calcAnnualMonth(month);
+  const company = getSelectedAnnualCompany();
+  $('annualComprasTitle').textContent = `// Compras · ${MESES[+annualState.curMonth-1]} · ${company || ''}`;
+  $('annualComprasForm').innerHTML = [
+    annualField('Factura afecta','an_compras_factura',month.compras_factura),
+    annualField('Factura exenta','an_compras_exenta',month.compras_exenta),
+    annualField('DIN','an_compras_din',month.compras_din),
+    annualField('ND · Nota de débito','an_compras_nd',month.compras_nd),
+    annualField('NC · Nota de crédito','an_compras_nc',month.compras_nc),
+    annualField('Total compras','an_compras_total',calc.compras_total,true)
+  ].join('');
+  $('annualVentasForm').innerHTML = [
+    annualField('Factura afecta','an_ventas_factura',month.ventas_factura),
+    annualField('Boleta','an_ventas_boleta',month.ventas_boleta),
+    annualField('Liquidación','an_ventas_liquidacion',month.ventas_liquidacion),
+    annualField('ND · Nota de débito','an_ventas_nd',month.ventas_nd),
+    annualField('NC · Nota de crédito','an_ventas_nc',month.ventas_nc),
+    annualField('Total ventas','an_ventas_total',calc.ventas_total,true)
+  ].join('');
+  $('annualFiscalForm').innerHTML = [
+    annualField('Remanente mes anterior','an_remanente_anterior',calc.remanente_anterior,true),
+    annualField('Crédito fiscal','an_credito',calc.credito_fiscal,true),
+    annualField('Débito fiscal','an_debito',calc.debito_fiscal,true),
+    annualField('IVA a pagar','an_iva',calc.a_pagar_iva,true),
+    annualField('PPM a pagar','an_pagar_ppm',calc.a_pagar_ppm,true),
+    annualField('Sueldos','an_sueldos',month.sueldos),
+    annualField('Pendiente por facturar','an_pendiente',month.pendiente_facturar),
+    annualField('Remanente para próximo mes','an_remanente',calc.remanente,true),
+    annualField('Total impuesto','an_total_impuesto',calc.total_impuesto,true),
+    annualField('Ganancia del mes','an_ganancia',calc.ganancia_mes,true)
+  ].join('');
+}
+function selectAnnualMonth(m){
+  annualState.curMonth = m;
+  renderAnnualMeses();
+}
+function annualRecalc(){
+  const current = annualMonthMerged(annualCurMonth());
+  current.compras_factura = annualVal('an_compras_factura');
+  current.compras_exenta = annualVal('an_compras_exenta');
+  current.compras_din = annualVal('an_compras_din');
+  current.compras_nd = annualVal('an_compras_nd');
+  current.compras_nc = annualVal('an_compras_nc');
+  current.ventas_factura = annualVal('an_ventas_factura');
+  current.ventas_boleta = annualVal('an_ventas_boleta');
+  current.ventas_liquidacion = annualVal('an_ventas_liquidacion');
+  current.ventas_nd = annualVal('an_ventas_nd');
+  current.ventas_nc = annualVal('an_ventas_nc');
+  current.sueldos = annualVal('an_sueldos');
+  current.pendiente_facturar = annualVal('an_pendiente');
+  current.remanente_anterior = Number(annualCurMonth().remanente_anterior || 0);
+  const calc = calcAnnualMonth(current);
+
+  annualSetFormattedValue('an_compras_total', calc.compras_total);
+  annualSetFormattedValue('an_ventas_total', calc.ventas_total);
+  annualSetFormattedValue('an_credito', calc.credito_fiscal);
+  annualSetFormattedValue('an_debito', calc.debito_fiscal);
+  annualSetFormattedValue('an_iva', calc.a_pagar_iva);
+  annualSetFormattedValue('an_pagar_ppm', calc.a_pagar_ppm);
+  annualSetFormattedValue('an_remanente', calc.remanente);
+  annualSetFormattedValue('an_total_impuesto', calc.total_impuesto);
+  annualSetFormattedValue('an_ganancia', calc.ganancia_mes);
+}
+async function saveAnnualMonth(){
+  const year = annualState.year;
+  const current = annualCurYear();
+  current.months[annualState.curMonth] = annualMonthMerged({
+    ...current.months[annualState.curMonth],
+    compras_factura: annualVal('an_compras_factura'),
+    compras_exenta: annualVal('an_compras_exenta'),
+    compras_din: annualVal('an_compras_din'),
+    compras_nd: annualVal('an_compras_nd'),
+    compras_nc: annualVal('an_compras_nc'),
+    ventas_factura: annualVal('an_ventas_factura'),
+    ventas_boleta: annualVal('an_ventas_boleta'),
+    ventas_liquidacion: annualVal('an_ventas_liquidacion'),
+    ventas_nd: annualVal('an_ventas_nd'),
+    ventas_nc: annualVal('an_ventas_nc'),
+    sueldos: annualVal('an_sueldos'),
+    pendiente_facturar: annualVal('an_pendiente')
+  });
+  recalcAnnualYear(current);
+  await saveAnnualYear(year);
+  renderAnnualApp();
+  showToast(`Mes ${MESES[+annualState.curMonth-1]} guardado`);
+}
+function resetAnnualMonth(){
+  annualCurYear().months[annualState.curMonth] = mkAnnualMonth();
+  recalcAnnualYear(annualCurYear());
+  renderAnnualMeses();
+}
+function renderAnnualResumen(){
+  const yearObj = annualCurYear();
+  const company = getSelectedAnnualCompany();
+  buildAnnualCompanySelectors();
+  const t = calcAnnualYearTotals(yearObj, company);
+  $('annualKpiGrid').innerHTML = `
+    <div class="kpi-card cteal"><div class="kpi-label">Total compras</div><div class="kpi-val" style="color:var(--teal)">${fmt(t.compras)}</div><div class="kpi-sub">Compras del año</div></div>
+    <div class="kpi-card cgreen"><div class="kpi-label">Total ventas</div><div class="kpi-val" style="color:var(--green)">${fmt(t.ventas)}</div><div class="kpi-sub">Ventas registradas del año</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">IVA pagado</div><div class="kpi-val" style="color:var(--amber)">${fmt(t.iva_pagado)}</div><div class="kpi-sub">Pago efectivo de IVA</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">PPM pagado</div><div class="kpi-val" style="color:var(--amber)">${fmt(t.ppm_pagado)}</div><div class="kpi-sub">1% sobre ventas + pendiente</div></div>
+    <div class="kpi-card cred"><div class="kpi-label">Sueldos pagados</div><div class="kpi-val" style="color:var(--red)">${fmt(t.sueldos)}</div><div class="kpi-sub">Total anual de sueldos</div></div>
+    <div class="kpi-card ${t.ganancia>=0?'cgreen':'cred'}"><div class="kpi-label">Ganancia anual</div><div class="kpi-val" style="color:${t.ganancia>=0?'var(--green)':'var(--red)'}">${fmt(t.ganancia)}</div><div class="kpi-sub">Ventas + pendiente - compras</div></div>
+  `;
+  const rows = ANNUAL_MONTH_KEYS.map(m=>{
+    const row = annualMonthMerged(yearObj.months[m]);
+    return `<tr>
+      <td>${MESES[+m-1].toUpperCase()}</td>
+      <td style="text-align:right">${fmt(row.compras_total)}</td>
+      <td style="text-align:right">${fmt(row.ventas_total)}</td>
+      <td style="text-align:right">${fmt(row.a_pagar_iva)}</td>
+      <td style="text-align:right">${fmt(row.a_pagar_ppm)}</td>
+      <td style="text-align:right">${fmt(row.sueldos)}</td>
+      <td style="text-align:right">${fmt(row.pendiente_facturar)}</td>
+      <td style="text-align:right;color:${row.ganancia_mes>=0?'var(--green)':'var(--red)'}">${fmt(row.ganancia_mes)}</td>
+    </tr>`;
+  }).join('');
+  $('annualSummaryTable').innerHTML = `<table class="tbl">
+    <thead><tr><th>Mes</th><th style="text-align:right">Compras</th><th style="text-align:right">Ventas</th><th style="text-align:right">IVA pagado</th><th style="text-align:right">PPM pagado</th><th style="text-align:right">Sueldos</th><th style="text-align:right">Pendiente</th><th style="text-align:right">Ganancia</th></tr></thead>
+    <tbody>${rows}
+      <tr style="border-top:1px solid var(--border);font-weight:700">
+        <td>TOTAL AÑO</td>
+        <td style="text-align:right">${fmt(t.compras)}</td>
+        <td style="text-align:right">${fmt(t.ventas)}</td>
+        <td style="text-align:right">${fmt(t.iva_pagado)}</td>
+        <td style="text-align:right">${fmt(t.ppm_pagado)}</td>
+        <td style="text-align:right">${fmt(t.sueldos)}</td>
+        <td style="text-align:right">${fmt(t.pendiente)}</td>
+        <td style="text-align:right;color:${t.ganancia>=0?'var(--green)':'var(--red)'}">${fmt(t.ganancia)}</td>
+      </tr>
+    </tbody>
+  </table>`;
+
+  const sociosRows = annualSociosProjection(t.ganancia, company);
+  $('annualSociosTable').innerHTML = sociosRows.length ? `<table class="tbl">
+    <thead><tr><th>Socio</th><th style="text-align:right">% accionario</th><th style="text-align:right">Utilidad anual</th><th style="text-align:right">Remuneración estimada mensual</th></tr></thead>
+    <tbody>
+      ${sociosRows.map(r=>`<tr><td>${r.nombre}</td><td style="text-align:right">${r.porcentaje.toFixed(2)}%</td><td style="text-align:right">${fmt(r.utilidad)}</td><td style="text-align:right">${fmt(r.remuneracion)}</td></tr>`).join('')}
+    </tbody>
+  </table>` : '<div style="color:var(--text3)">Agrega socios en configuración para ver la utilidad distribuida.</div>';
+}
+function renderAnnualConfig(){
+  buildAnnualCompanySelectors();
+  const empresas = annualConfig.empresas || [];
+  const company = getSelectedAnnualCompany();
+  const companyCfg = getAnnualCompanyConfig(company) || { nombre:company, socios:[] };
+  const socios = companyCfg.socios || [];
+  const totalPct = socios.reduce((s,x)=>s+Number(x.porcentaje||0),0);
+  $('annualConfigKpi').innerHTML = `
+    <div class="kpi-card cteal"><div class="kpi-label">Empresas</div><div class="kpi-val" style="color:var(--teal)">${empresas.length}</div><div class="kpi-sub">Cada empresa tiene su propia vista anual</div></div>
+    <div class="kpi-card cgreen"><div class="kpi-label">Socios de ${company || 'empresa'}</div><div class="kpi-val" style="color:var(--green)">${socios.length}</div><div class="kpi-sub">Socios configurados para la empresa seleccionada</div></div>
+    <div class="kpi-card ${Math.round(totalPct)===100?'cteal':'camber'}"><div class="kpi-label">% accionario ${company || ''}</div><div class="kpi-val" style="color:${Math.round(totalPct)===100?'var(--teal)':'var(--amber)'}">${totalPct.toFixed(2)}%</div><div class="kpi-sub">${Math.round(totalPct)===100?'Distribución completa':'Ajusta hasta completar 100%'}</div></div>
+  `;
+  $('annualEmpresasList').innerHTML = empresas.length ? empresas.map((e,idx)=>`<div class="cat-item"><span>${e.nombre}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="annualEditEmpresa(${idx})">✎</button><button class="btn-del" onclick="annualDelEmpresa(${idx})">✕</button></span></div>`).join('') : '<div style="color:var(--text3)">Sin empresas</div>';
+  $('annualSociosList').innerHTML = socios.length ? socios.map((s,idx)=>`<div class="cat-item"><span>${s.nombre} · ${Number(s.porcentaje||0).toFixed(2)}%</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="annualEditSocio(${idx})">✎</button><button class="btn-del" onclick="annualDelSocio(${idx})">✕</button></span></div>`).join('') : '<div style="color:var(--text3)">Sin socios para esta empresa</div>';
+}
+async function annualAddEmpresa(){
+  const nombre = prompt('Nombre de la empresa');
+  if(!nombre) return;
+  const clean = nombre.trim();
+  if(!clean) return;
+  if((annualConfig.empresas||[]).some(x=>x.nombre.toLowerCase()===clean.toLowerCase())){ showToast('La empresa ya existe', true); return; }
+  annualConfig.empresas.push({ nombre: clean, socios: [] });
+  Object.keys(annualState.data || {}).forEach(year => {
+    ensureAnnualCompanyYear(annualState.data[year], clean);
+  });
+  if(!Object.keys(annualState.data || {}).length && annualState.year){
+    ensureAnnualCompanyYear(annualCurYear(), clean);
+  }
+  for(const year of Object.keys(annualState.data || {})){
+    await saveAnnualYear(year);
+  }
+  annualState.company = clean;
+  await saveAnnualConfig();
+  buildAnnualCompanySelectors();
+  renderAnnualConfig();
+  renderAnnualResumen();
+}
+async function annualEditEmpresa(idx){
+  const current = annualConfig.empresas[idx];
+  const nombre = prompt('Editar empresa', current?.nombre || '');
+  if(nombre===null) return;
+  const clean = nombre.trim();
+  if(!clean) return;
+  if((annualConfig.empresas||[]).some((x,i)=>i!==idx && x.nombre.toLowerCase()===clean.toLowerCase())){ showToast('La empresa ya existe', true); return; }
+  const oldName = current.nombre;
+  annualConfig.empresas[idx].nombre = clean;
+
+  Object.keys(annualState.data || {}).forEach(year=>{
+    const y = annualState.data[year];
+    if(y.companies && y.companies[oldName]){
+      y.companies[clean] = y.companies[oldName];
+      delete y.companies[oldName];
+    }
+  });
+  if(annualState.company === oldName) annualState.company = clean;
+  await saveAnnualConfig();
+  for(const year of Object.keys(annualState.data || {})){
+    await saveAnnualYear(year);
+  }
+  buildAnnualCompanySelectors();
+  renderAnnualConfig();
+  renderAnnualResumen();
+}
+async function annualDelEmpresa(idx){
+  const removed = annualConfig.empresas[idx]?.nombre;
+  annualConfig.empresas.splice(idx,1);
+  Object.keys(annualState.data || {}).forEach(year=>{
+    const y = annualState.data[year];
+    if(y.companies && removed && y.companies[removed]) delete y.companies[removed];
+  });
+  if(annualState.company === removed) annualState.company = getAnnualCompanyNames()[0] || '';
+  await saveAnnualConfig();
+  for(const year of Object.keys(annualState.data || {})){
+    await saveAnnualYear(year);
+  }
+  buildAnnualCompanySelectors();
+  renderAnnualConfig();
+  renderAnnualResumen();
+}
+async function annualAddSocio(){
+  const company = getSelectedAnnualCompany();
+  if(!company){ showToast('Primero agrega una empresa', true); return; }
+  const cfg = getAnnualCompanyConfig(company);
+  if(!cfg){ showToast('Empresa no encontrada', true); return; }
+  const nombre = prompt(`Nombre del socio para ${company}`);
+  if(!nombre) return;
+  const pctStr = prompt('Porcentaje accionario', '0');
+  if(pctStr===null) return;
+  const porcentaje = Number(String(pctStr).replace(',','.')) || 0;
+  if(!cfg.socios) cfg.socios = [];
+  cfg.socios.push({ nombre:nombre.trim(), porcentaje });
+  await saveAnnualConfig();
+  renderAnnualConfig();
+  renderAnnualResumen();
+}
+async function annualEditSocio(idx){
+  const company = getSelectedAnnualCompany();
+  const cfg = getAnnualCompanyConfig(company);
+  if(!cfg || !cfg.socios || !cfg.socios[idx]){ showToast('Socio no encontrado', true); return; }
+  const socio = cfg.socios[idx];
+  const nombre = prompt('Nombre del socio', socio?.nombre || '');
+  if(nombre===null) return;
+  const pctStr = prompt('Porcentaje accionario', String(socio?.porcentaje || 0));
+  if(pctStr===null) return;
+  const porcentaje = Number(String(pctStr).replace(',','.')) || 0;
+  cfg.socios[idx] = { nombre:nombre.trim(), porcentaje };
+  await saveAnnualConfig();
+  renderAnnualConfig();
+  renderAnnualResumen();
+}
+async function annualDelSocio(idx){
+  const company = getSelectedAnnualCompany();
+  const cfg = getAnnualCompanyConfig(company);
+  if(!cfg || !cfg.socios || !cfg.socios[idx]) return;
+  cfg.socios.splice(idx,1);
+  await saveAnnualConfig();
+  renderAnnualConfig();
+  renderAnnualResumen();
+}
+function renderAnnualHistorial(){
+  const years = Object.keys(annualState.data).sort().reverse();
+  $('annualHistoryBody').innerHTML = years.map(y=>{
+    const t = calcAnnualYearTotals(annualState.data[y], '');
+    return `<div class="hist-row">
+      <div><span style="font-family:var(--font-display);font-size:18px">${y}</span><span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:8px">cierre anual</span></div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center">
+        <div style="text-align:right"><div class="kpi-label">Compras</div><div class="kpi-val" style="font-size:16px">${fmt(t.compras)}</div></div>
+        <div style="text-align:right"><div class="kpi-label">Ventas</div><div class="kpi-val" style="font-size:16px;color:var(--green)">${fmt(t.ventas)}</div></div>
+        <div style="text-align:right"><div class="kpi-label">Ganancia</div><div class="kpi-val" style="font-size:16px;color:${t.ganancia>=0?'var(--green)':'var(--red)'}">${fmt(t.ganancia)}</div></div>
+        <button class="btn-secondary" onclick="jumpAnnualYear('${y}')">Ver</button>
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3)">Sin años registrados</div>';
+}
+function jumpAnnualYear(y){
+  annualState.year = y;
+  $('yearSel').value = y;
+  buildAnnualCompanySelectors();
+  setAnnualLabel();
+  annualState.curSec = 'resumen';
+  document.querySelectorAll('#app-anual .nav-item').forEach(x=>x.classList.remove('active'));
+  $('anav-resumen').classList.add('active');
+  renderAnnualApp();
+}
+
 
 // ── EXCEL EXPORT ──
 function exportarExcel() {
