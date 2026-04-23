@@ -521,6 +521,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
     <div class="sidebar">
       <div class="nav-group">Módulos</div>
       <div class="nav-item active" id="anav-resumen" onclick="goAnnualSec(this,'resumen')">◈ Resumen anual</div>
+      <div class="nav-item" id="anav-socios" onclick="goAnnualSec(this,'socios')">👥 Socios</div>
       <div class="nav-item" id="anav-meses" onclick="goAnnualSec(this,'meses')">🗓️ Mes a mes</div>
       <div class="nav-item" id="anav-config" onclick="goAnnualSec(this,'config')">⚙ Configuración</div>
       <div class="nav-item" id="anav-historial" onclick="goAnnualSec(this,'historial')">📋 Historial anual</div>
@@ -547,6 +548,27 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         <div class="section-card">
           <div class="card-hdr"><div class="card-title">// Utilidad por socio y remuneración estimada</div></div>
           <div class="card-body" id="annualSociosTable"></div>
+        </div>
+      </div>
+
+      <div id="asec-socios" style="display:none">
+        <div class="page-title">DETALLE DE <span>SOCIOS</span></div>
+        <div class="page-sub">// Vista por empresa, por socio y consolidado global del año seleccionado</div>
+        <div class="kpi-grid" id="annualSociosKpiGrid"></div>
+
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Resumen por empresa</div></div>
+          <div class="card-body" id="annualSociosEmpresaTable"></div>
+        </div>
+
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Detalle por socio y empresa</div></div>
+          <div class="card-body" id="annualSociosDetalleTable"></div>
+        </div>
+
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Consolidado global por socio</div></div>
+          <div class="card-body" id="annualSociosGlobalTable"></div>
         </div>
       </div>
 
@@ -2184,17 +2206,57 @@ function getAnnualCompanyConfig(name){
   if(idx === -1) return null;
   return annualConfig.empresas[idx];
 }
-function annualSociosProjection(ganancia, companyName){
-  const cfg = getAnnualCompanyConfig(companyName);
+function annualSociosProjection(ganancia, ppmPagado, companyName){
+  const cfg = getAnnualCompanyConfig(companyName) || { socios:[] };
   return (cfg.socios || []).map(s => {
-    const utilidad = Math.round((ganancia || 0) * (Number(s.porcentaje||0) / 100));
+    const porcentaje = Number(s.porcentaje||0);
+    const factor = porcentaje / 100;
+    const utilidad = Math.round((ganancia || 0) * factor);
+    const ppmSocio = Math.round((ppmPagado || 0) * factor);
+    const utilidadFinal = utilidad - ppmSocio;
+    const sueldoEstimado = Math.round(utilidadFinal / 12);
     return {
+      empresa: companyName,
       nombre: s.nombre,
-      porcentaje: Number(s.porcentaje||0),
+      porcentaje,
       utilidad,
-      remuneracion: Math.round(utilidad / 12)
+      ppm_pagado: ppmSocio,
+      utilidad_final: utilidadFinal,
+      sueldo_estimado: sueldoEstimado
     };
   });
+}
+
+function calcAnnualCompanyPartnerRows(yearObj){
+  const rows = [];
+  getAnnualCompanyNames().forEach(companyName => {
+    const totals = calcAnnualYearTotals(yearObj, companyName);
+    rows.push(...annualSociosProjection(totals.ganancia, totals.ppm_pagado, companyName));
+  });
+  return rows;
+}
+
+function calcAnnualGlobalSocios(rows){
+  const acc = {};
+  rows.forEach(r => {
+    const key = String(r.nombre || 'Socio');
+    if(!acc[key]){
+      acc[key] = {
+        nombre: key,
+        utilidad: 0,
+        ppm_pagado: 0,
+        utilidad_final: 0,
+        sueldo_estimado: 0
+      };
+    }
+    acc[key].utilidad += Number(r.utilidad || 0);
+    acc[key].ppm_pagado += Number(r.ppm_pagado || 0);
+    acc[key].utilidad_final += Number(r.utilidad_final || 0);
+  });
+  return Object.values(acc).map(r => ({
+    ...r,
+    sueldo_estimado: Math.round(r.utilidad_final / 12)
+  }));
 }
 async function loadAnnualData(){
   try{
@@ -2329,6 +2391,7 @@ function goAnnualSec(el, sec){
   el.classList.add('active');
   annualState.curSec = sec;
   if(sec==='resumen') renderAnnualResumen();
+  if(sec==='socios') renderAnnualSocios();
   if(sec==='meses') renderAnnualMeses();
   if(sec==='config') renderAnnualConfig();
   if(sec==='historial') renderAnnualHistorial();
@@ -2360,10 +2423,11 @@ function renderAnnualApp(){
   setAnnualLabel();
   recalcAnnualYear(annualCurYear());
   renderAnnualResumen();
+  renderAnnualSocios();
   renderAnnualMeses();
   renderAnnualConfig();
   renderAnnualHistorial();
-  ['resumen','meses','config','historial'].forEach(sec=>{
+  ['resumen','socios','meses','config','historial'].forEach(sec=>{
     const el = $('asec-'+sec);
     if(el) el.style.display = sec===annualState.curSec?'block':'none';
   });
@@ -2497,9 +2561,9 @@ function renderAnnualResumen(){
     <div class="kpi-card cteal"><div class="kpi-label">Total compras</div><div class="kpi-val" style="color:var(--teal)">${fmt(t.compras)}</div><div class="kpi-sub">Compras del año</div></div>
     <div class="kpi-card cgreen"><div class="kpi-label">Total ventas</div><div class="kpi-val" style="color:var(--green)">${fmt(t.ventas)}</div><div class="kpi-sub">Ventas registradas del año</div></div>
     <div class="kpi-card camber"><div class="kpi-label">IVA pagado</div><div class="kpi-val" style="color:var(--amber)">${fmt(t.iva_pagado)}</div><div class="kpi-sub">Pago efectivo de IVA</div></div>
-    <div class="kpi-card camber"><div class="kpi-label">PPM pagado</div><div class="kpi-val" style="color:var(--amber)">${fmt(t.ppm_pagado)}</div><div class="kpi-sub">1% sobre ventas + pendiente</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">PPM pagado</div><div class="kpi-val" style="color:var(--amber)">${fmt(t.ppm_pagado)}</div><div class="kpi-sub">1% sobre ventas</div></div>
     <div class="kpi-card cred"><div class="kpi-label">Sueldos pagados</div><div class="kpi-val" style="color:var(--red)">${fmt(t.sueldos)}</div><div class="kpi-sub">Total anual de sueldos</div></div>
-    <div class="kpi-card ${t.ganancia>=0?'cgreen':'cred'}"><div class="kpi-label">Ganancia anual</div><div class="kpi-val" style="color:${t.ganancia>=0?'var(--green)':'var(--red)'}">${fmt(t.ganancia)}</div><div class="kpi-sub">Ventas + pendiente - compras</div></div>
+    <div class="kpi-card ${t.ganancia>=0?'cgreen':'cred'}"><div class="kpi-label">Ganancia anual</div><div class="kpi-val" style="color:${t.ganancia>=0?'var(--green)':'var(--red)'}">${fmt(t.ganancia)}</div><div class="kpi-sub">Ventas - compras</div></div>
   `;
   const rows = ANNUAL_MONTH_KEYS.map(m=>{
     const row = annualMonthMerged((companyData.months||{})[m]);
@@ -2510,12 +2574,11 @@ function renderAnnualResumen(){
       <td style="text-align:right">${fmt(row.a_pagar_iva)}</td>
       <td style="text-align:right">${fmt(row.a_pagar_ppm)}</td>
       <td style="text-align:right">${fmt(row.sueldos)}</td>
-      <td style="text-align:right">${fmt(row.pendiente_facturar)}</td>
       <td style="text-align:right;color:${row.ganancia_mes>=0?'var(--green)':'var(--red)'}">${fmt(row.ganancia_mes)}</td>
     </tr>`;
   }).join('');
   $('annualSummaryTable').innerHTML = `<table class="tbl">
-    <thead><tr><th>Mes</th><th style="text-align:right">Compras</th><th style="text-align:right">Ventas</th><th style="text-align:right">IVA pagado</th><th style="text-align:right">PPM pagado</th><th style="text-align:right">Sueldos</th><th style="text-align:right">Pendiente</th><th style="text-align:right">Ganancia</th></tr></thead>
+    <thead><tr><th>Mes</th><th style="text-align:right">Compras</th><th style="text-align:right">Ventas</th><th style="text-align:right">IVA pagado</th><th style="text-align:right">PPM pagado</th><th style="text-align:right">Sueldos</th><th style="text-align:right">Ganancia</th></tr></thead>
     <tbody>${rows}
       <tr style="border-top:1px solid var(--border);font-weight:700">
         <td>TOTAL AÑO</td>
@@ -2524,20 +2587,87 @@ function renderAnnualResumen(){
         <td style="text-align:right">${fmt(t.iva_pagado)}</td>
         <td style="text-align:right">${fmt(t.ppm_pagado)}</td>
         <td style="text-align:right">${fmt(t.sueldos)}</td>
-        <td style="text-align:right">${fmt(t.pendiente)}</td>
         <td style="text-align:right;color:${t.ganancia>=0?'var(--green)':'var(--red)'}">${fmt(t.ganancia)}</td>
       </tr>
     </tbody>
   </table>`;
 
-  const sociosRows = annualSociosProjection(t.ganancia, company);
+  const sociosRows = annualSociosProjection(t.ganancia, t.ppm_pagado, company);
   $('annualSociosTable').innerHTML = sociosRows.length ? `<table class="tbl">
-    <thead><tr><th>Socio</th><th style="text-align:right">% accionario</th><th style="text-align:right">Utilidad anual</th><th style="text-align:right">Remuneración estimada mensual</th></tr></thead>
+    <thead><tr><th>Socio</th><th style="text-align:right">% accionario</th><th style="text-align:right">Utilidad</th><th style="text-align:right">PPM pagados</th><th style="text-align:right">Utilidad final</th><th style="text-align:right">Sueldo mensual estimado</th></tr></thead>
     <tbody>
-      ${sociosRows.map(r=>`<tr><td>${r.nombre}</td><td style="text-align:right">${r.porcentaje.toFixed(2)}%</td><td style="text-align:right">${fmt(r.utilidad)}</td><td style="text-align:right">${fmt(r.remuneracion)}</td></tr>`).join('')}
+      ${sociosRows.map(r=>`<tr><td>${r.nombre}</td><td style="text-align:right">${r.porcentaje.toFixed(2)}%</td><td style="text-align:right">${fmt(r.utilidad)}</td><td style="text-align:right">${fmt(r.ppm_pagado)}</td><td style="text-align:right">${fmt(r.utilidad_final)}</td><td style="text-align:right">${fmt(r.sueldo_estimado)}</td></tr>`).join('')}
     </tbody>
   </table>` : '<div style="color:var(--text3)">Agrega socios en configuración para ver la utilidad distribuida.</div>';
 }
+function renderAnnualSocios(){
+  const yearObj = annualCurYear();
+  buildAnnualCompanySelectors();
+
+  const companyRows = getAnnualCompanyNames().map(companyName => {
+    const totals = calcAnnualYearTotals(yearObj, companyName);
+    const utilidadFinal = totals.ganancia - totals.ppm_pagado;
+    return {
+      empresa: companyName,
+      utilidad: totals.ganancia,
+      ppm_pagado: totals.ppm_pagado,
+      utilidad_final: utilidadFinal,
+      sueldo_estimado: Math.round(utilidadFinal / 12)
+    };
+  });
+
+  const socioRows = calcAnnualCompanyPartnerRows(yearObj);
+  const globalRows = calcAnnualGlobalSocios(socioRows);
+
+  const totalUtilidad = companyRows.reduce((s,x)=>s+Number(x.utilidad||0),0);
+  const totalPpm = companyRows.reduce((s,x)=>s+Number(x.ppm_pagado||0),0);
+  const totalUtilidadFinal = companyRows.reduce((s,x)=>s+Number(x.utilidad_final||0),0);
+  const totalSueldoEstimado = Math.round(totalUtilidadFinal / 12);
+
+  $('annualSociosKpiGrid').innerHTML = `
+    <div class="kpi-card cteal"><div class="kpi-label">Empresas</div><div class="kpi-val" style="color:var(--teal)">${companyRows.length}</div><div class="kpi-sub">Con cierre anual cargado</div></div>
+    <div class="kpi-card cgreen"><div class="kpi-label">Utilidad global</div><div class="kpi-val" style="color:var(--green)">${fmt(totalUtilidad)}</div><div class="kpi-sub">Suma de utilidades del año</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">PPM global</div><div class="kpi-val" style="color:var(--amber)">${fmt(totalPpm)}</div><div class="kpi-sub">Distribución total de PPM</div></div>
+  `;
+
+  $('annualSociosEmpresaTable').innerHTML = companyRows.length ? `<table class="tbl">
+    <thead><tr><th>Empresa</th><th style="text-align:right">Utilidad</th><th style="text-align:right">PPM pagados</th><th style="text-align:right">Utilidad final</th><th style="text-align:right">Sueldo mensual estimado</th></tr></thead>
+    <tbody>
+      ${companyRows.map(r=>`<tr><td>${r.empresa}</td><td style="text-align:right">${fmt(r.utilidad)}</td><td style="text-align:right">${fmt(r.ppm_pagado)}</td><td style="text-align:right">${fmt(r.utilidad_final)}</td><td style="text-align:right">${fmt(r.sueldo_estimado)}</td></tr>`).join('')}
+      <tr style="border-top:1px solid var(--border);font-weight:700">
+        <td>TOTAL GLOBAL</td>
+        <td style="text-align:right">${fmt(totalUtilidad)}</td>
+        <td style="text-align:right">${fmt(totalPpm)}</td>
+        <td style="text-align:right">${fmt(totalUtilidadFinal)}</td>
+        <td style="text-align:right">${fmt(totalSueldoEstimado)}</td>
+        <td style="text-align:right;color:${totalUtilidadFinal>=0?'var(--green)':'var(--red)'}">${fmt(totalUtilidadFinal)}</td>
+      </tr>
+    </tbody>
+  </table>` : '<div style="color:var(--text3)">No hay empresas configuradas.</div>';
+
+  $('annualSociosDetalleTable').innerHTML = socioRows.length ? `<table class="tbl">
+    <thead><tr><th>Empresa</th><th>Socio</th><th style="text-align:right">% accionario</th><th style="text-align:right">Utilidad</th><th style="text-align:right">PPM pagados</th><th style="text-align:right">Utilidad final</th><th style="text-align:right">Sueldo mensual estimado</th></tr></thead>
+    <tbody>
+      ${socioRows.map(r=>`<tr><td>${r.empresa}</td><td>${r.nombre}</td><td style="text-align:right">${r.porcentaje.toFixed(2)}%</td><td style="text-align:right">${fmt(r.utilidad)}</td><td style="text-align:right">${fmt(r.ppm_pagado)}</td><td style="text-align:right">${fmt(r.utilidad_final)}</td><td style="text-align:right">${fmt(r.sueldo_estimado)}</td></tr>`).join('')}
+    </tbody>
+  </table>` : '<div style="color:var(--text3)">Agrega socios en configuración para ver este detalle.</div>';
+
+  $('annualSociosGlobalTable').innerHTML = globalRows.length ? `<table class="tbl">
+    <thead><tr><th>Socio</th><th style="text-align:right">Utilidad</th><th style="text-align:right">PPM pagados</th><th style="text-align:right">Utilidad final</th><th style="text-align:right">Sueldo mensual estimado</th></tr></thead>
+    <tbody>
+      ${globalRows.map(r=>`<tr><td>${r.nombre}</td><td style="text-align:right">${fmt(r.utilidad)}</td><td style="text-align:right">${fmt(r.ppm_pagado)}</td><td style="text-align:right">${fmt(r.utilidad_final)}</td><td style="text-align:right">${fmt(r.sueldo_estimado)}</td></tr>`).join('')}
+      <tr style="border-top:1px solid var(--border);font-weight:700">
+        <td>TOTAL GLOBAL</td>
+        <td style="text-align:right">${fmt(totalUtilidad)}</td>
+        <td style="text-align:right">${fmt(totalPpm)}</td>
+        <td style="text-align:right">${fmt(totalUtilidadFinal)}</td>
+        <td style="text-align:right">${fmt(totalSueldoEstimado)}</td>
+        <td style="text-align:right;color:${totalUtilidadFinal>=0?'var(--green)':'var(--red)'}">${fmt(totalUtilidadFinal)}</td>
+      </tr>
+    </tbody>
+  </table>` : '<div style="color:var(--text3)">No hay datos globales todavía.</div>';
+}
+
 function renderAnnualConfig(){
   buildAnnualCompanySelectors();
   const empresas = annualConfig.empresas || [];
@@ -2953,7 +3083,21 @@ async function saveAdd(){
 }
 
 
+/*
+  REGLA DEL SISTEMA:
+  Cada cambio nuevo que se haga en este archivo debe agregarse también al registro VERSIONES
+  con su código de versión, fecha, descripción y etiqueta de tipo (feature, mejora o fix).
+  Mantener esta instrucción como comentario permanente para que el sistema la reconozca.
+*/
 const VERSIONES = [
+  {
+    version: "1.0.1",
+    fecha: "2026-04-23",
+    cambios: [
+      { tipo:"mejora", txt:"Se eliminó Resultado final global en la pestaña Socios por duplicar la utilidad final" },
+      { tipo:"fix", txt:"Se ajustaron tablas y cálculos de socios para mostrar solo utilidad, PPM, utilidad final y sueldo estimado" }
+    ]
+  },
   {
     version: "1.0.0",
     fecha: "2026-04-23",
