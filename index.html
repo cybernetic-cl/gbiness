@@ -1862,6 +1862,79 @@ function renderReporte2() {
 const ANNUAL_MONTH_KEYS = ['01','02','03','04','05','06','07','08','09','10','11','12'];
 const ANNUAL_EDITABLE_FIELDS = ['compras_factura','compras_exenta','compras_din','compras_nd','compras_nc','ventas_factura','ventas_boleta','ventas_liquidacion','ventas_nd','ventas_nc','sueldos','pendiente_facturar'];
 const annualState = { year:null, data:{}, curSec:'resumen', curMonth:'01', company:'' };
+let annualAutosaveTimer = null;
+let annualAutosaveBusy = false;
+let annualAutosaveQueued = false;
+function annualSelectionKey(){ return 'gbisness_annual_selection'; }
+function persistAnnualSelection(){
+  try{
+    localStorage.setItem(annualSelectionKey(), JSON.stringify({
+      year: annualState.year || '',
+      company: annualState.company || '',
+      curMonth: annualState.curMonth || '01',
+      curSec: annualState.curSec || 'resumen'
+    }));
+  }catch(e){ console.warn('No se pudo persistir selección anual', e); }
+}
+function restoreAnnualSelection(){
+  try{
+    const raw = localStorage.getItem(annualSelectionKey());
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(saved && typeof saved === 'object'){
+      if(saved.year) annualState.year = String(saved.year);
+      if(saved.company) annualState.company = String(saved.company);
+      if(saved.curMonth) annualState.curMonth = String(saved.curMonth).padStart(2,'0');
+      if(saved.curSec) annualState.curSec = String(saved.curSec);
+    }
+  }catch(e){ console.warn('No se pudo restaurar selección anual', e); }
+}
+async function annualAutosave(forceToast=false){
+  const year = String(annualState.year || '').trim();
+  if(!year || !annualState.data[year]) return;
+  if(annualAutosaveBusy){ annualAutosaveQueued = true; return; }
+  annualAutosaveBusy = true;
+  try{
+    if(annualState.curSec === 'meses'){
+      const company = getSelectedAnnualCompany();
+      if(company && annualState.curMonth && annualCurMonth()){
+        const current = annualMonthMerged(annualCurMonth());
+        current.compras_factura = annualVal('an_compras_factura');
+        current.compras_exenta = annualVal('an_compras_exenta');
+        current.compras_din = annualVal('an_compras_din');
+        current.compras_nd = annualVal('an_compras_nd');
+        current.compras_nc = annualVal('an_compras_nc');
+        current.ventas_factura = annualVal('an_ventas_factura');
+        current.ventas_boleta = annualVal('an_ventas_boleta');
+        current.ventas_liquidacion = annualVal('an_ventas_liquidacion');
+        current.ventas_nd = annualVal('an_ventas_nd');
+        current.ventas_nc = annualVal('an_ventas_nc');
+        current.sueldos = annualVal('an_sueldos');
+        current.pendiente_facturar = annualVal('an_pendiente');
+        current.remanente_anterior = Number(annualCurMonth().remanente_anterior || 0);
+        annualCurCompanyData().months[annualState.curMonth] = annualMonthMerged(current);
+        recalcAnnualYear(annualState.data[year]);
+      }
+    }
+    persistAnnualSelection();
+    await saveAnnualYear(year);
+    if(forceToast) showToast('Guardado correctamente');
+  }catch(e){
+    console.error('[Annual autosave]', e);
+    showToast('Error al guardar cierre anual', true);
+  }finally{
+    annualAutosaveBusy = false;
+    if(annualAutosaveQueued){
+      annualAutosaveQueued = false;
+      annualAutosave();
+    }
+  }
+}
+function scheduleAnnualAutosave(ms=700){
+  clearTimeout(annualAutosaveTimer);
+  annualAutosaveTimer = setTimeout(()=>annualAutosave(false), ms);
+}
+
 const annualConfigDefault = {
   empresas:[
     {
@@ -1978,7 +2051,7 @@ function annualSetFormattedValue(id, value){
 function annualField(label,id,val,ro=false){
   return `<div class="fw">
     <label class="fl">${label}${ro?' <span style="color:var(--teal)">· AUTO</span>':''}</label>
-    <input ${ro?'readonly tabindex="-1"':''} type="text" inputmode="numeric" id="${id}" class="fi annual-money-field ${ro?'annual-locked':''}" value="${annualMoney(val)}" oninput="${ro?'':"annualMoneyInput(this);annualRecalc()"}">
+    <input ${ro?'readonly tabindex="-1"':''} type="text" inputmode="numeric" id="${id}" class="fi annual-money-field ${ro?'annual-locked':''}" value="${annualMoney(val)}" oninput="${ro?'':"annualMoneyInput(this);annualRecalc();scheduleAnnualAutosave()"}">
   </div>`;
 }
 function annualMoneyInput(el){
@@ -2073,40 +2146,67 @@ async function annualUploadTemplate(event){
     }
 
     const touchedYears = new Set();
+    const touchedCompanies = new Set();
     let loaded = 0;
+    let ignored = 0;
+    const currentCompany = getSelectedAnnualCompany();
+
+    const aliases = {
+      compras_factura:['compras_factura','compras factura','Compras Factura','compra_factura','compras afectas'],
+      compras_exenta:['compras_exenta','compras exenta','Compras Exenta'],
+      compras_din:['compras_din','compras din','Compras DIN','DIN'],
+      compras_nd:['compras_nd','compras nd','Compras ND'],
+      compras_nc:['compras_nc','compras nc','Compras NC'],
+      ventas_factura:['ventas_factura','ventas factura','Ventas Factura'],
+      ventas_boleta:['ventas_boleta','ventas boleta','Ventas Boleta'],
+      ventas_liquidacion:['ventas_liquidacion','ventas liquidacion','Ventas Liquidacion','Ventas Liquidación'],
+      ventas_nd:['ventas_nd','ventas nd','Ventas ND'],
+      ventas_nc:['ventas_nc','ventas nc','Ventas NC'],
+      sueldos:['sueldos','Sueldos'],
+      pendiente_facturar:['pendiente_facturar','pendiente por facturar','Pendiente por Facturar','pendiente']
+    };
+    const pick = (row, arr) => {
+      for(const key of arr){
+        if(Object.prototype.hasOwnProperty.call(row, key)) return row[key];
+      }
+      return '';
+    };
 
     rows.forEach(row=>{
       const monthRaw = row.mes ?? row.Mes ?? row.MES ?? row.month ?? row.Month;
       const key = annualMonthLabelToKey(monthRaw);
-      if(!key || !ANNUAL_MONTH_KEYS.includes(key)) return;
+      if(!key || !ANNUAL_MONTH_KEYS.includes(key)){ ignored += 1; return; }
 
       const rawYear = String(row.anio ?? row.año ?? row['Año'] ?? row['anio'] ?? row.year ?? row.Year ?? annualState.year ?? '').trim();
       const year = /^\d{4}$/.test(rawYear) ? rawYear : String(annualState.year || new Date().getFullYear());
       if(!annualState.data[year]) annualState.data[year] = mkAnnualYear(year);
 
-      const company = getSelectedAnnualCompany();
+      const rawCompany = String(row.empresa ?? row.Empresa ?? row.EMPRESA ?? currentCompany ?? '').trim();
+      const names = getAnnualCompanyNames();
+      const company = names.includes(rawCompany) ? rawCompany : currentCompany;
       const yearObj = annualState.data[year];
       const companyData = company ? ensureAnnualCompanyYear(yearObj, company) : null;
-      if(!companyData) return;
+      if(!companyData){ ignored += 1; return; }
 
       companyData.months[key] = annualMonthMerged({
         ...companyData.months[key],
-        compras_factura: annualParseMoney(row.compras_factura ?? row['compras factura'] ?? row['Compras Factura']),
-        compras_exenta: annualParseMoney(row.compras_exenta ?? row['compras exenta'] ?? row['Compras Exenta']),
-        compras_din: annualParseMoney(row.compras_din ?? row['compras din'] ?? row['Compras DIN'] ?? row.DIN),
-        compras_nd: annualParseMoney(row.compras_nd ?? row['compras nd'] ?? row['Compras ND']),
-        compras_nc: annualParseMoney(row.compras_nc ?? row['compras nc'] ?? row['Compras NC']),
-        ventas_factura: annualParseMoney(row.ventas_factura ?? row['ventas factura'] ?? row['Ventas Factura']),
-        ventas_boleta: annualParseMoney(row.ventas_boleta ?? row['ventas boleta'] ?? row['Ventas Boleta']),
-        ventas_liquidacion: annualParseMoney(row.ventas_liquidacion ?? row['ventas liquidacion'] ?? row['Ventas Liquidacion'] ?? row['Ventas Liquidación']),
-        ventas_nd: annualParseMoney(row.ventas_nd ?? row['ventas nd'] ?? row['Ventas ND']),
-        ventas_nc: annualParseMoney(row.ventas_nc ?? row['ventas nc'] ?? row['Ventas NC']),
-        sueldos: annualParseMoney(row.sueldos ?? row.Sueldos),
-        pendiente_facturar: annualParseMoney(row.pendiente_facturar ?? row['pendiente por facturar'] ?? row['Pendiente por Facturar'])
+        compras_factura: annualParseMoney(pick(row, aliases.compras_factura)),
+        compras_exenta: annualParseMoney(pick(row, aliases.compras_exenta)),
+        compras_din: annualParseMoney(pick(row, aliases.compras_din)),
+        compras_nd: annualParseMoney(pick(row, aliases.compras_nd)),
+        compras_nc: annualParseMoney(pick(row, aliases.compras_nc)),
+        ventas_factura: annualParseMoney(pick(row, aliases.ventas_factura)),
+        ventas_boleta: annualParseMoney(pick(row, aliases.ventas_boleta)),
+        ventas_liquidacion: annualParseMoney(pick(row, aliases.ventas_liquidacion)),
+        ventas_nd: annualParseMoney(pick(row, aliases.ventas_nd)),
+        ventas_nc: annualParseMoney(pick(row, aliases.ventas_nc)),
+        sueldos: annualParseMoney(pick(row, aliases.sueldos)),
+        pendiente_facturar: annualParseMoney(pick(row, aliases.pendiente_facturar))
       });
 
       recalcAnnualYear(yearObj);
       touchedYears.add(year);
+      touchedCompanies.add(company);
       loaded += 1;
     });
 
@@ -2121,12 +2221,19 @@ async function annualUploadTemplate(event){
       if(targetYear){
         annualState.year = targetYear;
         buildYearSel();
-        $('yearSel').value = targetYear;
+        if($('yearSel')) $('yearSel').value = targetYear;
       }
+      if(touchedCompanies.size && !touchedCompanies.has(annualState.company)){
+        annualState.company = Array.from(touchedCompanies)[0];
+      }
+      persistAnnualSelection();
       renderAnnualApp();
     }
 
-    showToast(loaded ? `Planilla cargada: ${loaded} meses actualizados en ${touchedYears.size} año(s)` : 'No se reconocieron meses válidos', !loaded);
+    const msg = loaded
+      ? `Planilla cargada: ${loaded} fila(s) válidas${ignored ? ` · ${ignored} ignorada(s)` : ''}`
+      : 'No se reconocieron meses válidos';
+    showToast(msg, !loaded);
   }catch(e){
     console.error('Error cargando planilla anual:', e);
     showToast('Error al cargar planilla', true);
@@ -2328,21 +2435,26 @@ function buildAnnualCompanySelectors(){
   annualState.company = names.includes(annualState.company) ? annualState.company : (names[0] || '');
   if($('annualCompanySel')) $('annualCompanySel').value = annualState.company;
   if($('annualCompanyConfigSel')) $('annualCompanyConfigSel').value = annualState.company;
+  if($('annualMonthCompanySel')) $('annualMonthCompanySel').value = annualState.company;
+  persistAnnualSelection();
 }
 function onAnnualCompanyChange(){
   annualState.company = $('annualCompanySel').value;
   buildAnnualCompanySelectors();
+  persistAnnualSelection();
   renderAnnualApp();
 }
 function annualOnConfigCompanyChange(){
   annualState.company = $('annualCompanyConfigSel').value;
   buildAnnualCompanySelectors();
+  persistAnnualSelection();
   renderAnnualConfig();
   renderAnnualResumen();
 }
 function onAnnualMonthCompanyChange(){
   annualState.company = $('annualMonthCompanySel').value;
   buildAnnualCompanySelectors();
+  persistAnnualSelection();
   renderAnnualMeses();
   renderAnnualResumen();
 }
@@ -2412,6 +2524,7 @@ async function doNewYear(){
 function onAnnualYearChange(){
   annualState.year = $('yearSel').value;
   recalcAnnualYear(annualCurYear());
+  persistAnnualSelection();
   setAnnualLabel();
   renderAnnualApp();
 }
@@ -2430,19 +2543,25 @@ function goAnnualSec(el, sec){
 function bootAnnual(){
   showLoader(true);
   Promise.resolve().then(async()=>{
+    restoreAnnualSelection();
     await loadAnnualConfig();
     await loadAnnualData();
     if(!Object.keys(annualState.data).length){
       const y = String(new Date().getFullYear());
       annualState.data[y] = mkAnnualYear(y);
+      annualState.year = y;
       await saveAnnualYear(y);
     }
     buildYearSel();
-    annualState.year = Object.keys(annualState.data).sort().reverse()[0];
-    annualState.company = getAnnualCompanyNames()[0] || '';
-    $('yearSel').value = annualState.year;
+    const availableYears = Object.keys(annualState.data).sort().reverse();
+    if(!annualState.year || !annualState.data[annualState.year]){
+      annualState.year = availableYears[0];
+    }
+    annualState.company = getAnnualCompanyNames().includes(annualState.company) ? annualState.company : (getAnnualCompanyNames()[0] || '');
+    if($('yearSel')) $('yearSel').value = annualState.year;
     buildAnnualCompanySelectors();
     setAnnualLabel();
+    persistAnnualSelection();
     renderAnnualApp();
   }).catch(e=>{
     console.error(e);
@@ -2503,6 +2622,7 @@ function renderAnnualMeses(){
 }
 function selectAnnualMonth(m){
   annualState.curMonth = m;
+  persistAnnualSelection();
   renderAnnualMeses();
 }
 function annualRecalc(){
@@ -2520,7 +2640,9 @@ function annualRecalc(){
   current.sueldos = annualVal('an_sueldos');
   current.pendiente_facturar = annualVal('an_pendiente');
   current.remanente_anterior = Number(annualCurMonth().remanente_anterior || 0);
-  const calc = calcAnnualMonth(current);
+  annualCurCompanyData().months[annualState.curMonth] = annualMonthMerged(current);
+  recalcAnnualYear(annualCurYear());
+  const calc = annualCurMonth();
 
   annualSetFormattedValue('an_compras_total', calc.compras_total);
   annualSetFormattedValue('an_ventas_total', calc.ventas_total);
@@ -2531,6 +2653,7 @@ function annualRecalc(){
   annualSetFormattedValue('an_remanente', calc.remanente);
   annualSetFormattedValue('an_total_impuesto', calc.total_impuesto);
   annualSetFormattedValue('an_ganancia', calc.ganancia_mes);
+  persistAnnualSelection();
 }
 async function saveAnnualMonth(){
   try{
