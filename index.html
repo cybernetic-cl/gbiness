@@ -344,6 +344,38 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         <div class="page-sub">// Todos los meses registrados</div>
         <div class="section-card"><div class="card-body" id="histBody"></div></div>
       </div>
+
+      <!-- CONFIGURACION -->
+      <div id="sec-configuracion" style="display:none">
+        <div class="page-title">CONFIGURACIÓN <span>LISTAS</span></div>
+        <div class="page-sub">// Administra las listas desplegables del sistema</div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Saldos · plataformas</div><button class="btn-secondary" onclick="openDropdownManager('saldos')">+ Agregar</button></div>
+            <div class="card-body" id="cfg_saldos"></div>
+          </div>
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Bancos y servicios</div><button class="btn-secondary" onclick="openDropdownManager('bancos')">+ Agregar</button></div>
+            <div class="card-body" id="cfg_bancos"></div>
+          </div>
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Remuneraciones</div><button class="btn-secondary" onclick="openDropdownManager('remuneraciones')">+ Agregar</button></div>
+            <div class="card-body" id="cfg_remuneraciones"></div>
+          </div>
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Pendientes</div><button class="btn-secondary" onclick="openDropdownManager('pendientes')">+ Agregar</button></div>
+            <div class="card-body" id="cfg_pendientes"></div>
+          </div>
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Comisiones</div><button class="btn-secondary" onclick="openDropdownManager('comisiones')">+ Agregar</button></div>
+            <div class="card-body" id="cfg_comisiones"></div>
+          </div>
+          <div class="section-card" style="margin:0">
+            <div class="card-hdr"><div class="card-title">// Presupuesto</div><button class="btn-secondary" onclick="openDropdownManager('proveedores')">+ Agregar</button></div>
+            <div class="card-body" id="cfg_presupuesto_extra"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -475,16 +507,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
       <div class="fw"><label class="fl">Empresa <span style="color:var(--red)">*</span></label>
         <select id="c_empresa" class="fi"></select></div>
       <div class="fw"><label class="fl">Proveedor <span style="color:var(--red)">*</span></label>
-        <select id="c_proveedor" class="fi"></select></div>
+        <select id="c_proveedor" class="fi" onchange="handleDynamicSelect('c_proveedor','proveedores')"></select></div>
       <div class="fw"><label class="fl">Responsable <span style="color:var(--red)">*</span></label>
-        <select id="c_responsable" class="fi"></select></div>
+        <select id="c_responsable" class="fi" onchange="handleDynamicSelect('c_responsable','responsables_pres')"></select></div>
       <div class="fw"><label class="fl">Monto ($) <span style="color:var(--red)">*</span></label>
         <input type="number" id="c_monto" class="fi" placeholder="0"></div>
       <div class="fw"><label class="fl">Tipo de Pago <span style="color:var(--red)">*</span></label>
-        <select id="c_tipopago" class="fi" onchange="toggleBanco()"></select></div>
+        <select id="c_tipopago" class="fi" onchange="handleDynamicSelect('c_tipopago','tiposPago')"></select></div>
       <div class="fw" id="bancoField" style="display:none">
         <label class="fl">Banco</label>
-        <select id="c_banco" class="fi"></select>
+        <select id="c_banco" class="fi" onchange="handleDynamicSelect('c_banco','bancos_pres')"></select>
       </div>
       <div class="fw" style="grid-column:1/-1"><label class="fl">Descripción (opcional)</label>
         <input type="text" id="c_desc" class="fi" placeholder="Detalle de la compra..."></div>
@@ -498,14 +530,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 
 <!-- MODAL CAT ITEM -->
 <div class="overlay" id="catOverlay">
-  <div class="modal" style="max-width:360px">
+  <div class="modal" style="max-width:520px">
     <button class="close-btn" onclick="closeOv('catOverlay')">✕</button>
     <div class="modal-title" id="catTitle">Agregar</div>
+    <div class="modal-sub" id="catSub">Administra esta lista desplegable</div>
     <div class="fw"><label class="fl" id="catLabel">Nombre</label>
       <input type="text" id="catInput" class="fi" placeholder="..." onkeydown="if(event.key==='Enter')saveCatItem()"></div>
+    <div id="catExistingList" style="max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:2px;padding:8px 12px;background:rgba(255,255,255,0.02)"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeOv('catOverlay')">Cancelar</button>
-      <button class="btn-primary" onclick="saveCatItem()">Guardar</button>
+      <button class="btn-primary" id="catSaveBtn" onclick="saveCatItem()">Guardar</button>
     </div>
   </div>
 </div>
@@ -571,13 +605,15 @@ function selectModule(mod) {
 }
 const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const EMPS   = ['Cybernetic','Mascokits','Mini Mall','Personal'];
-const CATS   = {
+const DEFAULT_CATS = {
   saldos:['MERCADOLIBRE','FALABELLA','EFECTIVO','OTRO'],
   bancos:['FALABELLA','MERCADOLIBRE','CHEQUE','SCOTIA','SERVICIOS','CONTABILIUM','CENCOSUD','VISA SCOTIA','OTRO'],
   remuneraciones:['REMUNERACIONES','PREVIRED','SII','OTRO'],
   pendientes:['FLEX','OTRO'],
-  comisiones:['COMISIÓN','PUBLICIDAD','FACEBOOK','GOOGLE','INSTAGRAM','OTRO']
+  comisiones:['COMISIÓN','PUBLICIDAD','FACEBOOK','GOOGLE','INSTAGRAM','OTRO'],
+  estados_pago:['P','PAGADO','PENDIENTE']
 };
+let CATS = loadClosureCats();
 const COLORS = {
   FALABELLA:{b:'#c0392b',f:'#fff'},MERCADOLIBRE:{b:'#f39c12',f:'#000'},
   CHEQUE:{b:'#e67e22',f:'#fff'},SCOTIA:{b:'#c0392b',f:'#fff'},
@@ -709,31 +745,111 @@ function badge(cat){
 }
 function eBadge(e){ if(!e) return ''; return (e==='P'||e?.toUpperCase()==='PAGADO')?`<span class="ep">✓ ${e}</span>`:`<span class="ea">${e}</span>`; }
 const opts= a => a.map(v=>`<option value="${v}">${v}</option>`).join('');
-const eOpts='<option value="">Sin estado</option><option value="P">P — Pagado</option><option value="PAGADO">PAGADO</option><option value="PENDIENTE">PENDIENTE</option>';
+function estadoOptions(selected=''){
+  const current = String(selected || '').trim();
+  const items = getDropdownItems('estados_pago');
+  const base = `<option value="">Sin estado</option>`;
+  const optsHtml = items.map(v => `<option value="${v}" ${v===current?'selected':''}>${v==='P'?'P — Pagado':v}</option>`).join('');
+  return base + optsHtml + `<option value="__new__">+ Agregar nuevo</option><option value="__manage__">⚙ Configurar lista</option>`;
+}
 const g  = id => ($( id)||{value:''}).value;
 const gn = id => parseFloat(g(id))||0;
+
+function loadClosureCats(){
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('gbisness_dropdown_config') || '{}'); } catch(e){ saved = {}; }
+  const merged = {};
+  Object.keys(DEFAULT_CATS).forEach(k=>{
+    const arr = Array.isArray(saved[k]) ? saved[k] : DEFAULT_CATS[k];
+    merged[k] = [...new Set(arr.map(v=>String(v||'').trim().toUpperCase()).filter(Boolean))];
+  });
+  return merged;
+}
+function saveClosureCats(){ localStorage.setItem('gbisness_dropdown_config', JSON.stringify(CATS)); }
+function getDropdownItems(type){
+  if (DEFAULT_CATS[type]) return (CATS[type] || DEFAULT_CATS[type] || []).slice();
+  if (type==='proveedores') return (presState.config.proveedores || []).slice();
+  if (type==='bancos_pres') return (presState.config.bancos_pres || []).slice();
+  if (type==='responsables_pres') return (presState.config.responsables_pres || []).slice();
+  if (type==='tiposPago') return (presState.config.tiposPago || TIPOS_PAGO_DEFAULT).slice();
+  return [];
+}
+function getDropdownLabel(type){
+  return {saldos:'Plataformas de saldo',bancos:'Categorías bancarias',remuneraciones:'Categorías de remuneraciones',pendientes:'Categorías de pendientes',comisiones:'Categorías de comisiones',estados_pago:'Estados de pago',proveedores:'Proveedores',bancos_pres:'Bancos',responsables_pres:'Responsables',tiposPago:'Tipos de pago'}[type] || 'Lista';
+}
+function dynamicOptions(type, selected=''){
+  const current = String(selected || '').trim();
+  const items = getDropdownItems(type);
+  const optsHtml = items.map(v => `<option value="${v}" ${v===current?'selected':''}>${v}</option>`).join('');
+  return optsHtml + `<option value="__new__">+ Agregar nuevo</option><option value="__manage__">⚙ Configurar lista</option>`;
+}
+let dynamicSelectTarget = null;
+function handleDynamicSelect(selectId, type){
+  const sel = $(selectId);
+  if (!sel) return;
+  if (sel.value === '__new__' || sel.value === '__manage__') { openDropdownManager(type, selectId); return; }
+  if (selectId === 'c_tipopago') toggleBanco();
+}
+function refreshSelectValue(selectId, value, type){
+  const sel = $(selectId);
+  if (!sel) return;
+  const prefix = ['c_proveedor','c_responsable','c_banco'].includes(selectId) ? `<option value="">— ${selectId==='c_proveedor'?'Proveedor':selectId==='c_responsable'?'Responsable':'Banco'} —</option>` : '';
+  sel.innerHTML = prefix + dynamicOptions(type, value);
+  sel.value = value;
+  if (selectId === 'c_tipopago') toggleBanco();
+}
+function getDynamicValue(selectId){
+  const sel = $(selectId);
+  const val = String((sel?.value) || '').trim();
+  if (!val || val === '__new__' || val === '__manage__') return '';
+  return val;
+}
+function renderListItems(targetId, type){
+  const el = $(targetId);
+  if (!el) return;
+  const items = getDropdownItems(type);
+  el.innerHTML = items.length ? items.map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'${type}')">✎</button><button class="btn-del" onclick="delCatItem('${type}',${idx})">✕</button></span></div>`).join('') : '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin registros</div>';
+}
+function renderDropdownConfigSec(){
+  renderListItems('cfg_saldos','saldos');
+  renderListItems('cfg_bancos','bancos');
+  renderListItems('cfg_remuneraciones','remuneraciones');
+  renderListItems('cfg_pendientes','pendientes');
+  renderListItems('cfg_comisiones','comisiones');
+  const extra = $('cfg_presupuesto_extra');
+  if (extra) {
+    extra.innerHTML = `
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Proveedores</div><button class="btn-secondary" onclick="openDropdownManager('proveedores')">Gestionar</button></div>${(getDropdownItems('proveedores').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'proveedores')">✎</button><button class="btn-del" onclick="delCatItem('proveedores',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin proveedores</div>'}</div>
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Responsables</div><button class="btn-secondary" onclick="openDropdownManager('responsables_pres')">Gestionar</button></div>${(getDropdownItems('responsables_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'responsables_pres')">✎</button><button class="btn-del" onclick="delCatItem('responsables_pres',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin responsables</div>'}</div>
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Bancos</div><button class="btn-secondary" onclick="openDropdownManager('bancos_pres')">Gestionar</button></div>${(getDropdownItems('bancos_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'bancos_pres')">✎</button><button class="btn-del" onclick="delCatItem('bancos_pres',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin bancos</div>'}</div>
+      <div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Tipos de pago</div><button class="btn-secondary" onclick="openDropdownManager('tiposPago')">Gestionar</button></div>${(getDropdownItems('tiposPago').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'tiposPago')">✎</button><button class="btn-del" onclick="delCatItem('tiposPago',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin tipos de pago</div>'}</div>`;
+  }
+}
+
 
 // ── RESUMEN ──
 function renderResumen(){
   const d=cur();
-  const tB=d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
+  const tBNeg=d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
+  const tBPos=d.bancos.reduce((s,r)=>s+(r.positivo||0),0);
   const tR=d.remuneraciones.reduce((s,r)=>s+(r.monto||0),0);
   const tP=d.pendientes.reduce((s,r)=>s+(r.monto||0),0);
   const tC=d.comisiones.reduce((s,r)=>s+(r.monto||0),0);
-  const tG=tB+tR+tP+tC;
-  const tS=d.saldos.reduce((s,r)=>s+(r.liberado||0)+(r.pendiente||0),0);
+  const tG=tBNeg+tR+tP+tC;
+  const tSBase=d.saldos.reduce((s,r)=>s+(r.liberado||0)+(r.pendiente||0),0);
   const tL=d.saldos.reduce((s,r)=>s+(r.liberado||0),0);
   const tPS=d.saldos.reduce((s,r)=>s+(r.pendiente||0),0);
+  const tS=tSBase+tBPos;
   const dsp=tS-tG;
   $('kpiGrid').innerHTML=`
-    <div class="kpi-card cteal"><div class="kpi-label">Total Ingresos</div><div class="kpi-val" style="color:var(--teal)">${fmt(tS)}</div><div class="kpi-sub">Liberado: ${fmt(tL)} · Pend: ${fmt(tPS)}</div></div>
-    <div class="kpi-card cred"><div class="kpi-label">Total Gastos</div><div class="kpi-val" style="color:var(--red)">${fmt(tG)}</div><div class="kpi-sub">Bancos + Remu + Pend + Comisiones</div></div>
+    <div class="kpi-card cteal"><div class="kpi-label">Total Ingresos</div><div class="kpi-val" style="color:var(--teal)">${fmt(tS)}</div><div class="kpi-sub">Saldos: ${fmt(tSBase)} · Bancos(+): ${fmt(tBPos)}</div></div>
+    <div class="kpi-card cred"><div class="kpi-label">Total Gastos</div><div class="kpi-val" style="color:var(--red)">${fmt(tG)}</div><div class="kpi-sub">Bancos(-) + Remu + Pend + Comisiones</div></div>
     <div class="kpi-card ${dsp>=0?'cgreen':'cred'}"><div class="kpi-label">Disponible</div><div class="kpi-val" style="color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</div><div class="kpi-sub">Ingresos − Total gastos</div></div>
     <div class="kpi-card camber"><div class="kpi-label">Pendiente de Cobro</div><div class="kpi-val" style="color:var(--amber)">${fmt(tPS)}</div><div class="kpi-sub">Aún no liberado en plataformas</div></div>
   `;
-  const rows=[['Bancos y Servicios',tB,'var(--red)'],['Remuneraciones e Impuestos',tR,'var(--red)'],['Pendientes / Operador Logístico',tP,'var(--amber)'],['Comisiones y Publicidad',tC,'var(--red)']];
+  const rows=[['Bancos y Servicios (-)',tBNeg,'var(--red)'],['Bancos y Servicios (+)',tBPos,'var(--green)'],['Remuneraciones e Impuestos',tR,'var(--red)'],['Pendientes / Operador Logístico',tP,'var(--amber)'],['Comisiones y Publicidad',tC,'var(--red)']];
   $('desgloce').innerHTML=`<table class="tbl"><thead><tr><th>Categoría</th><th style="text-align:right">Monto</th><th style="text-align:right">% del total</th></tr></thead><tbody>
-    ${rows.map(([l,v,c])=>`<tr><td style="color:var(--text)">${l}</td><td style="text-align:right;color:${c};font-family:var(--font-mono)">${fmt(v)}</td><td style="text-align:right;color:var(--text3);font-family:var(--font-mono)">${tG>0?((v/tG)*100).toFixed(1)+'%':'—'}</td></tr>`).join('')}
+    ${rows.map(([l,v,c])=>`<tr><td style="color:var(--text)">${l}</td><td style="text-align:right;color:${c};font-family:var(--font-mono)">${fmt(v)}</td><td style="text-align:right;color:var(--text3);font-family:var(--font-mono)">${l.includes('(+)') ? '—' : (tG>0?((v/tG)*100).toFixed(1)+'%':'—')}</td></tr>`).join('')}
     <tr style="border-top:1px solid var(--border)"><td style="font-weight:600">TOTAL GASTOS</td><td style="text-align:right;color:var(--red);font-family:var(--font-display);font-size:16px">${fmt(tG)}</td><td></td></tr>
     <tr><td style="font-weight:600;color:var(--teal)">DISPONIBLE (Reposiciones del mes)</td><td style="text-align:right;font-family:var(--font-display);font-size:16px;color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</td><td></td></tr>
   </tbody></table>`;
@@ -752,7 +868,12 @@ function renderSaldos(){
 function renderBancos(){
   const d=cur();
   $('bancosBody').innerHTML=d.bancos.map((r,i)=>`<tr><td>${badge(r.categoria)}</td><td style="color:var(--text)">${r.descripcion||''}</td><td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${r.negativo?fmt(r.negativo):'—'}</td><td style="text-align:right;color:var(--green);font-family:var(--font-mono)">${r.positivo?fmt(r.positivo):'—'}</td><td>${eBadge(r.estado)}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('bancos',${i})">✎</button><button class="btn-del" onclick="delRow('bancos',${i})">✕</button></td></tr>`).join('');
-  $('bancosTotal').textContent=fmt(d.bancos.reduce((s,r)=>s+(r.negativo||0),0));
+  const totalNeg=d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
+  const totalPos=d.bancos.reduce((s,r)=>s+(r.positivo||0),0);
+  const neto=totalPos-totalNeg;
+  document.querySelector('#sec-bancos .total-lbl').textContent='Neto bancario';
+  $('bancosTotal').textContent=fmt(neto);
+  $('bancosTotal').style.color=neto>=0?'var(--green)':'var(--red)';
 }
 
 // ── REMU ──
@@ -783,7 +904,7 @@ function renderHist(){
     :ms.map(m=>{
       const [y,mn]=m._id.split('-');
       const tG=(m.bancos||[]).reduce((s,r)=>s+(r.negativo||0),0)+(m.remuneraciones||[]).reduce((s,r)=>s+(r.monto||0),0)+(m.pendientes||[]).reduce((s,r)=>s+(r.monto||0),0)+(m.comisiones||[]).reduce((s,r)=>s+(r.monto||0),0);
-      const tI=(m.saldos||[]).reduce((s,r)=>s+(r.liberado||0)+(r.pendiente||0),0);
+      const tI=(m.saldos||[]).reduce((s,r)=>s+(r.liberado||0)+(r.pendiente||0),0)+(m.bancos||[]).reduce((s,r)=>s+(r.positivo||0),0);
       const dsp=tI-tG;
       return `<div class="hist-row"><div><span style="font-family:var(--font-display);font-size:18px;color:var(--text)">${MESES[+mn-1]} ${y}</span><span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:10px">${m._id}</span></div>
       <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center">
@@ -804,17 +925,16 @@ function jumpMes(id){
 
 // ── MODAL ADD ──
 const DEFS = {
-  saldos:{ title:'Agregar Saldo', f:()=>`<div class="fw"><label class="fl">Cuenta / Plataforma</label>
-    <input type="text" id="f0" class="fi" placeholder="Ej: Mercadolibre, BCI, etc" list="saldos-sugg" autocomplete="off">
-    <datalist id="saldos-sugg">${CATS.saldos.map(v=>`<option value="${v}">`).join('')}</datalist></div>
+  saldos:{ title:'Agregar Saldo', f:(r={})=>`<div class="fw"><label class="fl">Cuenta / Plataforma</label>
+    <select id="f0" class="fi" onchange="handleDynamicSelect('f0','saldos')">${dynamicOptions('saldos', r.cuenta||'')}</select></div>
     <div class="fw"><label class="fl">Empresa</label><select id="f1" class="fi">${opts(EMPS)}</select></div>
     <div class="fw"><label class="fl">Monto Liberado ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div>
     <div class="fw"><label class="fl">Monto Pendiente ($)</label><input type="number" id="f3" class="fi" placeholder="0"></div>`,
-    s:()=>({cuenta:g('f0').toUpperCase()||'OTRO',empresa:g('f1'),liberado:gn('f2'),pendiente:gn('f3')})},
-  bancos:{ title:'Agregar Pago Bancario', f:()=>`<div class="fw"><label class="fl">Categoría</label><select id="f0" class="fi">${opts(CATS.bancos)}</select></div><div class="fw"><label class="fl">Descripción</label><input type="text" id="f1" class="fi" placeholder="Ej: CMR Facturado"></div><div class="fw"><label class="fl">Monto Negativo — Gasto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Monto Positivo — Ingreso ($)</label><input type="number" id="f3" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f4" class="fi">${eOpts}</select></div>`, s:()=>({categoria:g('f0'),descripcion:g('f1'),negativo:gn('f2'),positivo:gn('f3'),estado:g('f4')})},
-  remuneraciones:{ title:'Agregar Remuneración', f:()=>`<div class="fw"><label class="fl">Categoría</label><select id="f0" class="fi">${opts(CATS.remuneraciones)}</select></div><div class="fw"><label class="fl">Nombre / Descripción</label><input type="text" id="f1" class="fi" placeholder="Ej: Denny Marrufo"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi">${eOpts}</select></div>`, s:()=>({categoria:g('f0'),descripcion:g('f1'),monto:gn('f2'),estado:g('f3')})},
-  pendientes:{ title:'Agregar Pendiente', f:()=>`<div class="fw"><label class="fl">Categoría</label><select id="f0" class="fi">${opts(CATS.pendientes)}</select></div><div class="fw"><label class="fl">Descripción</label><input type="text" id="f1" class="fi" placeholder="Ej: FastWay"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi">${eOpts}</select></div>`, s:()=>({categoria:g('f0'),descripcion:g('f1'),monto:gn('f2'),estado:g('f3')})},
-  comisiones:{ title:'Agregar Comisión / Publicidad', f:()=>`<div class="fw"><label class="fl">Plataforma / Concepto</label><select id="f0" class="fi">${opts(CATS.comisiones)}</select></div><div class="fw"><label class="fl">Responsable / Detalle</label><input type="text" id="f1" class="fi" placeholder="Ej: Gregorio"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi">${eOpts}</select></div>`, s:()=>({plataforma:g('f0'),responsable:g('f1'),monto:gn('f2'),estado:g('f3')})}
+    s:()=>({cuenta:getDynamicValue('f0')||'OTRO',empresa:g('f1'),liberado:gn('f2'),pendiente:gn('f3')})},
+  bancos:{ title:'Agregar Pago Bancario', f:(r={})=>`<div class="fw"><label class="fl">Categoría</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','bancos')">${dynamicOptions('bancos', r.categoria||'')}</select></div><div class="fw"><label class="fl">Descripción</label><input type="text" id="f1" class="fi" placeholder="Ej: CMR Facturado"></div><div class="fw"><label class="fl">Monto Negativo — Gasto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Monto Positivo — Ingreso ($)</label><input type="number" id="f3" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f4" class="fi" onchange="handleDynamicSelect('f4','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({categoria:getDynamicValue('f0')||'OTRO',descripcion:g('f1'),negativo:gn('f2'),positivo:gn('f3'),estado:getDynamicValue('f4')})},
+  remuneraciones:{ title:'Agregar Remuneración', f:(r={})=>`<div class="fw"><label class="fl">Categoría</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','remuneraciones')">${dynamicOptions('remuneraciones', r.categoria||'')}</select></div><div class="fw"><label class="fl">Nombre / Descripción</label><input type="text" id="f1" class="fi" placeholder="Ej: Denny Marrufo"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi" onchange="handleDynamicSelect('f3','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({categoria:getDynamicValue('f0')||'OTRO',descripcion:g('f1'),monto:gn('f2'),estado:getDynamicValue('f3')})},
+  pendientes:{ title:'Agregar Pendiente', f:(r={})=>`<div class="fw"><label class="fl">Categoría</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','pendientes')">${dynamicOptions('pendientes', r.categoria||'')}</select></div><div class="fw"><label class="fl">Descripción</label><input type="text" id="f1" class="fi" placeholder="Ej: FastWay"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi" onchange="handleDynamicSelect('f3','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({categoria:getDynamicValue('f0')||'OTRO',descripcion:g('f1'),monto:gn('f2'),estado:getDynamicValue('f3')})},
+  comisiones:{ title:'Agregar Comisión / Publicidad', f:(r={})=>`<div class="fw"><label class="fl">Plataforma / Concepto</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','comisiones')">${dynamicOptions('comisiones', r.plataforma||'')}</select></div><div class="fw"><label class="fl">Responsable / Detalle</label><input type="text" id="f1" class="fi" placeholder="Ej: Gregorio"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi" onchange="handleDynamicSelect('f3','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({plataforma:getDynamicValue('f0')||'OTRO',responsable:g('f1'),monto:gn('f2'),estado:getDynamicValue('f3')})}
 };
 
 function openAdd(type){
@@ -951,13 +1071,13 @@ function renderPresConfig() {
   // Proveedores
   const pl = $('proveedoresList');
   if (pl) pl.innerHTML = (cfg.proveedores||[]).map((p,i)=>`
-    <div class="cat-item"><span>${p}</span><button class="btn-del" onclick="delCatItem('proveedores',${i})">✕</button></div>`).join('')
+    <div class="cat-item"><span>${p}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'proveedores')">✎</button><button class="btn-del" onclick="delCatItem('proveedores',${i})">✕</button></span></div>`).join('')
     || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin proveedores</div>';
 
   // Bancos
   const bl = $('bancosList');
   if (bl) bl.innerHTML = (cfg.bancos_pres||[]).map((b,i)=>`
-    <div class="cat-item"><span>${b}</span><button class="btn-del" onclick="delCatItem('bancos_pres',${i})">✕</button></div>`).join('')
+    <div class="cat-item"><span>${b}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'bancos_pres')">✎</button><button class="btn-del" onclick="delCatItem('bancos_pres',${i})">✕</button></span></div>`).join('')
     || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin bancos</div>';
 }
 
@@ -1024,47 +1144,93 @@ async function updatePresupuesto(emp, val) {
 }
 
 let catCtx = null;
-let editCtx = null; // { type, idx }
-function addCatItem(type) {
+let editCtx = null; // shared for row edit and category edit
+function getConfigArrayRef(type){
+  if (DEFAULT_CATS[type]) return CATS[type] || (CATS[type] = [...DEFAULT_CATS[type]]);
+  if (type==='proveedores') return presState.config.proveedores || (presState.config.proveedores = []);
+  if (type==='bancos_pres') return presState.config.bancos_pres || (presState.config.bancos_pres = []);
+  if (type==='responsables_pres') return presState.config.responsables_pres || (presState.config.responsables_pres = []);
+  if (type==='tiposPago') return presState.config.tiposPago || (presState.config.tiposPago = [...TIPOS_PAGO_DEFAULT]);
+  return [];
+}
+function openDropdownManager(type, selectId='') {
   catCtx = type;
-  const labels = { proveedores:'Agregar Proveedor', bancos_pres:'Agregar Banco', responsables_pres:'Agregar Responsable' };
-  $('catTitle').textContent = labels[type]||'Agregar';
+  dynamicSelectTarget = selectId || null;
+  editCtx = null;
+  $('catTitle').textContent = 'Configurar · ' + getDropdownLabel(type);
+  $('catSub').textContent = 'Puedes agregar, editar o eliminar opciones';
+  $('catLabel').textContent = 'Nombre';
   $('catInput').value = '';
+  $('catSaveBtn').textContent = 'Guardar';
+  renderCatList();
   $('catOverlay').classList.add('open');
   setTimeout(()=>$('catInput').focus(),80);
 }
+function addCatItem(type) { openDropdownManager(type); }
+function renderCatList() {
+  const box = $('catExistingList');
+  if (!box) return;
+  const items = getConfigArrayRef(catCtx);
+  box.innerHTML = items.length ? items.map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'${catCtx}')">✎</button><button class="btn-del" onclick="delCatItem('${catCtx}',${idx})">✕</button></span></div>`).join('') : '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin registros</div>';
+}
+function editCatItem(idx, forcedType='') {
+  if (forcedType) catCtx = forcedType;
+  const items = getConfigArrayRef(catCtx);
+  $('catInput').value = items[idx] || '';
+  $('catSaveBtn').textContent = 'Actualizar';
+  editCtx = { type:'cat', listType:catCtx, idx };
+  $('catOverlay').classList.add('open');
+  renderCatList();
+  setTimeout(()=>$('catInput').focus(),80);
+}
+async function persistDropdownType(type){
+  if (DEFAULT_CATS[type]) saveClosureCats(); else await savePresConfig();
+  populateCompraSelects();
+  renderPresConfig();
+  renderPresConfig2();
+  renderDropdownConfigSec();
+}
 async function saveCatItem() {
-  const val = $('catInput').value.trim();
+  const val = $('catInput').value.trim().toUpperCase();
   if (!val) return;
-  if (!presState.config[catCtx]) presState.config[catCtx] = [];
-  if (!presState.config[catCtx].includes(val)) {
-    presState.config[catCtx].push(val);
-    renderPresConfig2(); // immediate update
-    populateCompraSelects();
-    await savePresConfig(); // save in background
+  const arr = getConfigArrayRef(catCtx);
+  if (editCtx && editCtx.type==='cat' && editCtx.listType===catCtx) {
+    const duplicate = arr.findIndex((x,i)=>x===val && i!==editCtx.idx);
+    if (duplicate !== -1) { showToast('Ese valor ya existe', true); return; }
+    arr[editCtx.idx] = val;
+  } else {
+    if (arr.includes(val)) { showToast('Ese valor ya existe', true); return; }
+    arr.push(val);
+  }
+  await persistDropdownType(catCtx);
+  renderCatList();
+  $('catInput').value = '';
+  $('catSaveBtn').textContent = 'Guardar';
+  editCtx = null;
+  if (dynamicSelectTarget) {
+    refreshSelectValue(dynamicSelectTarget, val, catCtx);
+    dynamicSelectTarget = null;
+    closeOv('catOverlay');
+  } else {
     showToast('Guardado');
   }
-  closeOv('catOverlay');
 }
 async function delCatItem(type, idx) {
-  presState.config[type].splice(idx,1);
-  renderPresConfig2(); // immediate update
-  populateCompraSelects();
-  await savePresConfig(); // save in background
+  catCtx = type;
+  const arr = getConfigArrayRef(type);
+  arr.splice(idx,1);
+  await persistDropdownType(type);
+  renderCatList();
   showToast('Eliminado');
 }
 
 // ── COMPRA MODAL ──
 function populateCompraSelects() {
-  const cfg = presState.config;
-  // empresa
-  const ce = $('c_empresa'); if(ce){ ce.innerHTML='<option value="">— Empresa —</option>'; EMPS_PRES.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;ce.appendChild(o);}); }
-  // proveedor
-  const cp = $('c_proveedor'); if(cp){ cp.innerHTML='<option value="">— Proveedor —</option>'; (cfg.proveedores||[]).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;cp.appendChild(o);}); }
-  // tipo pago
-  const ct = $('c_tipopago'); if(ct){ ct.innerHTML=''; (cfg.tiposPago||TIPOS_PAGO_DEFAULT).forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;ct.appendChild(o);}); }
-  // banco
-  const cb = $('c_banco'); if(cb){ cb.innerHTML='<option value="">— Banco —</option>'; (cfg.bancos_pres||[]).forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;cb.appendChild(o);}); }
+  const ce = $('c_empresa'); if(ce){ const cur=ce.value; ce.innerHTML='<option value="">— Empresa —</option>'; EMPS_PRES.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;ce.appendChild(o);}); if(cur) ce.value=cur; }
+  const cp = $('c_proveedor'); if(cp){ const cur=cp.value; cp.innerHTML='<option value="">— Proveedor —</option>'+dynamicOptions('proveedores', cur); if(cur) cp.value=cur; }
+  const cr = $('c_responsable'); if(cr){ const cur=cr.value; cr.innerHTML='<option value="">— Responsable —</option>'+dynamicOptions('responsables_pres', cur); if(cur) cr.value=cur; }
+  const ct = $('c_tipopago'); if(ct){ const cur=ct.value; ct.innerHTML=dynamicOptions('tiposPago', cur); if(cur) ct.value=cur; }
+  const cb = $('c_banco'); if(cb){ const cur=cb.value; cb.innerHTML='<option value="">— Banco —</option>'+dynamicOptions('bancos_pres', cur); if(cur) cb.value=cur; }
 }
 
 function toggleBanco() {
@@ -1316,17 +1482,17 @@ function renderPresConfig2() {
 
   const rl=$('responsablesList');
   if(rl) rl.innerHTML=(cfg.responsables_pres||[]).map((r,i)=>`
-    <div class="cat-item"><span>${r}</span><button class="btn-del" onclick="delCatItem('responsables_pres',${i})">✕</button></div>`).join('')
+    <div class="cat-item"><span>${r}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'responsables_pres')">✎</button><button class="btn-del" onclick="delCatItem('responsables_pres',${i})">✕</button></span></div>`).join('')
     ||'<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin responsables</div>';
 
   const pl=$('proveedoresList2');
   if(pl) pl.innerHTML=(cfg.proveedores||[]).map((p,i)=>`
-    <div class="cat-item"><span>${p}</span><button class="btn-del" onclick="delCatItem('proveedores',${i})">✕</button></div>`).join('')
+    <div class="cat-item"><span>${p}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'proveedores')">✎</button><button class="btn-del" onclick="delCatItem('proveedores',${i})">✕</button></span></div>`).join('')
     ||'<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin proveedores</div>';
 
   const bl=$('bancosList2');
   if(bl) bl.innerHTML=(cfg.bancos_pres||[]).map((b,i)=>`
-    <div class="cat-item"><span>${b}</span><button class="btn-del" onclick="delCatItem('bancos_pres',${i})">✕</button></div>`).join('')
+    <div class="cat-item"><span>${b}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'bancos_pres')">✎</button><button class="btn-del" onclick="delCatItem('bancos_pres',${i})">✕</button></span></div>`).join('')
     ||'<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin bancos</div>';
 }
 
@@ -1491,13 +1657,11 @@ async function saveCompra() {
 function openEdit(type, idx) {
   const row = cur()[type][idx];
   if (!row) return;
-  editCtx = { type, idx };
+  editCtx = { type:'row', rowType:type, idx };
   const cfg = DEFS[type];
   $('addTitle').textContent = 'Editar ' + cfg.title.replace('Agregar ','');
   $('addSub').textContent = '';
-  $('addFields').innerHTML = cfg.f();
-  // Populate fields with existing values
-  const keys = Object.keys(row);
+  $('addFields').innerHTML = cfg.f(row);
   if (type==='saldos') {
     const f0=$('f0'); if(f0) f0.value=row.cuenta||'';
     const f1=$('f1'); if(f1) f1.value=row.empresa||'';
@@ -1525,20 +1689,19 @@ function openEdit(type, idx) {
 
 async function saveAdd(){
   const d=cur();
-  if (editCtx) {
-    // Edit mode
-    const row = DEFS[editCtx.type].s();
-    d[editCtx.type][editCtx.idx] = { ...d[editCtx.type][editCtx.idx], ...row };
+  if (editCtx && editCtx.type==='row') {
+    const row = DEFS[editCtx.rowType].s();
+    if(!row) return;
+    d[editCtx.rowType][editCtx.idx] = { ...d[editCtx.rowType][editCtx.idx], ...row };
     editCtx = null;
   } else {
-    // Add mode
-    const row=DEFS[S.ctx].s(); d[S.ctx].push(row);
+    const row=DEFS[S.ctx].s(); if(!row) return; d[S.ctx].push(row);
   }
   await save(S.mes); closeOv('addOverlay'); renderSec(S.cur); showToast('Guardado');
 }
 
 // ── UTILS ──
-function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; }
+function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; if(id==='catOverlay'){ editCtx=null; dynamicSelectTarget=null; } }
 function showLoader(v){
   let el=$('_ldr'); if(!el&&v){ el=Object.assign(document.createElement('div'),{id:'_ldr'}); el.style.cssText='position:fixed;inset:0;background:rgba(7,8,15,0.88);display:flex;align-items:center;justify-content:center;z-index:9998;font-family:var(--font-mono);font-size:11px;color:var(--teal);letter-spacing:2px'; el.textContent='CARGANDO...'; document.body.appendChild(el); }
   if(el) el.style.display=v?'flex':'none';
