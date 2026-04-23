@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GBisness — Cybernetic SpA</title>
+<title>GBisness â€” Cybernetic SpA</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -79,6 +79,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .fl{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:5px}
 .fi{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:8px 11px;font-family:var(--font-mono);font-size:12px;border-radius:2px;outline:none;transition:border-color .2s}
 .fi:focus{border-color:var(--teal)}
+.annual-locked{background:rgba(255,255,255,0.04)!important;color:var(--teal)!important;pointer-events:none;user-select:none}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 .pass-error{color:var(--red);font-family:var(--font-mono);font-size:10px;margin-top:-8px;margin-bottom:10px;display:none}
 /* LOGIN */
@@ -124,35 +125,35 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-wrap" style="max-width:420px">
-    <div class="login-logo" style="font-size:42px">📊 GBISNESS</div>
-    <div class="login-sub">// Cybernetic SpA · Selecciona el módulo</div>
+    <div class="login-logo" style="font-size:42px">ðŸ“Š GBISNESS</div>
+    <div class="login-sub">// Cybernetic SpA Â· Selecciona el mÃ³dulo</div>
 
     <!-- Module cards -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
       <div id="mod-cierre" class="module-card active" onclick="selectModule('cierre')">
-        <div class="module-icon">💰</div>
+        <div class="module-icon">ðŸ’°</div>
         <div class="module-name">Cierre Mensual</div>
         <div class="module-sub">Saldos y gastos</div>
       </div>
       <div id="mod-presupuesto" class="module-card" onclick="selectModule('presupuesto')">
-        <div class="module-icon">🎯</div>
+        <div class="module-icon">ðŸŽ¯</div>
         <div class="module-name">Presupuesto</div>
         <div class="module-sub">Compras y gastos</div>
       </div>
       <div id="mod-anual" class="module-card" onclick="selectModule('anual')">
-        <div class="module-icon">📆</div>
+        <div class="module-icon">ðŸ“†</div>
         <div class="module-name">Cierre Anual</div>
-        <div class="module-sub">Año y resumen</div>
+        <div class="module-sub">AÃ±o y resumen</div>
       </div>
     </div>
 
     <div class="login-card">
       <div id="login-module-label" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--teal);margin-bottom:14px;text-transform:uppercase">// Cierre Mensual</div>
       <div class="login-field">
-        <label>Contraseña</label>
-        <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+        <label>ContraseÃ±a</label>
+        <input type="password" id="loginPass" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
-      <div id="loginError" class="pass-error">Contraseña incorrecta</div>
+      <div id="loginError" class="pass-error">ContraseÃ±a incorrecta</div>
       <button class="btn-login" onclick="doLogin()">ENTRAR</button>
     </div>
   </div>
@@ -161,7 +162,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="topbar">
-    <div class="topbar-logo">📊 GBISNESS</div>
+    <div class="topbar-logo">ðŸ“Š GBISNESS</div>
     <select id="mesSel" class="month-select" onchange="onMesChange()"></select>
     <button class="btn-primary" onclick="openNewMes()">+ Nuevo Mes</button>
     <button class="btn-logout" onclick="doLogout()">SALIR</button>
@@ -169,16 +170,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 
   <div class="app-layout">
     <div class="sidebar">
-      <div class="nav-group">Módulos</div>
-      <div class="nav-item active" onclick="goSec(this,'resumen')">◈ Resumen</div>
-      <div class="nav-item" onclick="goSec(this,'saldos')">🏦 Saldos</div>
-      <div class="nav-item" onclick="goSec(this,'bancos')">💳 Bancos y Servicios</div>
-      <div class="nav-item" onclick="goSec(this,'remuneraciones')">👥 Remuneraciones</div>
-      <div class="nav-item" onclick="goSec(this,'pendientes')">⏳ Pendientes</div>
-      <div class="nav-item" onclick="goSec(this,'comisiones')">💰 Comisiones</div>
-      <div class="nav-group" style="margin-top:10px">Gestión</div>
-      <div class="nav-item" onclick="goSec(this,'historial')">📋 Historial de cierres</div>
-      <div class="nav-item" onclick="goSec(this,'configuracion')">⚙ Configuración</div>
+      <div class="nav-group">MÃ³dulos</div>
+      <div class="nav-item active" onclick="goSec(this,'resumen')">â—ˆ Resumen</div>
+      <div class="nav-item" onclick="goSec(this,'saldos')">ðŸ¦ Saldos</div>
+      <div class="nav-item" onclick="goSec(this,'bancos')">ðŸ’³ Bancos y Servicios</div>
+      <div class="nav-item" onclick="goSec(this,'remuneraciones')">ðŸ‘¥ Remuneraciones</div>
+      <div class="nav-item" onclick="goSec(this,'pendientes')">â³ Pendientes</div>
+      <div class="nav-item" onclick="goSec(this,'comisiones')">ðŸ’° Comisiones</div>
+      <div class="nav-group" style="margin-top:10px">GestiÃ³n</div>
+      <div class="nav-item" onclick="goSec(this,'historial')">ðŸ“‹ Historial de cierres</div>
+      <div class="nav-item" onclick="goSec(this,'configuracion')">âš™ ConfiguraciÃ³n</div>
     </div>
 
     <div class="main">
@@ -187,7 +188,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
       <!-- RESUMEN -->
       <div id="sec-resumen">
         <div class="page-title">RESUMEN <span>FINANCIERO</span></div>
-        <div class="page-sub">// Estado consolidado · se actualiza en tiempo real</div>
+        <div class="page-sub">// Estado consolidado Â· se actualiza en tiempo real</div>
         <div class="kpi-grid" id="kpiGrid"></div>
         <div class="section-card">
           <div class="card-hdr"><div class="card-title">// Desglose de gastos del mes</div></div>
@@ -217,7 +218,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         <div class="section-card">
           <div class="card-hdr"><div class="card-title">// Pagos del mes</div><button class="btn-secondary" onclick="openAdd('bancos')">+ Agregar</button></div>
           <div class="card-body">
-            <table class="tbl"><thead><tr><th>Categoría</th><th>Descripción</th><th style="text-align:right">Negativo</th><th style="text-align:right">Positivo</th><th>Estado</th><th></th></tr></thead>
+            <table class="tbl"><thead><tr><th>CategorÃ­a</th><th>DescripciÃ³n</th><th style="text-align:right">Negativo</th><th style="text-align:right">Positivo</th><th>Estado</th><th></th></tr></thead>
             <tbody id="bancosBody"></tbody></table>
             <button class="btn-add" onclick="openAdd('bancos')">+ Agregar pago bancario</button>
           </div>
@@ -232,9 +233,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         <div class="section-card">
           <div class="card-hdr"><div class="card-title">// Detalle</div><button class="btn-secondary" onclick="openAdd('remuneraciones')">+ Agregar</button></div>
           <div class="card-body">
-            <table class="tbl"><thead><tr><th>Categoría</th><th>Nombre / Descripción</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
+            <table class="tbl"><thead><tr><th>CategorÃ­a</th><th>Nombre / DescripciÃ³n</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
             <tbody id="remuBody"></tbody></table>
-            <button class="btn-add" onclick="openAdd('remuneraciones')">+ Agregar remuneración / impuesto</button>
+            <button class="btn-add" onclick="openAdd('remuneraciones')">+ Agregar remuneraciÃ³n / impuesto</button>
           </div>
           <div class="total-bar"><span class="total-lbl">Total remuneraciones</span><span class="total-val" id="remuTotal" style="color:var(--red)">$0</span></div>
         </div>
@@ -243,11 +244,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
       <!-- PENDIENTES -->
       <div id="sec-pendientes" style="display:none">
         <div class="page-title">PAGOS <span>PENDIENTES</span></div>
-        <div class="page-sub">// Operadores logísticos y cuentas por pagar</div>
+        <div class="page-sub">// Operadores logÃ­sticos y cuentas por pagar</div>
         <div class="section-card">
           <div class="card-hdr"><div class="card-title">// Pendientes del mes</div><button class="btn-secondary" onclick="openAdd('pendientes')">+ Agregar</button></div>
           <div class="card-body">
-            <table class="tbl"><thead><tr><th>Categoría</th><th>Descripción</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
+            <table class="tbl"><thead><tr><th>CategorÃ­a</th><th>DescripciÃ³n</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
             <tbody id="pendBody"></tbody></table>
             <button class="btn-add" onclick="openAdd('pendientes')">+ Agregar pendiente</button>
           </div>
@@ -264,7 +265,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
           <div class="card-body">
             <table class="tbl"><thead><tr><th>Plataforma</th><th>Responsable</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
             <tbody id="comBody"></tbody></table>
-            <button class="btn-add" onclick="openAdd('comisiones')">+ Agregar comisión / publicidad</button>
+            <button class="btn-add" onclick="openAdd('comisiones')">+ Agregar comisiÃ³n / publicidad</button>
           </div>
           <div class="total-bar"><span class="total-lbl">Total comisiones</span><span class="total-val" id="comTotal" style="color:var(--red)">$0</span></div>
         </div>
@@ -272,17 +273,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 
       <!-- PRESUPUESTO -->
       <div id="sec-presupuesto" style="display:none">
-        <div class="page-title">GESTIÓN DE <span>PRESUPUESTO</span></div>
-        <div class="page-sub">// Presupuesto mensual por empresa · compras y gastos</div>
+        <div class="page-title">GESTIÃ“N DE <span>PRESUPUESTO</span></div>
+        <div class="page-sub">// Presupuesto mensual por empresa Â· compras y gastos</div>
 
         <!-- KPIs -->
         <div class="kpi-grid" id="pres-kpi"></div>
 
         <!-- TABS -->
         <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px" id="presTabBar">
-          <button class="ptab active" onclick="presTab(this,'compras')">📋 Compras</button>
-          <button class="ptab" onclick="presTab(this,'config')">⚙ Configuración</button>
-          <button class="ptab" onclick="presTab(this,'reporte')">📊 Reporte</button>
+          <button class="ptab active" onclick="presTab(this,'compras')">ðŸ“‹ Compras</button>
+          <button class="ptab" onclick="presTab(this,'config')">âš™ ConfiguraciÃ³n</button>
+          <button class="ptab" onclick="presTab(this,'reporte')">ðŸ“Š Reporte</button>
         </div>
 
         <!-- TAB COMPRAS -->
@@ -292,7 +293,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
               <select id="pres-filter-emp" class="fi" style="width:160px" onchange="renderCompras()">
                 <option value="">Todas las empresas</option>
               </select>
-              <input type="text" id="pres-search" class="fi" placeholder="🔍 Buscar..." style="width:200px" oninput="renderCompras()">
+              <input type="text" id="pres-search" class="fi" placeholder="ðŸ” Buscar..." style="width:200px" oninput="renderCompras()">
             </div>
             <button class="btn-primary" onclick="openAddCompra()">+ Nueva Compra</button>
           </div>
@@ -352,11 +353,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 
       <!-- CONFIGURACION -->
       <div id="sec-configuracion" style="display:none">
-        <div class="page-title">CONFIGURACIÓN <span>LISTAS</span></div>
+        <div class="page-title">CONFIGURACIÃ“N <span>LISTAS</span></div>
         <div class="page-sub">// Administra las listas desplegables del sistema</div>
         <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Saldos · plataformas</div><button class="btn-secondary" onclick="openDropdownManager('saldos')">+ Agregar</button></div>
+            <div class="card-hdr"><div class="card-title">// Saldos Â· plataformas</div><button class="btn-secondary" onclick="openDropdownManager('saldos')">+ Agregar</button></div>
             <div class="card-body" id="cfg_saldos"></div>
           </div>
           <div class="section-card" style="margin:0">
@@ -388,7 +389,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <!-- MODAL ADD ROW -->
 <div class="overlay" id="addOverlay">
   <div class="modal">
-    <button class="close-btn" onclick="closeOv('addOverlay')">✕</button>
+    <button class="close-btn" onclick="closeOv('addOverlay')">âœ•</button>
     <div class="modal-title" id="addTitle">Agregar</div>
     <div class="modal-sub" id="addSub"></div>
     <div id="addFields"></div>
@@ -402,14 +403,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <!-- MODAL NUEVO MES -->
 <div class="overlay" id="newMesOv">
   <div class="modal">
-    <button class="close-btn" onclick="closeOv('newMesOv')">✕</button>
+    <button class="close-btn" onclick="closeOv('newMesOv')">âœ•</button>
     <div class="modal-title">Nuevo Cierre</div>
     <div class="modal-sub">Crea el cierre mensual</div>
-    <div class="fw"><label class="fl">Mes y Año</label><input type="month" id="nmVal" class="fi"></div>
-    <div class="fw"><label class="fl">¿Copiar estructura del mes anterior?</label>
+    <div class="fw"><label class="fl">Mes y AÃ±o</label><input type="month" id="nmVal" class="fi"></div>
+    <div class="fw"><label class="fl">Â¿Copiar estructura del mes anterior?</label>
       <select id="nmCopy" class="fi">
-        <option value="no">No — empezar en blanco</option>
-        <option value="si">Sí — copiar solo estructura (sin montos)</option>
+        <option value="no">No â€” empezar en blanco</option>
+        <option value="si">SÃ­ â€” copiar solo estructura (sin montos)</option>
         <option value="completo">Copiar mes completo (con todos los montos)</option>
       </select>
     </div>
@@ -423,34 +424,34 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <!-- APP PRESUPUESTO (separate panel) -->
 <div id="app-presupuesto" style="display:none;min-height:100vh;background:var(--bg)">
   <div class="topbar">
-    <div class="topbar-logo">🎯 GBISNESS · PRESUPUESTO</div>
+    <div class="topbar-logo">ðŸŽ¯ GBISNESS Â· PRESUPUESTO</div>
     <select id="mesSel2" class="month-select" onchange="onMesPres()"></select>
     <button class="btn-logout" onclick="doLogout()">SALIR</button>
   </div>
   <div class="app-layout">
     <div class="sidebar">
       <div class="nav-group">Vistas</div>
-      <div class="nav-item active" id="pnav-compras" onclick="presNavSwitch(this,'compras')">📋 Compras</div>
-      <div class="nav-item" id="pnav-reporte" onclick="presNavSwitch(this,'reporte')">📊 Reporte</div>
+      <div class="nav-item active" id="pnav-compras" onclick="presNavSwitch(this,'compras')">ðŸ“‹ Compras</div>
+      <div class="nav-item" id="pnav-reporte" onclick="presNavSwitch(this,'reporte')">ðŸ“Š Reporte</div>
       <div class="nav-group" style="margin-top:10px">Admin</div>
-      <div class="nav-item" id="pnav-config" onclick="presNavSwitch(this,'config')">⚙ Configuración</div>
+      <div class="nav-item" id="pnav-config" onclick="presNavSwitch(this,'config')">âš™ ConfiguraciÃ³n</div>
     </div>
     <div class="main">
       <div id="presLabel" class="mes-label"></div>
 
       <!-- COMPRAS -->
       <div id="pview-compras">
-        <div class="page-title">GESTIÓN DE <span style="color:var(--teal)">PRESUPUESTO</span></div>
-        <div class="page-sub">// Compras del mes · presupuesto por empresa</div>
+        <div class="page-title">GESTIÃ“N DE <span style="color:var(--teal)">PRESUPUESTO</span></div>
+        <div class="page-sub">// Compras del mes Â· presupuesto por empresa</div>
         <div id="pres-kpi2" style="margin-bottom:18px"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <select id="pres-filter-emp2" class="fi" style="width:160px" onchange="renderCompras2()">
               <option value="">Todas las empresas</option>
             </select>
-            <input type="text" id="pres-search2" class="fi" placeholder="🔍 Buscar..." style="width:200px" oninput="renderCompras2()">
+            <input type="text" id="pres-search2" class="fi" placeholder="ðŸ” Buscar..." style="width:200px" oninput="renderCompras2()">
           </div>
-          <button class="btn-secondary" onclick="exportarExcel()" style="border-color:rgba(0,229,160,0.3);color:var(--teal)">⬇ Excel</button>
+          <button class="btn-secondary" onclick="exportarExcel()" style="border-color:rgba(0,229,160,0.3);color:var(--teal)">â¬‡ Excel</button>
           <button class="btn-primary" onclick="openAddCompra()">+ Nueva Compra</button>
         </div>
         <div class="section-card">
@@ -467,16 +468,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
       <!-- REPORTE -->
       <div id="pview-reporte" style="display:none">
         <div class="page-title">REPORTE DE <span style="color:var(--teal)">GASTOS</span></div>
-        <div class="page-sub">// Resumen del mes · exportable a Excel</div>
+        <div class="page-sub">// Resumen del mes Â· exportable a Excel</div>
         <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-          <button class="btn-secondary" onclick="exportarExcel()" style="border-color:rgba(0,229,160,0.3);color:var(--teal)">⬇ Exportar Excel</button>
+          <button class="btn-secondary" onclick="exportarExcel()" style="border-color:rgba(0,229,160,0.3);color:var(--teal)">â¬‡ Exportar Excel</button>
         </div>
         <div id="reporte-content2"></div>
       </div>
 
       <!-- CONFIG -->
       <div id="pview-config" style="display:none">
-        <div class="page-title">CONFIGURACIÓN <span style="color:var(--teal)">ADMIN</span></div>
+        <div class="page-title">CONFIGURACIÃ“N <span style="color:var(--teal)">ADMIN</span></div>
         <div class="page-sub">// Presupuestos, proveedores, responsables y bancos</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div class="section-card" style="margin:0">
@@ -506,18 +507,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 
 <div id="app-anual" style="display:none;min-height:100vh;background:var(--bg)">
   <div class="topbar">
-    <div class="topbar-logo">📆 GBISNESS · CIERRE ANUAL</div>
+    <div class="topbar-logo">ðŸ“† GBISNESS Â· CIERRE ANUAL</div>
     <select id="yearSel" class="month-select" onchange="onAnnualYearChange()"></select>
-    <button class="btn-primary" onclick="openNewYear()">+ Nuevo Año</button>
+    <button class="btn-primary" onclick="openNewYear()">+ Nuevo AÃ±o</button>
     <button class="btn-logout" onclick="doLogout()">SALIR</button>
   </div>
   <div class="app-layout">
     <div class="sidebar">
-      <div class="nav-group">Módulos</div>
-      <div class="nav-item active" id="anav-resumen" onclick="goAnnualSec(this,'resumen')">◈ Resumen anual</div>
-      <div class="nav-item" id="anav-meses" onclick="goAnnualSec(this,'meses')">🗓️ Mes a mes</div>
-      <div class="nav-item" id="anav-config" onclick="goAnnualSec(this,'config')">⚙ Configuración</div>
-      <div class="nav-item" id="anav-historial" onclick="goAnnualSec(this,'historial')">📋 Historial anual</div>
+      <div class="nav-group">MÃ³dulos</div>
+      <div class="nav-item active" id="anav-resumen" onclick="goAnnualSec(this,'resumen')">â—ˆ Resumen anual</div>
+      <div class="nav-item" id="anav-meses" onclick="goAnnualSec(this,'meses')">ðŸ—“ï¸ Mes a mes</div>
+      <div class="nav-item" id="anav-config" onclick="goAnnualSec(this,'config')">âš™ ConfiguraciÃ³n</div>
+      <div class="nav-item" id="anav-historial" onclick="goAnnualSec(this,'historial')">ðŸ“‹ Historial anual</div>
     </div>
     <div class="main">
       <div id="annualYearLabel" class="mes-label"></div>
@@ -526,7 +527,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
           <div>
             <div class="page-title">CIERRE <span>ANUAL</span></div>
-            <div class="page-sub">// Consolidado anual por empresa, armado mes por mes con cálculo automático de IVA, PPM, sueldos y utilidad por socio</div>
+            <div class="page-sub">// Consolidado anual por empresa, armado mes por mes con cÃ¡lculo automÃ¡tico de IVA, PPM, sueldos y utilidad por socio</div>
           </div>
           <div style="min-width:240px">
             <label class="fl">Empresa</label>
@@ -535,11 +536,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         </div>
         <div class="kpi-grid" id="annualKpiGrid"></div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Resumen estructural del año</div></div>
+          <div class="card-hdr"><div class="card-title">// Resumen estructural del aÃ±o</div></div>
           <div class="card-body" id="annualSummaryTable"></div>
         </div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Utilidad por socio y remuneración estimada</div></div>
+          <div class="card-hdr"><div class="card-title">// Utilidad por socio y remuneraciÃ³n estimada</div></div>
           <div class="card-body" id="annualSociosTable"></div>
         </div>
       </div>
@@ -548,7 +549,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
           <div>
             <div class="page-title">ARMADO <span>MENSUAL</span></div>
-            <div class="page-sub">// Completa cada mes por empresa y el resumen anual se actualiza automáticamente</div>
+            <div class="page-sub">// Completa cada mes por empresa y el resumen anual se actualiza automÃ¡ticamente</div>
           </div>
           <div style="min-width:240px">
             <label class="fl">Empresa</label>
@@ -556,6 +557,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
           </div>
         </div>
         <div id="annualMonthTabs" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">// Puedes cargar todos los meses desde Excel. Solo se llenan columnas editables; IVA, PPM, remanente, total impuesto y ganancia se calculan automÃ¡ticamente.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-secondary" onclick="annualDownloadTemplate()">â¬‡ Descargar plantilla</button>
+            <button class="btn-secondary" onclick="$('annualUploadInput').click()">â¬† Subir planilla</button>
+            <input type="file" id="annualUploadInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="annualUploadTemplate(event)">
+          </div>
+        </div>
         <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
           <div class="section-card" style="margin:0">
             <div class="card-hdr"><div class="card-title" id="annualComprasTitle">// Compras</div></div>
@@ -577,7 +586,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
       </div>
 
       <div id="asec-config" style="display:none">
-        <div class="page-title">CONFIGURACIÓN <span>ANUAL</span></div>
+        <div class="page-title">CONFIGURACIÃ“N <span>ANUAL</span></div>
         <div class="page-sub">// Cada empresa puede tener sus propios socios y porcentaje accionario</div>
         <div class="kpi-grid" id="annualConfigKpi"></div>
         <div class="section-card">
@@ -589,7 +598,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
             </div>
           </div>
           <div class="card-body">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">Configura los socios por empresa. Ejemplo: Cybernetic → Richard 51% / Ivone 49%.</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">Configura los socios por empresa. Ejemplo: Cybernetic â†’ Richard 51% / Ivone 49%.</div>
           </div>
         </div>
         <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
@@ -606,7 +615,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 
       <div id="asec-historial" style="display:none">
         <div class="page-title">HISTORIAL <span>ANUAL</span></div>
-        <div class="page-sub">// Años creados y sus principales cifras</div>
+        <div class="page-sub">// AÃ±os creados y sus principales cifras</div>
         <div class="section-card"><div class="card-body" id="annualHistoryBody"></div></div>
       </div>
     </div>
@@ -614,13 +623,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 </div>
 
 
-<!-- MODAL NUEVO AÑO -->
+<!-- MODAL NUEVO AÃ‘O -->
 <div class="overlay" id="newYearOv">
   <div class="modal">
-    <button class="close-btn" onclick="closeOv('newYearOv')">✕</button>
+    <button class="close-btn" onclick="closeOv('newYearOv')">âœ•</button>
     <div class="modal-title">Nuevo Cierre Anual</div>
     <div class="modal-sub">Crea la estructura anual para trabajar mes por mes</div>
-    <div class="fw"><label class="fl">Año</label><input type="number" id="nyVal" class="fi" min="2020" max="2100" placeholder="2026"></div>
+    <div class="fw"><label class="fl">AÃ±o</label><input type="number" id="nyVal" class="fi" min="2020" max="2100" placeholder="2026"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeOv('newYearOv')">Cancelar</button>
       <button class="btn-primary" onclick="doNewYear()">Crear</button>
@@ -628,10 +637,54 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
   </div>
 </div>
 
+
+<!-- MODAL EMPRESA ANUAL -->
+<div class="overlay" id="annualEmpresaOv">
+  <div class="modal">
+    <button class="close-btn" onclick="closeAnnualEmpresaModal()">âœ•</button>
+    <div class="modal-title" id="annualEmpresaModalTitle">Agregar empresa</div>
+    <div class="modal-sub" id="annualEmpresaModalSub">Configura una empresa para el cierre anual</div>
+
+    <div class="fw">
+      <label class="fl">Nombre de la empresa</label>
+      <input type="text" id="annualEmpresaInput" class="fi" placeholder="Ej: Cybernetic" onkeydown="if(event.key==='Enter')saveAnnualEmpresaModal()">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeAnnualEmpresaModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveAnnualEmpresaModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SOCIO ANUAL -->
+<div class="overlay" id="annualSocioOv">
+  <div class="modal">
+    <button class="close-btn" onclick="closeAnnualSocioModal()">âœ•</button>
+    <div class="modal-title" id="annualSocioModalTitle">Agregar socio</div>
+    <div class="modal-sub" id="annualSocioModalSub">Configura el nombre y porcentaje accionario</div>
+
+    <div class="fw">
+      <label class="fl">Nombre del socio</label>
+      <input type="text" id="annualSocioNombre" class="fi" placeholder="Ej: Richard" onkeydown="if(event.key==='Enter')saveAnnualSocioModal()">
+    </div>
+
+    <div class="fw">
+      <label class="fl">Porcentaje accionario</label>
+      <input type="number" id="annualSocioPct" class="fi" placeholder="0" min="0" step="0.01" onkeydown="if(event.key==='Enter')saveAnnualSocioModal()">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeAnnualSocioModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveAnnualSocioModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CAMBIOS -->
 <div class="overlay" id="versionOv">
   <div class="modal" style="max-width:620px">
-    <button class="close-btn" onclick="closeOv('versionOv')">✕</button>
+    <button class="close-btn" onclick="closeOv('versionOv')">âœ•</button>
     <div class="modal-title">Historial de cambios</div>
     <div class="modal-sub">Versionado visible del sistema</div>
     <div id="versionHistoryBody" style="max-height:60vh;overflow:auto"></div>
@@ -642,7 +695,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <!-- MODAL NUEVA COMPRA -->
 <div class="overlay" id="compraOverlay">
   <div class="modal" style="max-width:480px">
-    <button class="close-btn" onclick="closeOv('compraOverlay')">✕</button>
+    <button class="close-btn" onclick="closeOv('compraOverlay')">âœ•</button>
     <div class="modal-title">Nueva Compra</div>
     <div class="modal-sub">Registra un gasto del presupuesto</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -661,7 +714,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         <label class="fl">Banco</label>
         <select id="c_banco" class="fi" onchange="handleDynamicSelect('c_banco','bancos_pres')"></select>
       </div>
-      <div class="fw" style="grid-column:1/-1"><label class="fl">Descripción (opcional)</label>
+      <div class="fw" style="grid-column:1/-1"><label class="fl">DescripciÃ³n (opcional)</label>
         <input type="text" id="c_desc" class="fi" placeholder="Detalle de la compra..."></div>
     </div>
     <div class="modal-actions">
@@ -674,7 +727,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <!-- MODAL CAT ITEM -->
 <div class="overlay" id="catOverlay">
   <div class="modal" style="max-width:520px">
-    <button class="close-btn" onclick="closeOv('catOverlay')">✕</button>
+    <button class="close-btn" onclick="closeOv('catOverlay')">âœ•</button>
     <div class="modal-title" id="catTitle">Agregar</div>
     <div class="modal-sub" id="catSub">Administra esta lista desplegable</div>
     <div class="fw"><label class="fl" id="catLabel">Nombre</label>
@@ -688,6 +741,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 </div>
 
 <div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <!-- FIREBASE -->
 <script type="module">
@@ -765,7 +820,7 @@ function selectModule(mod) {
   activeModule = mod;
   document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
   document.getElementById('mod-'+mod).classList.add('active');
-  const labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual' };
+  const labels = { cierre:'// Cierre Mensual', presupuesto:'// GestiÃ³n de Presupuesto', anual:'// Cierre Anual' };
   document.getElementById('login-module-label').textContent = labels[mod];
   document.getElementById('loginError').style.display = 'none';
   document.getElementById('loginPass').value = '';
@@ -777,7 +832,7 @@ const DEFAULT_CATS = {
   bancos:['FALABELLA','MERCADOLIBRE','CHEQUE','SCOTIA','SERVICIOS','CONTABILIUM','CENCOSUD','VISA SCOTIA','OTRO'],
   remuneraciones:['REMUNERACIONES','PREVIRED','SII','OTRO'],
   pendientes:['FLEX','OTRO'],
-  comisiones:['COMISIÓN','PUBLICIDAD','FACEBOOK','GOOGLE','INSTAGRAM','OTRO'],
+  comisiones:['COMISIÃ“N','PUBLICIDAD','FACEBOOK','GOOGLE','INSTAGRAM','OTRO'],
   estados_pago:['P','PAGADO','PENDIENTE']
 };
 function normalizeDropdownObject(src={}){
@@ -797,7 +852,7 @@ const COLORS = {
   CENCOSUD:{b:'#8e44ad',f:'#fff'},'VISA SCOTIA':{b:'#2c3e50',f:'#fff'},
   REMUNERACIONES:{b:'#2980b9',f:'#fff'},PREVIRED:{b:'#1a5276',f:'#fff'},
   SII:{b:'#922b21',f:'#fff'},FLEX:{b:'#1e8449',f:'#fff'},
-  'COMISIÓN':{b:'#6c3483',f:'#fff'},PUBLICIDAD:{b:'#ca6f1e',f:'#fff'},
+  'COMISIÃ“N':{b:'#6c3483',f:'#fff'},PUBLICIDAD:{b:'#ca6f1e',f:'#fff'},
   FACEBOOK:{b:'#1877f2',f:'#fff'},GOOGLE:{b:'#db4437',f:'#fff'},
   INSTAGRAM:{b:'#c13584',f:'#fff'},EFECTIVO:{b:'#17a589',f:'#fff'},
   BCI:{b:'#154360',f:'#fff'},'CREDITO 1':{b:'#1f618d',f:'#fff'},
@@ -807,7 +862,7 @@ const COLORS = {
 
 const S = { mes:null, data:{}, cur:'resumen', ctx:null };
 
-// ── AUTH ──
+// â”€â”€ AUTH â”€â”€
 async function sha(s){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
 function doLogin(){
   sha(document.getElementById('loginPass').value).then(h=>{
@@ -841,7 +896,7 @@ function doLogout(){
   document.getElementById('loginPass').value='';
 }
 
-// ── BOOT ──
+// â”€â”€ BOOT â”€â”€
 window._boot = boot;
 async function boot(){
   showLoader(true);
@@ -863,7 +918,7 @@ function mkEmpty(id){ return {_id:id,saldos:[],bancos:[],remuneraciones:[],pendi
 function cur(){ return S.data[S.mes]||mkEmpty(S.mes); }
 async function save(id){ if(window.fbSave) await window.fbSave(id,S.data[id]).catch(e=>console.error(e)); }
 
-// ── MES ──
+// â”€â”€ MES â”€â”€
 function buildSel(){
   const sel=document.getElementById('mesSel'), v=sel.value; sel.innerHTML='';
   Object.keys(S.data).sort().reverse().forEach(id=>{ const [y,m]=id.split('-'); const o=document.createElement('option'); o.value=id; o.textContent=`${MESES[+m-1]} ${y}`; sel.appendChild(o); });
@@ -899,7 +954,7 @@ async function doNewMes(){
   closeOv('newMesOv'); draw(); showToast(`Mes creado: ${id}`);
 }
 
-// ── NAV ──
+// â”€â”€ NAV â”€â”€
 function goSec(el,name){
   document.querySelectorAll('[id^="sec-"]').forEach(s=>s.style.display='none');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -918,21 +973,21 @@ function renderSec(n){
   else if(n==='historial') renderHist();
 }
 
-// ── HELPERS ──
+// â”€â”€ HELPERS â”€â”€
 const $  = id => document.getElementById(id);
 const fmt= n  => '$'+Math.round(n||0).toLocaleString('es-CL');
 function badge(cat){
   const c=COLORS[(cat||'OTRO').toUpperCase()]||COLORS.OTRO;
   return `<span class="cbadge" style="background:${c.b};color:${c.f}">${cat||'OTRO'}</span>`;
 }
-function eBadge(e){ if(!e) return ''; return (e==='P'||e?.toUpperCase()==='PAGADO')?`<span class="ep">✓ ${e}</span>`:`<span class="ea">${e}</span>`; }
+function eBadge(e){ if(!e) return ''; return (e==='P'||e?.toUpperCase()==='PAGADO')?`<span class="ep">âœ“ ${e}</span>`:`<span class="ea">${e}</span>`; }
 const opts= a => a.map(v=>`<option value="${v}">${v}</option>`).join('');
 function estadoOptions(selected=''){
   const current = String(selected || '').trim();
   const items = getDropdownItems('estados_pago');
   const base = `<option value="">Sin estado</option>`;
-  const optsHtml = items.map(v => `<option value="${v}" ${v===current?'selected':''}>${v==='P'?'P — Pagado':v}</option>`).join('');
-  return base + optsHtml + `<option value="__new__">+ Agregar nuevo</option><option value="__manage__">⚙ Configurar lista</option>`;
+  const optsHtml = items.map(v => `<option value="${v}" ${v===current?'selected':''}>${v==='P'?'P â€” Pagado':v}</option>`).join('');
+  return base + optsHtml + `<option value="__new__">+ Agregar nuevo</option><option value="__manage__">âš™ Configurar lista</option>`;
 }
 const g  = id => ($( id)||{value:''}).value;
 const gn = id => parseFloat(g(id))||0;
@@ -966,13 +1021,13 @@ function getDropdownItems(type){
   return [];
 }
 function getDropdownLabel(type){
-  return {saldos:'Plataformas de saldo',bancos:'Categorías bancarias',remuneraciones:'Categorías de remuneraciones',pendientes:'Categorías de pendientes',comisiones:'Categorías de comisiones',estados_pago:'Estados de pago',proveedores:'Proveedores',bancos_pres:'Bancos',responsables_pres:'Responsables',tiposPago:'Tipos de pago'}[type] || 'Lista';
+  return {saldos:'Plataformas de saldo',bancos:'CategorÃ­as bancarias',remuneraciones:'CategorÃ­as de remuneraciones',pendientes:'CategorÃ­as de pendientes',comisiones:'CategorÃ­as de comisiones',estados_pago:'Estados de pago',proveedores:'Proveedores',bancos_pres:'Bancos',responsables_pres:'Responsables',tiposPago:'Tipos de pago'}[type] || 'Lista';
 }
 function dynamicOptions(type, selected=''){
   const current = String(selected || '').trim();
   const items = getDropdownItems(type);
   const optsHtml = items.map(v => `<option value="${v}" ${v===current?'selected':''}>${v}</option>`).join('');
-  return optsHtml + `<option value="__new__">+ Agregar nuevo</option><option value="__manage__">⚙ Configurar lista</option>`;
+  return optsHtml + `<option value="__new__">+ Agregar nuevo</option><option value="__manage__">âš™ Configurar lista</option>`;
 }
 let dynamicSelectTarget = null;
 function handleDynamicSelect(selectId, type){
@@ -984,7 +1039,7 @@ function handleDynamicSelect(selectId, type){
 function refreshSelectValue(selectId, value, type){
   const sel = $(selectId);
   if (!sel) return;
-  const prefix = ['c_proveedor','c_responsable','c_banco'].includes(selectId) ? `<option value="">— ${selectId==='c_proveedor'?'Proveedor':selectId==='c_responsable'?'Responsable':'Banco'} —</option>` : '';
+  const prefix = ['c_proveedor','c_responsable','c_banco'].includes(selectId) ? `<option value="">â€” ${selectId==='c_proveedor'?'Proveedor':selectId==='c_responsable'?'Responsable':'Banco'} â€”</option>` : '';
   sel.innerHTML = prefix + dynamicOptions(type, value);
   sel.value = value;
   if (selectId === 'c_tipopago') toggleBanco();
@@ -999,7 +1054,7 @@ function renderListItems(targetId, type){
   const el = $(targetId);
   if (!el) return;
   const items = getDropdownItems(type);
-  el.innerHTML = items.length ? items.map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'${type}')">✎</button><button class="btn-del" onclick="delCatItem('${type}',${idx})">✕</button></span></div>`).join('') : '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin registros</div>';
+  el.innerHTML = items.length ? items.map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'${type}')">âœŽ</button><button class="btn-del" onclick="delCatItem('${type}',${idx})">âœ•</button></span></div>`).join('') : '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin registros</div>';
 }
 function renderDropdownConfigSec(){
   renderListItems('cfg_saldos','saldos');
@@ -1010,15 +1065,15 @@ function renderDropdownConfigSec(){
   const extra = $('cfg_presupuesto_extra');
   if (extra) {
     extra.innerHTML = `
-      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Proveedores</div><button class="btn-secondary" onclick="openDropdownManager('proveedores')">Gestionar</button></div>${(getDropdownItems('proveedores').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'proveedores')">✎</button><button class="btn-del" onclick="delCatItem('proveedores',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin proveedores</div>'}</div>
-      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Responsables</div><button class="btn-secondary" onclick="openDropdownManager('responsables_pres')">Gestionar</button></div>${(getDropdownItems('responsables_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'responsables_pres')">✎</button><button class="btn-del" onclick="delCatItem('responsables_pres',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin responsables</div>'}</div>
-      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Bancos</div><button class="btn-secondary" onclick="openDropdownManager('bancos_pres')">Gestionar</button></div>${(getDropdownItems('bancos_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'bancos_pres')">✎</button><button class="btn-del" onclick="delCatItem('bancos_pres',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin bancos</div>'}</div>
-      <div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Tipos de pago</div><button class="btn-secondary" onclick="openDropdownManager('tiposPago')">Gestionar</button></div>${(getDropdownItems('tiposPago').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'tiposPago')">✎</button><button class="btn-del" onclick="delCatItem('tiposPago',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin tipos de pago</div>'}</div>`;
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Proveedores</div><button class="btn-secondary" onclick="openDropdownManager('proveedores')">Gestionar</button></div>${(getDropdownItems('proveedores').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'proveedores')">âœŽ</button><button class="btn-del" onclick="delCatItem('proveedores',${idx})">âœ•</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin proveedores</div>'}</div>
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Responsables</div><button class="btn-secondary" onclick="openDropdownManager('responsables_pres')">Gestionar</button></div>${(getDropdownItems('responsables_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'responsables_pres')">âœŽ</button><button class="btn-del" onclick="delCatItem('responsables_pres',${idx})">âœ•</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin responsables</div>'}</div>
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Bancos</div><button class="btn-secondary" onclick="openDropdownManager('bancos_pres')">Gestionar</button></div>${(getDropdownItems('bancos_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'bancos_pres')">âœŽ</button><button class="btn-del" onclick="delCatItem('bancos_pres',${idx})">âœ•</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin bancos</div>'}</div>
+      <div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Tipos de pago</div><button class="btn-secondary" onclick="openDropdownManager('tiposPago')">Gestionar</button></div>${(getDropdownItems('tiposPago').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'tiposPago')">âœŽ</button><button class="btn-del" onclick="delCatItem('tiposPago',${idx})">âœ•</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin tipos de pago</div>'}</div>`;
   }
 }
 
 
-// ── RESUMEN ──
+// â”€â”€ RESUMEN â”€â”€
 function renderResumen(){
   const d=cur();
   const tBNeg=d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
@@ -1033,32 +1088,32 @@ function renderResumen(){
   const tS=tSBase+tBPos;
   const dsp=tS-tG;
   $('kpiGrid').innerHTML=`
-    <div class="kpi-card cteal"><div class="kpi-label">Total Ingresos</div><div class="kpi-val" style="color:var(--teal)">${fmt(tS)}</div><div class="kpi-sub">Saldos: ${fmt(tSBase)} · Bancos(+): ${fmt(tBPos)}</div></div>
+    <div class="kpi-card cteal"><div class="kpi-label">Total Ingresos</div><div class="kpi-val" style="color:var(--teal)">${fmt(tS)}</div><div class="kpi-sub">Saldos: ${fmt(tSBase)} Â· Bancos(+): ${fmt(tBPos)}</div></div>
     <div class="kpi-card cred"><div class="kpi-label">Total Gastos</div><div class="kpi-val" style="color:var(--red)">${fmt(tG)}</div><div class="kpi-sub">Bancos(-) + Remu + Pend + Comisiones</div></div>
-    <div class="kpi-card ${dsp>=0?'cgreen':'cred'}"><div class="kpi-label">Disponible</div><div class="kpi-val" style="color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</div><div class="kpi-sub">Ingresos − Total gastos</div></div>
-    <div class="kpi-card camber"><div class="kpi-label">Pendiente de Cobro</div><div class="kpi-val" style="color:var(--amber)">${fmt(tPS)}</div><div class="kpi-sub">Aún no liberado en plataformas</div></div>
+    <div class="kpi-card ${dsp>=0?'cgreen':'cred'}"><div class="kpi-label">Disponible</div><div class="kpi-val" style="color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</div><div class="kpi-sub">Ingresos âˆ’ Total gastos</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">Pendiente de Cobro</div><div class="kpi-val" style="color:var(--amber)">${fmt(tPS)}</div><div class="kpi-sub">AÃºn no liberado en plataformas</div></div>
   `;
-  const rows=[['Bancos y Servicios (-)',tBNeg,'var(--red)'],['Bancos y Servicios (+)',tBPos,'var(--green)'],['Remuneraciones e Impuestos',tR,'var(--red)'],['Pendientes / Operador Logístico',tP,'var(--amber)'],['Comisiones y Publicidad',tC,'var(--red)']];
-  $('desgloce').innerHTML=`<table class="tbl"><thead><tr><th>Categoría</th><th style="text-align:right">Monto</th><th style="text-align:right">% del total</th></tr></thead><tbody>
-    ${rows.map(([l,v,c])=>`<tr><td style="color:var(--text)">${l}</td><td style="text-align:right;color:${c};font-family:var(--font-mono)">${fmt(v)}</td><td style="text-align:right;color:var(--text3);font-family:var(--font-mono)">${l.includes('(+)') ? '—' : (tG>0?((v/tG)*100).toFixed(1)+'%':'—')}</td></tr>`).join('')}
+  const rows=[['Bancos y Servicios (-)',tBNeg,'var(--red)'],['Bancos y Servicios (+)',tBPos,'var(--green)'],['Remuneraciones e Impuestos',tR,'var(--red)'],['Pendientes / Operador LogÃ­stico',tP,'var(--amber)'],['Comisiones y Publicidad',tC,'var(--red)']];
+  $('desgloce').innerHTML=`<table class="tbl"><thead><tr><th>CategorÃ­a</th><th style="text-align:right">Monto</th><th style="text-align:right">% del total</th></tr></thead><tbody>
+    ${rows.map(([l,v,c])=>`<tr><td style="color:var(--text)">${l}</td><td style="text-align:right;color:${c};font-family:var(--font-mono)">${fmt(v)}</td><td style="text-align:right;color:var(--text3);font-family:var(--font-mono)">${l.includes('(+)') ? 'â€”' : (tG>0?((v/tG)*100).toFixed(1)+'%':'â€”')}</td></tr>`).join('')}
     <tr style="border-top:1px solid var(--border)"><td style="font-weight:600">TOTAL GASTOS</td><td style="text-align:right;color:var(--red);font-family:var(--font-display);font-size:16px">${fmt(tG)}</td><td></td></tr>
     <tr><td style="font-weight:600;color:var(--teal)">DISPONIBLE (Reposiciones del mes)</td><td style="text-align:right;font-family:var(--font-display);font-size:16px;color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</td><td></td></tr>
   </tbody></table>`;
 }
 
-// ── SALDOS ──
+// â”€â”€ SALDOS â”€â”€
 function renderSaldos(){
   const d=cur();
-  $('saldosBody').innerHTML=d.saldos.map((r,i)=>`<tr><td>${badge(r.cuenta)}</td><td style="color:var(--text2)">${r.empresa||''}</td><td style="text-align:right;color:var(--green);font-family:var(--font-mono)">${fmt(r.liberado)}</td><td style="text-align:right;color:var(--amber);font-family:var(--font-mono)">${fmt(r.pendiente)}</td><td style="text-align:right;font-family:var(--font-mono);font-weight:700">${fmt((r.liberado||0)+(r.pendiente||0))}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('saldos',${i})">✎</button><button class="btn-del" onclick="delRow('saldos',${i})">✕</button></td></tr>`).join('');
+  $('saldosBody').innerHTML=d.saldos.map((r,i)=>`<tr><td>${badge(r.cuenta)}</td><td style="color:var(--text2)">${r.empresa||''}</td><td style="text-align:right;color:var(--green);font-family:var(--font-mono)">${fmt(r.liberado)}</td><td style="text-align:right;color:var(--amber);font-family:var(--font-mono)">${fmt(r.pendiente)}</td><td style="text-align:right;font-family:var(--font-mono);font-weight:700">${fmt((r.liberado||0)+(r.pendiente||0))}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('saldos',${i})">âœŽ</button><button class="btn-del" onclick="delRow('saldos',${i})">âœ•</button></td></tr>`).join('');
   const be={};
   d.saldos.forEach(r=>{if(!be[r.empresa])be[r.empresa]={l:0,p:0};be[r.empresa].l+=(r.liberado||0);be[r.empresa].p+=(r.pendiente||0);});
-  $('saldosKpi').innerHTML=Object.entries(be).map(([e,v])=>`<div class="kpi-card cteal"><div class="kpi-label">${e}</div><div class="kpi-val" style="color:var(--teal)">${fmt(v.l+v.p)}</div><div class="kpi-sub">Lib: ${fmt(v.l)} · Pend: ${fmt(v.p)}</div></div>`).join('');
+  $('saldosKpi').innerHTML=Object.entries(be).map(([e,v])=>`<div class="kpi-card cteal"><div class="kpi-label">${e}</div><div class="kpi-val" style="color:var(--teal)">${fmt(v.l+v.p)}</div><div class="kpi-sub">Lib: ${fmt(v.l)} Â· Pend: ${fmt(v.p)}</div></div>`).join('');
 }
 
-// ── BANCOS ──
+// â”€â”€ BANCOS â”€â”€
 function renderBancos(){
   const d=cur();
-  $('bancosBody').innerHTML=d.bancos.map((r,i)=>`<tr><td>${badge(r.categoria)}</td><td style="color:var(--text)">${r.descripcion||''}</td><td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${r.negativo?fmt(r.negativo):'—'}</td><td style="text-align:right;color:var(--green);font-family:var(--font-mono)">${r.positivo?fmt(r.positivo):'—'}</td><td>${eBadge(r.estado)}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('bancos',${i})">✎</button><button class="btn-del" onclick="delRow('bancos',${i})">✕</button></td></tr>`).join('');
+  $('bancosBody').innerHTML=d.bancos.map((r,i)=>`<tr><td>${badge(r.categoria)}</td><td style="color:var(--text)">${r.descripcion||''}</td><td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${r.negativo?fmt(r.negativo):'â€”'}</td><td style="text-align:right;color:var(--green);font-family:var(--font-mono)">${r.positivo?fmt(r.positivo):'â€”'}</td><td>${eBadge(r.estado)}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('bancos',${i})">âœŽ</button><button class="btn-del" onclick="delRow('bancos',${i})">âœ•</button></td></tr>`).join('');
   const totalNeg=d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
   const totalPos=d.bancos.reduce((s,r)=>s+(r.positivo||0),0);
   const neto=totalPos-totalNeg;
@@ -1067,28 +1122,28 @@ function renderBancos(){
   $('bancosTotal').style.color=neto>=0?'var(--green)':'var(--red)';
 }
 
-// ── REMU ──
+// â”€â”€ REMU â”€â”€
 function renderRemu(){
   const d=cur();
-  $('remuBody').innerHTML=d.remuneraciones.map((r,i)=>`<tr><td>${badge(r.categoria)}</td><td style="color:var(--text)">${r.descripcion||''}</td><td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${fmt(r.monto)}</td><td>${eBadge(r.estado)}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('remuneraciones',${i})">✎</button><button class="btn-del" onclick="delRow('remuneraciones',${i})">✕</button></td></tr>`).join('');
+  $('remuBody').innerHTML=d.remuneraciones.map((r,i)=>`<tr><td>${badge(r.categoria)}</td><td style="color:var(--text)">${r.descripcion||''}</td><td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${fmt(r.monto)}</td><td>${eBadge(r.estado)}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('remuneraciones',${i})">âœŽ</button><button class="btn-del" onclick="delRow('remuneraciones',${i})">âœ•</button></td></tr>`).join('');
   $('remuTotal').textContent=fmt(d.remuneraciones.reduce((s,r)=>s+(r.monto||0),0));
 }
 
-// ── PEND ──
+// â”€â”€ PEND â”€â”€
 function renderPend(){
   const d=cur();
-  $('pendBody').innerHTML=d.pendientes.map((r,i)=>`<tr><td>${badge(r.categoria)}</td><td style="color:var(--text)">${r.descripcion||''}</td><td style="text-align:right;color:var(--amber);font-family:var(--font-mono)">${fmt(r.monto)}</td><td>${eBadge(r.estado)}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('pendientes',${i})">✎</button><button class="btn-del" onclick="delRow('pendientes',${i})">✕</button></td></tr>`).join('');
+  $('pendBody').innerHTML=d.pendientes.map((r,i)=>`<tr><td>${badge(r.categoria)}</td><td style="color:var(--text)">${r.descripcion||''}</td><td style="text-align:right;color:var(--amber);font-family:var(--font-mono)">${fmt(r.monto)}</td><td>${eBadge(r.estado)}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('pendientes',${i})">âœŽ</button><button class="btn-del" onclick="delRow('pendientes',${i})">âœ•</button></td></tr>`).join('');
   $('pendTotal').textContent=fmt(d.pendientes.reduce((s,r)=>s+(r.monto||0),0));
 }
 
-// ── COM ──
+// â”€â”€ COM â”€â”€
 function renderCom(){
   const d=cur();
-  $('comBody').innerHTML=d.comisiones.map((r,i)=>`<tr><td>${badge(r.plataforma)}</td><td style="color:var(--text2)">${r.responsable||''}</td><td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${fmt(r.monto)}</td><td>${eBadge(r.estado)}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('comisiones',${i})">✎</button><button class="btn-del" onclick="delRow('comisiones',${i})">✕</button></td></tr>`).join('');
+  $('comBody').innerHTML=d.comisiones.map((r,i)=>`<tr><td>${badge(r.plataforma)}</td><td style="color:var(--text2)">${r.responsable||''}</td><td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${fmt(r.monto)}</td><td>${eBadge(r.estado)}</td><td style="display:flex;gap:4px"><button class="btn-del" onclick="openEdit('comisiones',${i})">âœŽ</button><button class="btn-del" onclick="delRow('comisiones',${i})">âœ•</button></td></tr>`).join('');
   $('comTotal').textContent=fmt(d.comisiones.reduce((s,r)=>s+(r.monto||0),0));
 }
 
-// ── HIST ──
+// â”€â”€ HIST â”€â”€
 function renderHist(){
   const ms=Object.values(S.data).sort((a,b)=>b._id.localeCompare(a._id));
   $('histBody').innerHTML=!ms.length?'<div style="padding:18px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin cierres registrados</div>'
@@ -1114,7 +1169,7 @@ function jumpMes(id){
   S.cur='resumen'; renderResumen();
 }
 
-// ── MODAL ADD ──
+// â”€â”€ MODAL ADD â”€â”€
 const DEFS = {
   saldos:{ title:'Agregar Saldo', f:(r={})=>`<div class="fw"><label class="fl">Cuenta / Plataforma</label>
     <select id="f0" class="fi" onchange="handleDynamicSelect('f0','saldos')">${dynamicOptions('saldos', r.cuenta||'')}</select></div>
@@ -1122,10 +1177,10 @@ const DEFS = {
     <div class="fw"><label class="fl">Monto Liberado ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div>
     <div class="fw"><label class="fl">Monto Pendiente ($)</label><input type="number" id="f3" class="fi" placeholder="0"></div>`,
     s:()=>({cuenta:getDynamicValue('f0')||'OTRO',empresa:g('f1'),liberado:gn('f2'),pendiente:gn('f3')})},
-  bancos:{ title:'Agregar Pago Bancario', f:(r={})=>`<div class="fw"><label class="fl">Categoría</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','bancos')">${dynamicOptions('bancos', r.categoria||'')}</select></div><div class="fw"><label class="fl">Descripción</label><input type="text" id="f1" class="fi" placeholder="Ej: CMR Facturado"></div><div class="fw"><label class="fl">Monto Negativo — Gasto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Monto Positivo — Ingreso ($)</label><input type="number" id="f3" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f4" class="fi" onchange="handleDynamicSelect('f4','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({categoria:getDynamicValue('f0')||'OTRO',descripcion:g('f1'),negativo:gn('f2'),positivo:gn('f3'),estado:getDynamicValue('f4')})},
-  remuneraciones:{ title:'Agregar Remuneración', f:(r={})=>`<div class="fw"><label class="fl">Categoría</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','remuneraciones')">${dynamicOptions('remuneraciones', r.categoria||'')}</select></div><div class="fw"><label class="fl">Nombre / Descripción</label><input type="text" id="f1" class="fi" placeholder="Ej: Denny Marrufo"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi" onchange="handleDynamicSelect('f3','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({categoria:getDynamicValue('f0')||'OTRO',descripcion:g('f1'),monto:gn('f2'),estado:getDynamicValue('f3')})},
-  pendientes:{ title:'Agregar Pendiente', f:(r={})=>`<div class="fw"><label class="fl">Categoría</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','pendientes')">${dynamicOptions('pendientes', r.categoria||'')}</select></div><div class="fw"><label class="fl">Descripción</label><input type="text" id="f1" class="fi" placeholder="Ej: FastWay"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi" onchange="handleDynamicSelect('f3','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({categoria:getDynamicValue('f0')||'OTRO',descripcion:g('f1'),monto:gn('f2'),estado:getDynamicValue('f3')})},
-  comisiones:{ title:'Agregar Comisión / Publicidad', f:(r={})=>`<div class="fw"><label class="fl">Plataforma / Concepto</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','comisiones')">${dynamicOptions('comisiones', r.plataforma||'')}</select></div><div class="fw"><label class="fl">Responsable / Detalle</label><input type="text" id="f1" class="fi" placeholder="Ej: Gregorio"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi" onchange="handleDynamicSelect('f3','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({plataforma:getDynamicValue('f0')||'OTRO',responsable:g('f1'),monto:gn('f2'),estado:getDynamicValue('f3')})}
+  bancos:{ title:'Agregar Pago Bancario', f:(r={})=>`<div class="fw"><label class="fl">CategorÃ­a</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','bancos')">${dynamicOptions('bancos', r.categoria||'')}</select></div><div class="fw"><label class="fl">DescripciÃ³n</label><input type="text" id="f1" class="fi" placeholder="Ej: CMR Facturado"></div><div class="fw"><label class="fl">Monto Negativo â€” Gasto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Monto Positivo â€” Ingreso ($)</label><input type="number" id="f3" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f4" class="fi" onchange="handleDynamicSelect('f4','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({categoria:getDynamicValue('f0')||'OTRO',descripcion:g('f1'),negativo:gn('f2'),positivo:gn('f3'),estado:getDynamicValue('f4')})},
+  remuneraciones:{ title:'Agregar RemuneraciÃ³n', f:(r={})=>`<div class="fw"><label class="fl">CategorÃ­a</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','remuneraciones')">${dynamicOptions('remuneraciones', r.categoria||'')}</select></div><div class="fw"><label class="fl">Nombre / DescripciÃ³n</label><input type="text" id="f1" class="fi" placeholder="Ej: Denny Marrufo"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi" onchange="handleDynamicSelect('f3','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({categoria:getDynamicValue('f0')||'OTRO',descripcion:g('f1'),monto:gn('f2'),estado:getDynamicValue('f3')})},
+  pendientes:{ title:'Agregar Pendiente', f:(r={})=>`<div class="fw"><label class="fl">CategorÃ­a</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','pendientes')">${dynamicOptions('pendientes', r.categoria||'')}</select></div><div class="fw"><label class="fl">DescripciÃ³n</label><input type="text" id="f1" class="fi" placeholder="Ej: FastWay"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi" onchange="handleDynamicSelect('f3','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({categoria:getDynamicValue('f0')||'OTRO',descripcion:g('f1'),monto:gn('f2'),estado:getDynamicValue('f3')})},
+  comisiones:{ title:'Agregar ComisiÃ³n / Publicidad', f:(r={})=>`<div class="fw"><label class="fl">Plataforma / Concepto</label><select id="f0" class="fi" onchange="handleDynamicSelect('f0','comisiones')">${dynamicOptions('comisiones', r.plataforma||'')}</select></div><div class="fw"><label class="fl">Responsable / Detalle</label><input type="text" id="f1" class="fi" placeholder="Ej: Gregorio"></div><div class="fw"><label class="fl">Monto ($)</label><input type="number" id="f2" class="fi" placeholder="0"></div><div class="fw"><label class="fl">Estado</label><select id="f3" class="fi" onchange="handleDynamicSelect('f3','estados_pago')">${estadoOptions(r.estado||'')}</select></div>`, s:()=>({plataforma:getDynamicValue('f0')||'OTRO',responsable:g('f1'),monto:gn('f2'),estado:getDynamicValue('f3')})}
 };
 
 function openAdd(type){
@@ -1139,9 +1194,9 @@ async function delRow(type,idx){
   cur()[type].splice(idx,1); await save(S.mes); renderSec(S.cur); showToast('Eliminado');
 }
 
-// ════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // PRESUPUESTO
-// ════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const EMPS_PRES = ['Cybernetic','Mascokits','Mini Mall'];
 const TIPOS_PAGO_DEFAULT = ['Transferencia','Efectivo','POS','Otro'];
@@ -1184,7 +1239,7 @@ function getMesCompras() {
   return presState.compras[S.mes] || [];
 }
 
-// ── RENDER PRESUPUESTO ──
+// â”€â”€ RENDER PRESUPUESTO â”€â”€
 function renderPresupuesto() {
   renderPresKpi();
   renderCompras();
@@ -1214,7 +1269,7 @@ function renderPresKpi() {
         <div style="height:100%;width:${pct}%;background:${excede?'var(--red)':'var(--teal)'};transition:width .4s"></div>
       </div>
       ${excede
-        ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--red);font-weight:700">⚠ Excede en ${fmt(Math.abs(resto))}</div>`
+        ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--red);font-weight:700">âš  Excede en ${fmt(Math.abs(resto))}</div>`
         : `<div class="kpi-sub">Disponible: ${fmt(resto)}</div>`}
     </div>`;
   }).join('');
@@ -1230,12 +1285,12 @@ function renderCompras() {
   if (!body) return;
   if (!list.length) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin compras registradas este mes</td></tr>'; return; }
   body.innerHTML = list.map((c,i) => `<tr>
-    <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'—'}</td>
-    <td style="color:var(--text)">${c.proveedor||'—'}</td>
-    <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${c.empresa||'—'}</span></td>
-    <td style="font-size:12px;color:var(--text2)">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
+    <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'â€”'}</td>
+    <td style="color:var(--text)">${c.proveedor||'â€”'}</td>
+    <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${c.empresa||'â€”'}</span></td>
+    <td style="font-size:12px;color:var(--text2)">${c.tipoPago||'â€”'}${c.banco?' Â· '+c.banco:''}</td>
     <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt(c.monto)}</td>
-    <td><button class="btn-del" onclick="delCompra(${getMesCompras().indexOf(c)})">✕</button></td>
+    <td><button class="btn-del" onclick="delCompra(${getMesCompras().indexOf(c)})">âœ•</button></td>
   </tr>`).join('');
 }
 
@@ -1262,13 +1317,13 @@ function renderPresConfig() {
   // Proveedores
   const pl = $('proveedoresList');
   if (pl) pl.innerHTML = (cfg.proveedores||[]).map((p,i)=>`
-    <div class="cat-item"><span>${p}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'proveedores')">✎</button><button class="btn-del" onclick="delCatItem('proveedores',${i})">✕</button></span></div>`).join('')
+    <div class="cat-item"><span>${p}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'proveedores')">âœŽ</button><button class="btn-del" onclick="delCatItem('proveedores',${i})">âœ•</button></span></div>`).join('')
     || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin proveedores</div>';
 
   // Bancos
   const bl = $('bancosList');
   if (bl) bl.innerHTML = (cfg.bancos_pres||[]).map((b,i)=>`
-    <div class="cat-item"><span>${b}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'bancos_pres')">✎</button><button class="btn-del" onclick="delCatItem('bancos_pres',${i})">✕</button></span></div>`).join('')
+    <div class="cat-item"><span>${b}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'bancos_pres')">âœŽ</button><button class="btn-del" onclick="delCatItem('bancos_pres',${i})">âœ•</button></span></div>`).join('')
     || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin bancos</div>';
 }
 
@@ -1301,15 +1356,15 @@ function renderReporte() {
           <div class="card-title">${emp}</div>
           <div style="display:flex;gap:16px;align-items:center">
             <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">Pres: ${fmt(d.pres)}</span>
-            <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${excede?'var(--red)':'var(--green)'}">${excede?'⚠ Excede en '+fmt(d.gastado-d.pres):'Disponible: '+fmt(d.pres-d.gastado)}</span>
+            <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${excede?'var(--red)':'var(--green)'}">${excede?'âš  Excede en '+fmt(d.gastado-d.pres):'Disponible: '+fmt(d.pres-d.gastado)}</span>
           </div>
         </div>
         <div class="card-body">
           <table class="tbl"><thead><tr><th>Fecha</th><th>Proveedor</th><th>Tipo Pago</th><th style="text-align:right">Monto</th></tr></thead>
           <tbody>${d.items.map(c=>`<tr>
-            <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'—'}</td>
-            <td>${c.proveedor||'—'}</td>
-            <td style="color:var(--text2);font-size:12px">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
+            <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'â€”'}</td>
+            <td>${c.proveedor||'â€”'}</td>
+            <td style="color:var(--text2);font-size:12px">${c.tipoPago||'â€”'}${c.banco?' Â· '+c.banco:''}</td>
             <td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${fmt(c.monto)}</td>
           </tr>`).join('')}</tbody></table>
           <div style="text-align:right;padding:10px 0 0;border-top:1px solid var(--border);font-family:var(--font-display);font-size:16px;color:var(--red)">Total: ${fmt(d.gastado)}</div>
@@ -1318,7 +1373,7 @@ function renderReporte() {
     }).join('')}`;
 }
 
-// ── PRESUPUESTO CONFIG ACTIONS ──
+// â”€â”€ PRESUPUESTO CONFIG ACTIONS â”€â”€
 async function updatePresupuestoGlobal(val) {
   presState.config.presupuesto_global = parseFloat(val)||0;
   renderPresKpi2(); // immediate UI update
@@ -1348,7 +1403,7 @@ function openDropdownManager(type, selectId='') {
   catCtx = type;
   dynamicSelectTarget = selectId || null;
   editCtx = null;
-  $('catTitle').textContent = 'Configurar · ' + getDropdownLabel(type);
+  $('catTitle').textContent = 'Configurar Â· ' + getDropdownLabel(type);
   $('catSub').textContent = 'Puedes agregar, editar o eliminar opciones';
   $('catLabel').textContent = 'Nombre';
   $('catInput').value = '';
@@ -1362,7 +1417,7 @@ function renderCatList() {
   const box = $('catExistingList');
   if (!box) return;
   const items = getConfigArrayRef(catCtx);
-  box.innerHTML = items.length ? items.map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'${catCtx}')">✎</button><button class="btn-del" onclick="delCatItem('${catCtx}',${idx})">✕</button></span></div>`).join('') : '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin registros</div>';
+  box.innerHTML = items.length ? items.map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'${catCtx}')">âœŽ</button><button class="btn-del" onclick="delCatItem('${catCtx}',${idx})">âœ•</button></span></div>`).join('') : '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin registros</div>';
 }
 function editCatItem(idx, forcedType='') {
   if (forcedType) catCtx = forcedType;
@@ -1415,13 +1470,13 @@ async function delCatItem(type, idx) {
   showToast('Eliminado');
 }
 
-// ── COMPRA MODAL ──
+// â”€â”€ COMPRA MODAL â”€â”€
 function populateCompraSelects() {
-  const ce = $('c_empresa'); if(ce){ const cur=ce.value; ce.innerHTML='<option value="">— Empresa —</option>'; EMPS_PRES.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;ce.appendChild(o);}); if(cur) ce.value=cur; }
-  const cp = $('c_proveedor'); if(cp){ const cur=cp.value; cp.innerHTML='<option value="">— Proveedor —</option>'+dynamicOptions('proveedores', cur); if(cur) cp.value=cur; }
-  const cr = $('c_responsable'); if(cr){ const cur=cr.value; cr.innerHTML='<option value="">— Responsable —</option>'+dynamicOptions('responsables_pres', cur); if(cur) cr.value=cur; }
+  const ce = $('c_empresa'); if(ce){ const cur=ce.value; ce.innerHTML='<option value="">â€” Empresa â€”</option>'; EMPS_PRES.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;ce.appendChild(o);}); if(cur) ce.value=cur; }
+  const cp = $('c_proveedor'); if(cp){ const cur=cp.value; cp.innerHTML='<option value="">â€” Proveedor â€”</option>'+dynamicOptions('proveedores', cur); if(cur) cp.value=cur; }
+  const cr = $('c_responsable'); if(cr){ const cur=cr.value; cr.innerHTML='<option value="">â€” Responsable â€”</option>'+dynamicOptions('responsables_pres', cur); if(cur) cr.value=cur; }
   const ct = $('c_tipopago'); if(ct){ const cur=ct.value; ct.innerHTML=dynamicOptions('tiposPago', cur); if(cur) ct.value=cur; }
-  const cb = $('c_banco'); if(cb){ const cur=cb.value; cb.innerHTML='<option value="">— Banco —</option>'+dynamicOptions('bancos_pres', cur); if(cur) cb.value=cur; }
+  const cb = $('c_banco'); if(cb){ const cur=cb.value; cb.innerHTML='<option value="">â€” Banco â€”</option>'+dynamicOptions('bancos_pres', cur); if(cur) cb.value=cur; }
 }
 
 function toggleBanco() {
@@ -1482,9 +1537,9 @@ function presTab(el, tab) {
 }
 
 
-// ════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // PRESUPUESTO APP BOOTSTRAP
-// ════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 async function bootPresupuesto() {
   showLoader(true);
@@ -1564,7 +1619,7 @@ function renderPresKpi2() {
   const gExcede = gPres > 0 && tGastado > gPres;
   const gPct = gPres > 0 ? Math.min((tGastado/gPres)*100,100) : 0;
   const globalCard = `<div class="kpi-card ${gExcede?'cred':'cteal'}" style="border-color:${gExcede?'rgba(255,71,87,0.4)':'rgba(0,212,170,0.3)'};width:100%;box-sizing:border-box">
-    <div class="kpi-label">⬡ Presupuesto Global · Cybernetic · Mascokits · Mini Mall</div>
+    <div class="kpi-label">â¬¡ Presupuesto Global Â· Cybernetic Â· Mascokits Â· Mini Mall</div>
     <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
       <div class="kpi-val" style="color:${gExcede?'var(--red)':'var(--teal)'}">${fmt(tGastado)}</div>
       <div style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">/ ${gPres>0?fmt(gPres):'Sin configurar'}</div>
@@ -1573,10 +1628,10 @@ function renderPresKpi2() {
       <div style="height:100%;width:${gPct}%;background:${gExcede?'var(--red)':'var(--teal)'};transition:width .4s"></div>
     </div>
     ${gExcede
-      ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--red);font-weight:700">⚠ Excede en ${fmt(tGastado-gPres)}</div>`
+      ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--red);font-weight:700">âš  Excede en ${fmt(tGastado-gPres)}</div>`
       : gPres>0
         ? `<div class="kpi-sub">Disponible: ${fmt(gPres-tGastado)}</div>`
-        : `<div class="kpi-sub" style="color:var(--amber)">Configura el presupuesto en ⚙ Configuración</div>`}
+        : `<div class="kpi-sub" style="color:var(--amber)">Configura el presupuesto en âš™ ConfiguraciÃ³n</div>`}
   </div>`;
 
   // Render global card above grid, empresa cards inside grid
@@ -1637,13 +1692,13 @@ function renderCompras2() {
 
   if(!list.length){body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin compras registradas</td></tr>';return;}
   body.innerHTML=list.map(c=>`<tr>
-    <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'—'}</td>
-    <td style="color:var(--text)">${c.proveedor||'—'}${excedeSet.has(c.id)?'<span class="etiqueta-excede">EXCEDE</span>':''}</td>
-    <td style="color:var(--text2);font-size:12px">${c.responsable||'—'}</td>
-    <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${c.empresa||'—'}</span></td>
-    <td style="font-size:12px;color:var(--text2)">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
+    <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'â€”'}</td>
+    <td style="color:var(--text)">${c.proveedor||'â€”'}${excedeSet.has(c.id)?'<span class="etiqueta-excede">EXCEDE</span>':''}</td>
+    <td style="color:var(--text2);font-size:12px">${c.responsable||'â€”'}</td>
+    <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${c.empresa||'â€”'}</span></td>
+    <td style="font-size:12px;color:var(--text2)">${c.tipoPago||'â€”'}${c.banco?' Â· '+c.banco:''}</td>
     <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt(c.monto)}</td>
-    <td><button class="btn-del" onclick="delCompra2('${c.id}')">✕</button></td>
+    <td><button class="btn-del" onclick="delCompra2('${c.id}')">âœ•</button></td>
   </tr>`).join('');
 }
 
@@ -1669,22 +1724,22 @@ function renderPresConfig2() {
           onfocus="this.value=(presState.config.presupuesto_global||0)">
         <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">CLP</span>
       </div>
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:8px">Cybernetic · Mascokits · Mini Mall</div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:8px">Cybernetic Â· Mascokits Â· Mini Mall</div>
     </div>`;
 
   const rl=$('responsablesList');
   if(rl) rl.innerHTML=(cfg.responsables_pres||[]).map((r,i)=>`
-    <div class="cat-item"><span>${r}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'responsables_pres')">✎</button><button class="btn-del" onclick="delCatItem('responsables_pres',${i})">✕</button></span></div>`).join('')
+    <div class="cat-item"><span>${r}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'responsables_pres')">âœŽ</button><button class="btn-del" onclick="delCatItem('responsables_pres',${i})">âœ•</button></span></div>`).join('')
     ||'<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin responsables</div>';
 
   const pl=$('proveedoresList2');
   if(pl) pl.innerHTML=(cfg.proveedores||[]).map((p,i)=>`
-    <div class="cat-item"><span>${p}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'proveedores')">✎</button><button class="btn-del" onclick="delCatItem('proveedores',${i})">✕</button></span></div>`).join('')
+    <div class="cat-item"><span>${p}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'proveedores')">âœŽ</button><button class="btn-del" onclick="delCatItem('proveedores',${i})">âœ•</button></span></div>`).join('')
     ||'<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin proveedores</div>';
 
   const bl=$('bancosList2');
   if(bl) bl.innerHTML=(cfg.bancos_pres||[]).map((b,i)=>`
-    <div class="cat-item"><span>${b}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'bancos_pres')">✎</button><button class="btn-del" onclick="delCatItem('bancos_pres',${i})">✕</button></span></div>`).join('')
+    <div class="cat-item"><span>${b}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${i},'bancos_pres')">âœŽ</button><button class="btn-del" onclick="delCatItem('bancos_pres',${i})">âœ•</button></span></div>`).join('')
     ||'<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin bancos</div>';
 }
 
@@ -1702,9 +1757,9 @@ function renderReporte2() {
   const tP=Object.values(byEmp).reduce((s,v)=>s+v.pres,0);
   const gPres=cfg.presupuesto_global||0;
   const gExtra=gPres>0?`<div class="kpi-card ${tG>gPres?'cred':'cteal'}" style="grid-column:1/-1">
-    <div class="kpi-label">⬡ Presupuesto Global</div>
+    <div class="kpi-label">â¬¡ Presupuesto Global</div>
     <div style="display:flex;align-items:baseline;gap:10px"><div class="kpi-val" style="color:${tG>gPres?'var(--red)':'var(--teal)'}">${fmt(tG)}</div><div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">/ ${fmt(gPres)}</div></div>
-    ${tG>gPres?`<div style="font-family:var(--font-mono);font-size:10px;color:var(--red);margin-top:4px">⚠ Excede en ${fmt(tG-gPres)}</div>`:`<div class="kpi-sub">Disponible global: ${fmt(gPres-tG)}</div>`}
+    ${tG>gPres?`<div style="font-family:var(--font-mono);font-size:10px;color:var(--red);margin-top:4px">âš  Excede en ${fmt(tG-gPres)}</div>`:`<div class="kpi-sub">Disponible global: ${fmt(gPres-tG)}</div>`}
   </div>`:'';
   rc.innerHTML=`
     <div class="kpi-grid" style="margin-bottom:20px">
@@ -1721,18 +1776,18 @@ function renderReporte2() {
           <div style="display:flex;gap:16px;align-items:center">
             <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">Presupuesto: ${fmt(d.pres)}</span>
             <span style="font-family:var(--font-display);font-size:15px;color:${excede?'var(--red)':'var(--green)'}">
-              ${excede?'⚠ Excede en '+fmt(d.gastado-d.pres):'Disponible: '+fmt(d.pres-d.gastado)}</span>
+              ${excede?'âš  Excede en '+fmt(d.gastado-d.pres):'Disponible: '+fmt(d.pres-d.gastado)}</span>
           </div>
         </div>
         <div class="card-body">
           <table class="tbl"><thead><tr><th>Fecha</th><th>Proveedor</th><th>Responsable</th><th>Tipo Pago</th><th style="text-align:right">Monto</th><th></th></tr></thead>
           <tbody>${d.items.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).map(c=>`<tr>
-            <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'—'}</td>
-            <td>${c.proveedor||'—'}</td>
-            <td style="color:var(--text2);font-size:12px">${c.responsable||'—'}</td>
-            <td style="color:var(--text2);font-size:12px">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
+            <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'â€”'}</td>
+            <td>${c.proveedor||'â€”'}</td>
+            <td style="color:var(--text2);font-size:12px">${c.responsable||'â€”'}</td>
+            <td style="color:var(--text2);font-size:12px">${c.tipoPago||'â€”'}${c.banco?' Â· '+c.banco:''}</td>
             <td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${fmt(c.monto)}</td>
-            <td><button class="btn-del" onclick="delCompra2('${c.id}')">✕</button></td>
+            <td><button class="btn-del" onclick="delCompra2('${c.id}')">âœ•</button></td>
           </tr>`).join('')}</tbody></table>
           <div style="text-align:right;padding:10px 0 0;border-top:1px solid var(--border);font-family:var(--font-display);font-size:15px;color:var(--red)">Total: ${fmt(d.gastado)}</div>
         </div>
@@ -1741,9 +1796,9 @@ function renderReporte2() {
 }
 
 
-// ════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CIERRE ANUAL
-// ════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const ANNUAL_MONTH_KEYS = ['01','02','03','04','05','06','07','08','09','10','11','12'];
 const ANNUAL_EDITABLE_FIELDS = ['compras_factura','compras_exenta','compras_din','compras_nd','compras_nc','ventas_factura','ventas_boleta','ventas_liquidacion','ventas_nd','ventas_nc','sueldos','pendiente_facturar'];
@@ -1863,8 +1918,8 @@ function annualSetFormattedValue(id, value){
 }
 function annualField(label,id,val,ro=false){
   return `<div class="fw">
-    <label class="fl">${label}</label>
-    <input ${ro?'readonly':''} type="text" inputmode="numeric" id="${id}" class="fi annual-money-field" value="${annualMoney(val)}" ${ro?'style="background:rgba(255,255,255,0.04);color:var(--teal)"':''} oninput="${ro?'':"annualMoneyInput(this);annualRecalc()"}">
+    <label class="fl">${label}${ro?' <span style="color:var(--teal)">Â· AUTO</span>':''}</label>
+    <input ${ro?'readonly tabindex="-1"':''} type="text" inputmode="numeric" id="${id}" class="fi annual-money-field ${ro?'annual-locked':''}" value="${annualMoney(val)}" oninput="${ro?'':"annualMoneyInput(this);annualRecalc()"}">
   </div>`;
 }
 function annualMoneyInput(el){
@@ -1873,6 +1928,121 @@ function annualMoneyInput(el){
 }
 function annualVal(id){
   return annualParseMoney((($(id)||{}).value)||0);
+}
+function annualMonthLabelToKey(value=''){
+  const raw = String(value || '').trim().toLowerCase();
+  if(!raw) return '';
+  const normalized = raw.normalize('NFD').replace(/[Ì€-Í¯]/g,'');
+  const map = {
+    enero:'01', febrero:'02', marzo:'03', abril:'04', mayo:'05', junio:'06',
+    julio:'07', agosto:'08', septiembre:'09', setiembre:'09', octubre:'10', noviembre:'11', diciembre:'12',
+    '1':'01','01':'01','2':'02','02':'02','3':'03','03':'03','4':'04','04':'04','5':'05','05':'05','6':'06','06':'06',
+    '7':'07','07':'07','8':'08','08':'08','9':'09','09':'09','10':'10','11':'11','12':'12'
+  };
+  return map[normalized] || '';
+}
+function annualTemplateRow(monthKey){
+  return {
+    mes: MESES[+monthKey-1],
+    compras_factura: 0,
+    compras_exenta: 0,
+    compras_din: 0,
+    compras_nd: 0,
+    compras_nc: 0,
+    ventas_factura: 0,
+    ventas_boleta: 0,
+    ventas_liquidacion: 0,
+    ventas_nd: 0,
+    ventas_nc: 0,
+    sueldos: 0,
+    pendiente_facturar: 0
+  };
+}
+function annualTemplateInstructions(){
+  return [
+    {campo:'mes', descripcion:'Obligatorio. Usa Enero..Diciembre o 1..12', editable:'SI'},
+    {campo:'compras_factura', descripcion:'Factura afecta compras', editable:'SI'},
+    {campo:'compras_exenta', descripcion:'Factura exenta compras', editable:'SI'},
+    {campo:'compras_din', descripcion:'DIN compras', editable:'SI'},
+    {campo:'compras_nd', descripcion:'Nota de dÃ©bito compras', editable:'SI'},
+    {campo:'compras_nc', descripcion:'Nota de crÃ©dito compras', editable:'SI'},
+    {campo:'ventas_factura', descripcion:'Factura afecta ventas', editable:'SI'},
+    {campo:'ventas_boleta', descripcion:'Boleta ventas', editable:'SI'},
+    {campo:'ventas_liquidacion', descripcion:'LiquidaciÃ³n ventas', editable:'SI'},
+    {campo:'ventas_nd', descripcion:'Nota de dÃ©bito ventas', editable:'SI'},
+    {campo:'ventas_nc', descripcion:'Nota de crÃ©dito ventas', editable:'SI'},
+    {campo:'sueldos', descripcion:'Sueldos del mes', editable:'SI'},
+    {campo:'pendiente_facturar', descripcion:'Pendiente por facturar', editable:'SI'},
+    {campo:'auto_calculados', descripcion:'Remanente anterior, crÃ©dito fiscal, dÃ©bito fiscal, IVA, PPM, remanente siguiente, total impuesto y ganancia', editable:'NO'}
+  ];
+}
+function annualDownloadTemplate(){
+  try{
+    if(typeof XLSX === 'undefined'){
+      showToast('No se pudo cargar la librerÃ­a Excel', true);
+      return;
+    }
+    const wb = XLSX.utils.book_new();
+    const rows = ANNUAL_MONTH_KEYS.map(annualTemplateRow);
+    const wsData = XLSX.utils.json_to_sheet(rows);
+    const wsInfo = XLSX.utils.json_to_sheet(annualTemplateInstructions());
+    XLSX.utils.book_append_sheet(wb, wsData, 'Plantilla');
+    XLSX.utils.book_append_sheet(wb, wsInfo, 'Instrucciones');
+    const company = getSelectedAnnualCompany() || 'empresa';
+    const year = annualState.year || new Date().getFullYear();
+    XLSX.writeFile(wb, `plantilla_cierre_anual_${company}_${year}.xlsx`);
+  }catch(e){
+    console.error('Error descargando plantilla anual:', e);
+    showToast('Error al descargar plantilla', true);
+  }
+}
+async function annualUploadTemplate(event){
+  const file = event?.target?.files?.[0];
+  if(!file) return;
+  try{
+    if(typeof XLSX === 'undefined') throw new Error('XLSX no disponible');
+    const buffer = await file.arrayBuffer();
+    const wb = XLSX.read(buffer, { type:'array' });
+    const sheetName = wb.SheetNames[0];
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval:'' });
+    if(!rows.length){
+      showToast('La planilla no contiene datos', true);
+      event.target.value = '';
+      return;
+    }
+    const companyData = annualCurCompanyData();
+    let loaded = 0;
+    rows.forEach(row=>{
+      const key = annualMonthLabelToKey(row.mes ?? row.Mes ?? row.MES ?? row.month ?? row.Month);
+      if(!key || !ANNUAL_MONTH_KEYS.includes(key)) return;
+      companyData.months[key] = annualMonthMerged({
+        ...companyData.months[key],
+        compras_factura: annualParseMoney(row.compras_factura ?? row['compras factura'] ?? row['Compras Factura']),
+        compras_exenta: annualParseMoney(row.compras_exenta ?? row['compras exenta'] ?? row['Compras Exenta']),
+        compras_din: annualParseMoney(row.compras_din ?? row['compras din'] ?? row['Compras DIN'] ?? row.DIN),
+        compras_nd: annualParseMoney(row.compras_nd ?? row['compras nd'] ?? row['Compras ND']),
+        compras_nc: annualParseMoney(row.compras_nc ?? row['compras nc'] ?? row['Compras NC']),
+        ventas_factura: annualParseMoney(row.ventas_factura ?? row['ventas factura'] ?? row['Ventas Factura']),
+        ventas_boleta: annualParseMoney(row.ventas_boleta ?? row['ventas boleta'] ?? row['Ventas Boleta']),
+        ventas_liquidacion: annualParseMoney(row.ventas_liquidacion ?? row['ventas liquidacion'] ?? row['Ventas Liquidacion'] ?? row['Ventas LiquidaciÃ³n']),
+        ventas_nd: annualParseMoney(row.ventas_nd ?? row['ventas nd'] ?? row['Ventas ND']),
+        ventas_nc: annualParseMoney(row.ventas_nc ?? row['ventas nc'] ?? row['Ventas NC']),
+        sueldos: annualParseMoney(row.sueldos ?? row.Sueldos),
+        pendiente_facturar: annualParseMoney(row.pendiente_facturar ?? row['pendiente por facturar'] ?? row['Pendiente por Facturar'])
+      });
+      loaded += 1;
+    });
+    recalcAnnualYear(annualCurYear());
+    await saveAnnualYear(annualState.year);
+    renderAnnualMeses();
+    renderAnnualResumen();
+    showToast(loaded ? `Planilla cargada: ${loaded} meses actualizados` : 'No se reconocieron meses vÃ¡lidos', !loaded);
+  }catch(e){
+    console.error('Error cargando planilla anual:', e);
+    showToast('Error al cargar planilla', true);
+  } finally {
+    event.target.value = '';
+  }
 }
 function calcAnnualMonth(m){
   const comprasFactura = Number(m.compras_factura||0);
@@ -1891,11 +2061,11 @@ function calcAnnualMonth(m){
 
   // Excel base:
   // Total compras = Factura + Exenta + DIN + ND - NC
-  // Total ventas  = Factura + Boleta + Liquidación + ND - NC
-  // Crédito fiscal = (Total compras - Exenta) * 19%
-  // Débito fiscal  = (Total ventas + Pendiente por facturar) * 19%
-  // IVA a pagar    = Débito - Crédito - Remanente anterior
-  // Si IVA queda negativo, ese remanente pasa al próximo mes
+  // Total ventas  = Factura + Boleta + LiquidaciÃ³n + ND - NC
+  // CrÃ©dito fiscal = (Total compras - Exenta) * 19%
+  // DÃ©bito fiscal  = (Total ventas + Pendiente por facturar) * 19%
+  // IVA a pagar    = DÃ©bito - CrÃ©dito - Remanente anterior
+  // Si IVA queda negativo, ese remanente pasa al prÃ³ximo mes
   // PPM            = (Total ventas + Pendiente por facturar) * 1%
   // Ganancia       = Total ventas + Pendiente por facturar - Total compras
 
@@ -2063,7 +2233,7 @@ function buildYearSel(){
 function setAnnualLabel(){
   if(!$('annualYearLabel')) return;
   const company = getSelectedAnnualCompany();
-  $('annualYearLabel').textContent = annualState.year ? `AÑO ${annualState.year}${company ? ' · ' + company.toUpperCase() : ''}` : 'CIERRE ANUAL';
+  $('annualYearLabel').textContent = annualState.year ? `AÃ‘O ${annualState.year}${company ? ' Â· ' + company.toUpperCase() : ''}` : 'CIERRE ANUAL';
 }
 function getAnnualCompanyNames(){
   return (annualConfig.empresas || []).map(e => e.nombre).filter(Boolean);
@@ -2098,7 +2268,7 @@ function openNewYear(){
 async function doNewYear(){
   const year = String($('nyVal').value || '').trim();
   if(!year) return;
-  if(annualState.data[year]){ showToast('Ese año ya existe', true); return; }
+  if(annualState.data[year]){ showToast('Ese aÃ±o ya existe', true); return; }
   annualState.data[year] = mkAnnualYear(year);
   annualState.year = year;
   await saveAnnualYear(year);
@@ -2107,7 +2277,7 @@ async function doNewYear(){
   setAnnualLabel();
   closeOv('newYearOv');
   renderAnnualApp();
-  showToast('Año creado');
+  showToast('AÃ±o creado');
 }
 function onAnnualYearChange(){
   annualState.year = $('yearSel').value;
@@ -2169,32 +2339,32 @@ function renderAnnualMeses(){
   const month = annualCurMonth();
   const calc = calcAnnualMonth(month);
   const company = getSelectedAnnualCompany();
-  $('annualComprasTitle').textContent = `// Compras · ${MESES[+annualState.curMonth-1]} · ${company || ''}`;
+  $('annualComprasTitle').textContent = `// Compras Â· ${MESES[+annualState.curMonth-1]} Â· ${company || ''}`;
   $('annualComprasForm').innerHTML = [
     annualField('Factura afecta','an_compras_factura',month.compras_factura),
     annualField('Factura exenta','an_compras_exenta',month.compras_exenta),
     annualField('DIN','an_compras_din',month.compras_din),
-    annualField('ND · Nota de débito','an_compras_nd',month.compras_nd),
-    annualField('NC · Nota de crédito','an_compras_nc',month.compras_nc),
+    annualField('ND Â· Nota de dÃ©bito','an_compras_nd',month.compras_nd),
+    annualField('NC Â· Nota de crÃ©dito','an_compras_nc',month.compras_nc),
     annualField('Total compras','an_compras_total',calc.compras_total,true)
   ].join('');
   $('annualVentasForm').innerHTML = [
     annualField('Factura afecta','an_ventas_factura',month.ventas_factura),
     annualField('Boleta','an_ventas_boleta',month.ventas_boleta),
-    annualField('Liquidación','an_ventas_liquidacion',month.ventas_liquidacion),
-    annualField('ND · Nota de débito','an_ventas_nd',month.ventas_nd),
-    annualField('NC · Nota de crédito','an_ventas_nc',month.ventas_nc),
+    annualField('LiquidaciÃ³n','an_ventas_liquidacion',month.ventas_liquidacion),
+    annualField('ND Â· Nota de dÃ©bito','an_ventas_nd',month.ventas_nd),
+    annualField('NC Â· Nota de crÃ©dito','an_ventas_nc',month.ventas_nc),
     annualField('Total ventas','an_ventas_total',calc.ventas_total,true)
   ].join('');
   $('annualFiscalForm').innerHTML = [
     annualField('Remanente mes anterior','an_remanente_anterior',calc.remanente_anterior,true),
-    annualField('Crédito fiscal','an_credito',calc.credito_fiscal,true),
-    annualField('Débito fiscal','an_debito',calc.debito_fiscal,true),
+    annualField('CrÃ©dito fiscal','an_credito',calc.credito_fiscal,true),
+    annualField('DÃ©bito fiscal','an_debito',calc.debito_fiscal,true),
     annualField('IVA a pagar','an_iva',calc.a_pagar_iva,true),
     annualField('PPM a pagar','an_pagar_ppm',calc.a_pagar_ppm,true),
     annualField('Sueldos','an_sueldos',month.sueldos),
     annualField('Pendiente por facturar','an_pendiente',month.pendiente_facturar),
-    annualField('Remanente para próximo mes','an_remanente',calc.remanente,true),
+    annualField('Remanente para prÃ³ximo mes','an_remanente',calc.remanente,true),
     annualField('Total impuesto','an_total_impuesto',calc.total_impuesto,true),
     annualField('Ganancia del mes','an_ganancia',calc.ganancia_mes,true)
   ].join('');
@@ -2231,48 +2401,71 @@ function annualRecalc(){
   annualSetFormattedValue('an_ganancia', calc.ganancia_mes);
 }
 async function saveAnnualMonth(){
-  const year = annualState.year;
-  const current = annualCurYear();
-  current.months[annualState.curMonth] = annualMonthMerged({
-    ...current.months[annualState.curMonth],
-    compras_factura: annualVal('an_compras_factura'),
-    compras_exenta: annualVal('an_compras_exenta'),
-    compras_din: annualVal('an_compras_din'),
-    compras_nd: annualVal('an_compras_nd'),
-    compras_nc: annualVal('an_compras_nc'),
-    ventas_factura: annualVal('an_ventas_factura'),
-    ventas_boleta: annualVal('an_ventas_boleta'),
-    ventas_liquidacion: annualVal('an_ventas_liquidacion'),
-    ventas_nd: annualVal('an_ventas_nd'),
-    ventas_nc: annualVal('an_ventas_nc'),
-    sueldos: annualVal('an_sueldos'),
-    pendiente_facturar: annualVal('an_pendiente')
-  });
-  recalcAnnualYear(current);
-  await saveAnnualYear(year);
-  renderAnnualApp();
-  showToast(`Mes ${MESES[+annualState.curMonth-1]} guardado`);
+  try{
+    const year = annualState.year;
+    const yearObj = annualCurYear();
+    const companyData = annualCurCompanyData();
+
+    if(!year){
+      showToast('No hay aÃ±o seleccionado', true);
+      return;
+    }
+
+    if(!annualState.curMonth){
+      showToast('No hay mes seleccionado', true);
+      return;
+    }
+
+    const prev = annualMonthMerged(companyData.months[annualState.curMonth] || {});
+    companyData.months[annualState.curMonth] = annualMonthMerged({
+      ...prev,
+      compras_factura: annualVal('an_compras_factura'),
+      compras_exenta: annualVal('an_compras_exenta'),
+      compras_din: annualVal('an_compras_din'),
+      compras_nd: annualVal('an_compras_nd'),
+      compras_nc: annualVal('an_compras_nc'),
+      ventas_factura: annualVal('an_ventas_factura'),
+      ventas_boleta: annualVal('an_ventas_boleta'),
+      ventas_liquidacion: annualVal('an_ventas_liquidacion'),
+      ventas_nd: annualVal('an_ventas_nd'),
+      ventas_nc: annualVal('an_ventas_nc'),
+      sueldos: annualVal('an_sueldos'),
+      pendiente_facturar: annualVal('an_pendiente')
+    });
+
+    recalcAnnualYear(yearObj);
+    await saveAnnualYear(year);
+    renderAnnualMeses();
+    renderAnnualResumen();
+    showToast(`Mes ${MESES[+annualState.curMonth-1]} guardado`);
+  }catch(e){
+    console.error('Error al guardar mes anual:', e);
+    showToast('Error al guardar el mes', true);
+  }
 }
 function resetAnnualMonth(){
-  annualCurYear().months[annualState.curMonth] = mkAnnualMonth();
+  const companyData = annualCurCompanyData();
+  companyData.months[annualState.curMonth] = mkAnnualMonth();
   recalcAnnualYear(annualCurYear());
   renderAnnualMeses();
+  renderAnnualResumen();
 }
 function renderAnnualResumen(){
   const yearObj = annualCurYear();
   const company = getSelectedAnnualCompany();
+  const companyData = annualCurCompanyData();
   buildAnnualCompanySelectors();
   const t = calcAnnualYearTotals(yearObj, company);
   $('annualKpiGrid').innerHTML = `
-    <div class="kpi-card cteal"><div class="kpi-label">Total compras</div><div class="kpi-val" style="color:var(--teal)">${fmt(t.compras)}</div><div class="kpi-sub">Compras del año</div></div>
-    <div class="kpi-card cgreen"><div class="kpi-label">Total ventas</div><div class="kpi-val" style="color:var(--green)">${fmt(t.ventas)}</div><div class="kpi-sub">Ventas registradas del año</div></div>
+    <div class="kpi-card cteal"><div class="kpi-label">Total compras</div><div class="kpi-val" style="color:var(--teal)">${fmt(t.compras)}</div><div class="kpi-sub">Compras del aÃ±o</div></div>
+    <div class="kpi-card cgreen"><div class="kpi-label">Total ventas</div><div class="kpi-val" style="color:var(--green)">${fmt(t.ventas)}</div><div class="kpi-sub">Ventas registradas del aÃ±o</div></div>
     <div class="kpi-card camber"><div class="kpi-label">IVA pagado</div><div class="kpi-val" style="color:var(--amber)">${fmt(t.iva_pagado)}</div><div class="kpi-sub">Pago efectivo de IVA</div></div>
     <div class="kpi-card camber"><div class="kpi-label">PPM pagado</div><div class="kpi-val" style="color:var(--amber)">${fmt(t.ppm_pagado)}</div><div class="kpi-sub">1% sobre ventas + pendiente</div></div>
     <div class="kpi-card cred"><div class="kpi-label">Sueldos pagados</div><div class="kpi-val" style="color:var(--red)">${fmt(t.sueldos)}</div><div class="kpi-sub">Total anual de sueldos</div></div>
     <div class="kpi-card ${t.ganancia>=0?'cgreen':'cred'}"><div class="kpi-label">Ganancia anual</div><div class="kpi-val" style="color:${t.ganancia>=0?'var(--green)':'var(--red)'}">${fmt(t.ganancia)}</div><div class="kpi-sub">Ventas + pendiente - compras</div></div>
   `;
   const rows = ANNUAL_MONTH_KEYS.map(m=>{
-    const row = annualMonthMerged(yearObj.months[m]);
+    const row = annualMonthMerged((companyData.months||{})[m]);
     return `<tr>
       <td>${MESES[+m-1].toUpperCase()}</td>
       <td style="text-align:right">${fmt(row.compras_total)}</td>
@@ -2288,7 +2481,7 @@ function renderAnnualResumen(){
     <thead><tr><th>Mes</th><th style="text-align:right">Compras</th><th style="text-align:right">Ventas</th><th style="text-align:right">IVA pagado</th><th style="text-align:right">PPM pagado</th><th style="text-align:right">Sueldos</th><th style="text-align:right">Pendiente</th><th style="text-align:right">Ganancia</th></tr></thead>
     <tbody>${rows}
       <tr style="border-top:1px solid var(--border);font-weight:700">
-        <td>TOTAL AÑO</td>
+        <td>TOTAL AÃ‘O</td>
         <td style="text-align:right">${fmt(t.compras)}</td>
         <td style="text-align:right">${fmt(t.ventas)}</td>
         <td style="text-align:right">${fmt(t.iva_pagado)}</td>
@@ -2302,11 +2495,11 @@ function renderAnnualResumen(){
 
   const sociosRows = annualSociosProjection(t.ganancia, company);
   $('annualSociosTable').innerHTML = sociosRows.length ? `<table class="tbl">
-    <thead><tr><th>Socio</th><th style="text-align:right">% accionario</th><th style="text-align:right">Utilidad anual</th><th style="text-align:right">Remuneración estimada mensual</th></tr></thead>
+    <thead><tr><th>Socio</th><th style="text-align:right">% accionario</th><th style="text-align:right">Utilidad anual</th><th style="text-align:right">RemuneraciÃ³n estimada mensual</th></tr></thead>
     <tbody>
       ${sociosRows.map(r=>`<tr><td>${r.nombre}</td><td style="text-align:right">${r.porcentaje.toFixed(2)}%</td><td style="text-align:right">${fmt(r.utilidad)}</td><td style="text-align:right">${fmt(r.remuneracion)}</td></tr>`).join('')}
     </tbody>
-  </table>` : '<div style="color:var(--text3)">Agrega socios en configuración para ver la utilidad distribuida.</div>';
+  </table>` : '<div style="color:var(--text3)">Agrega socios en configuraciÃ³n para ver la utilidad distribuida.</div>';
 }
 function renderAnnualConfig(){
   buildAnnualCompanySelectors();
@@ -2318,59 +2511,113 @@ function renderAnnualConfig(){
   $('annualConfigKpi').innerHTML = `
     <div class="kpi-card cteal"><div class="kpi-label">Empresas</div><div class="kpi-val" style="color:var(--teal)">${empresas.length}</div><div class="kpi-sub">Cada empresa tiene su propia vista anual</div></div>
     <div class="kpi-card cgreen"><div class="kpi-label">Socios de ${company || 'empresa'}</div><div class="kpi-val" style="color:var(--green)">${socios.length}</div><div class="kpi-sub">Socios configurados para la empresa seleccionada</div></div>
-    <div class="kpi-card ${Math.round(totalPct)===100?'cteal':'camber'}"><div class="kpi-label">% accionario ${company || ''}</div><div class="kpi-val" style="color:${Math.round(totalPct)===100?'var(--teal)':'var(--amber)'}">${totalPct.toFixed(2)}%</div><div class="kpi-sub">${Math.round(totalPct)===100?'Distribución completa':'Ajusta hasta completar 100%'}</div></div>
+    <div class="kpi-card ${Math.round(totalPct)===100?'cteal':'camber'}"><div class="kpi-label">% accionario ${company || ''}</div><div class="kpi-val" style="color:${Math.round(totalPct)===100?'var(--teal)':'var(--amber)'}">${totalPct.toFixed(2)}%</div><div class="kpi-sub">${Math.round(totalPct)===100?'DistribuciÃ³n completa':'Ajusta hasta completar 100%'}</div></div>
   `;
-  $('annualEmpresasList').innerHTML = empresas.length ? empresas.map((e,idx)=>`<div class="cat-item"><span>${e.nombre}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="annualEditEmpresa(${idx})">✎</button><button class="btn-del" onclick="annualDelEmpresa(${idx})">✕</button></span></div>`).join('') : '<div style="color:var(--text3)">Sin empresas</div>';
-  $('annualSociosList').innerHTML = socios.length ? socios.map((s,idx)=>`<div class="cat-item"><span>${s.nombre} · ${Number(s.porcentaje||0).toFixed(2)}%</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="annualEditSocio(${idx})">✎</button><button class="btn-del" onclick="annualDelSocio(${idx})">✕</button></span></div>`).join('') : '<div style="color:var(--text3)">Sin socios para esta empresa</div>';
+  $('annualEmpresasList').innerHTML = empresas.length ? empresas.map((e,idx)=>`<div class="cat-item"><span>${e.nombre}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="annualEditEmpresa(${idx})">âœŽ</button><button class="btn-del" onclick="annualDelEmpresa(${idx})">âœ•</button></span></div>`).join('') : '<div style="color:var(--text3)">Sin empresas</div>';
+  $('annualSociosList').innerHTML = socios.length ? socios.map((s,idx)=>`<div class="cat-item"><span>${s.nombre} Â· ${Number(s.porcentaje||0).toFixed(2)}%</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="annualEditSocio(${idx})">âœŽ</button><button class="btn-del" onclick="annualDelSocio(${idx})">âœ•</button></span></div>`).join('') : '<div style="color:var(--text3)">Sin socios para esta empresa</div>';
 }
-async function annualAddEmpresa(){
-  const nombre = prompt('Nombre de la empresa');
-  if(!nombre) return;
-  const clean = nombre.trim();
-  if(!clean) return;
-  if((annualConfig.empresas||[]).some(x=>x.nombre.toLowerCase()===clean.toLowerCase())){ showToast('La empresa ya existe', true); return; }
-  annualConfig.empresas.push({ nombre: clean, socios: [] });
-  Object.keys(annualState.data || {}).forEach(year => {
-    ensureAnnualCompanyYear(annualState.data[year], clean);
-  });
-  if(!Object.keys(annualState.data || {}).length && annualState.year){
-    ensureAnnualCompanyYear(annualCurYear(), clean);
-  }
-  for(const year of Object.keys(annualState.data || {})){
-    await saveAnnualYear(year);
-  }
-  annualState.company = clean;
-  await saveAnnualConfig();
-  buildAnnualCompanySelectors();
-  renderAnnualConfig();
-  renderAnnualResumen();
+let annualEmpresaEditIdx = null;
+
+function annualAddEmpresa(){
+  openAnnualEmpresaModal();
 }
-async function annualEditEmpresa(idx){
-  const current = annualConfig.empresas[idx];
-  const nombre = prompt('Editar empresa', current?.nombre || '');
-  if(nombre===null) return;
-  const clean = nombre.trim();
-  if(!clean) return;
-  if((annualConfig.empresas||[]).some((x,i)=>i!==idx && x.nombre.toLowerCase()===clean.toLowerCase())){ showToast('La empresa ya existe', true); return; }
-  const oldName = current.nombre;
-  annualConfig.empresas[idx].nombre = clean;
+
+function annualEditEmpresa(idx){
+  openAnnualEmpresaModal(idx);
+}
+
+function openAnnualEmpresaModal(idx = null){
+  annualEmpresaEditIdx = idx;
+
+  const isEdit = idx !== null && idx !== undefined;
+  const current = isEdit ? (annualConfig.empresas[idx] || null) : null;
+
+  $('annualEmpresaModalTitle').textContent = isEdit ? 'Editar empresa' : 'Agregar empresa';
+  $('annualEmpresaModalSub').textContent = isEdit
+    ? 'Modifica el nombre de la empresa'
+    : 'Crea una nueva empresa para el cierre anual';
+
+  $('annualEmpresaInput').value = current?.nombre || '';
+  $('annualEmpresaOv').classList.add('open');
+
+  setTimeout(() => $('annualEmpresaInput')?.focus(), 50);
+}
+
+function closeAnnualEmpresaModal(){
+  annualEmpresaEditIdx = null;
+  $('annualEmpresaInput').value = '';
+  $('annualEmpresaOv').classList.remove('open');
+}
+
+async function saveAnnualEmpresaModal(){
+  const nombre = String($('annualEmpresaInput').value || '').trim();
+
+  if(!nombre){
+    showToast('Ingresa el nombre de la empresa', true);
+    $('annualEmpresaInput')?.focus();
+    return;
+  }
+
+  const exists = (annualConfig.empresas || []).some((x,i)=>
+    i !== annualEmpresaEditIdx &&
+    String(x.nombre || '').toLowerCase() === nombre.toLowerCase()
+  );
+
+  if(exists){
+    showToast('La empresa ya existe', true);
+    return;
+  }
+
+  if(annualEmpresaEditIdx === null){
+    annualConfig.empresas.push({ nombre, socios: [] });
+
+    Object.keys(annualState.data || {}).forEach(year => {
+      ensureAnnualCompanyYear(annualState.data[year], nombre);
+    });
+
+    if(!Object.keys(annualState.data || {}).length && annualState.year){
+      ensureAnnualCompanyYear(annualCurYear(), nombre);
+    }
+
+    for(const year of Object.keys(annualState.data || {})){
+      await saveAnnualYear(year);
+    }
+
+    annualState.company = nombre;
+    await saveAnnualConfig();
+    buildAnnualCompanySelectors();
+    renderAnnualConfig();
+    renderAnnualResumen();
+    closeAnnualEmpresaModal();
+    showToast('Empresa agregada');
+    return;
+  }
+
+  const oldName = annualConfig.empresas[annualEmpresaEditIdx].nombre;
+  annualConfig.empresas[annualEmpresaEditIdx].nombre = nombre;
 
   Object.keys(annualState.data || {}).forEach(year=>{
     const y = annualState.data[year];
     if(y.companies && y.companies[oldName]){
-      y.companies[clean] = y.companies[oldName];
+      y.companies[nombre] = y.companies[oldName];
       delete y.companies[oldName];
     }
   });
-  if(annualState.company === oldName) annualState.company = clean;
+
+  if(annualState.company === oldName) annualState.company = nombre;
+
   await saveAnnualConfig();
   for(const year of Object.keys(annualState.data || {})){
     await saveAnnualYear(year);
   }
+
   buildAnnualCompanySelectors();
   renderAnnualConfig();
   renderAnnualResumen();
+  closeAnnualEmpresaModal();
+  showToast('Empresa actualizada');
 }
+
 async function annualDelEmpresa(idx){
   const removed = annualConfig.empresas[idx]?.nombre;
   annualConfig.empresas.splice(idx,1);
@@ -2387,36 +2634,98 @@ async function annualDelEmpresa(idx){
   renderAnnualConfig();
   renderAnnualResumen();
 }
-async function annualAddSocio(){
+let annualSocioEditIdx = null;
+
+function annualAddSocio(){
   const company = getSelectedAnnualCompany();
   if(!company){ showToast('Primero agrega una empresa', true); return; }
   const cfg = getAnnualCompanyConfig(company);
   if(!cfg){ showToast('Empresa no encontrada', true); return; }
-  const nombre = prompt(`Nombre del socio para ${company}`);
-  if(!nombre) return;
-  const pctStr = prompt('Porcentaje accionario', '0');
-  if(pctStr===null) return;
-  const porcentaje = Number(String(pctStr).replace(',','.')) || 0;
-  if(!cfg.socios) cfg.socios = [];
-  cfg.socios.push({ nombre:nombre.trim(), porcentaje });
-  await saveAnnualConfig();
-  renderAnnualConfig();
-  renderAnnualResumen();
+  openAnnualSocioModal();
 }
-async function annualEditSocio(idx){
+
+function annualEditSocio(idx){
   const company = getSelectedAnnualCompany();
   const cfg = getAnnualCompanyConfig(company);
   if(!cfg || !cfg.socios || !cfg.socios[idx]){ showToast('Socio no encontrado', true); return; }
-  const socio = cfg.socios[idx];
-  const nombre = prompt('Nombre del socio', socio?.nombre || '');
-  if(nombre===null) return;
-  const pctStr = prompt('Porcentaje accionario', String(socio?.porcentaje || 0));
-  if(pctStr===null) return;
-  const porcentaje = Number(String(pctStr).replace(',','.')) || 0;
-  cfg.socios[idx] = { nombre:nombre.trim(), porcentaje };
+  openAnnualSocioModal(idx);
+}
+
+function openAnnualSocioModal(idx = null){
+  const company = getSelectedAnnualCompany();
+  const cfg = getAnnualCompanyConfig(company);
+  annualSocioEditIdx = idx;
+
+  const isEdit = idx !== null && idx !== undefined;
+  const socio = isEdit && cfg && cfg.socios ? cfg.socios[idx] : null;
+
+  $('annualSocioModalTitle').textContent = isEdit ? 'Editar socio' : 'Agregar socio';
+  $('annualSocioModalSub').textContent = company
+    ? `${isEdit ? 'Actualiza' : 'Configura'} los datos del socio para ${company}`
+    : 'Configura el nombre y porcentaje accionario';
+
+  $('annualSocioNombre').value = socio?.nombre || '';
+  $('annualSocioPct').value = socio ? Number(socio.porcentaje || 0) : '';
+
+  $('annualSocioOv').classList.add('open');
+  setTimeout(()=> $('annualSocioNombre')?.focus(), 40);
+}
+
+function closeAnnualSocioModal(){
+  annualSocioEditIdx = null;
+  $('annualSocioNombre').value = '';
+  $('annualSocioPct').value = '';
+  $('annualSocioOv').classList.remove('open');
+}
+
+async function saveAnnualSocioModal(){
+  const company = getSelectedAnnualCompany();
+  const cfg = getAnnualCompanyConfig(company);
+  if(!company || !cfg){ showToast('Empresa no encontrada', true); return; }
+
+  const nombre = String($('annualSocioNombre').value || '').trim();
+  const porcentaje = Number(String($('annualSocioPct').value || '0').replace(',','.')) || 0;
+
+  if(!nombre){
+    showToast('Ingresa el nombre del socio', true);
+    $('annualSocioNombre')?.focus();
+    return;
+  }
+
+  if(porcentaje < 0){
+    showToast('El porcentaje no puede ser negativo', true);
+    $('annualSocioPct')?.focus();
+    return;
+  }
+
+  if(!cfg.socios) cfg.socios = [];
+
+  const duplicate = cfg.socios.some((s,i)=>
+    i !== annualSocioEditIdx && String(s.nombre || '').trim().toLowerCase() === nombre.toLowerCase()
+  );
+  if(duplicate){
+    showToast('Ya existe un socio con ese nombre', true);
+    $('annualSocioNombre')?.focus();
+    return;
+  }
+
+  const payload = { nombre, porcentaje };
+
+  if(annualSocioEditIdx === null || annualSocioEditIdx === undefined){
+    cfg.socios.push(payload);
+  } else {
+    if(!cfg.socios[annualSocioEditIdx]){
+      showToast('Socio no encontrado', true);
+      return;
+    }
+    cfg.socios[annualSocioEditIdx] = payload;
+  }
+
   await saveAnnualConfig();
   renderAnnualConfig();
   renderAnnualResumen();
+  closeAnnualSocioModal();
+  showToast(annualSocioEditIdx === null || annualSocioEditIdx === undefined ? 'Socio agregado' : 'Socio actualizado');
 }
 async function annualDelSocio(idx){
   const company = getSelectedAnnualCompany();
@@ -2440,7 +2749,7 @@ function renderAnnualHistorial(){
         <button class="btn-secondary" onclick="jumpAnnualYear('${y}')">Ver</button>
       </div>
     </div>`;
-  }).join('') || '<div style="color:var(--text3)">Sin años registrados</div>';
+  }).join('') || '<div style="color:var(--text3)">Sin aÃ±os registrados</div>';
 }
 function jumpAnnualYear(y){
   annualState.year = y;
@@ -2454,7 +2763,7 @@ function jumpAnnualYear(y){
 }
 
 
-// ── EXCEL EXPORT ──
+// â”€â”€ EXCEL EXPORT â”€â”€
 function exportarExcel() {
   // Use only the currently visible/filtered records
   const q=($('pres-search2')||{value:''}).value.toLowerCase();
@@ -2472,34 +2781,34 @@ function exportarExcel() {
 
   const rows=[];
 
-  // ── ENCABEZADO ──
-  rows.push([`REPORTE DE PRESUPUESTO — ${mesNombre}`]);
+  // â”€â”€ ENCABEZADO â”€â”€
+  rows.push([`REPORTE DE PRESUPUESTO â€” ${mesNombre}`]);
   rows.push([`Generado: ${new Date().toLocaleDateString('es-CL')} ${new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})}`]);
   rows.push([]);
 
-  // ── RESUMEN GLOBAL ──
+  // â”€â”€ RESUMEN GLOBAL â”€â”€
   rows.push(['RESUMEN GLOBAL']);
   rows.push(['Presupuesto Global','Gastado Total','Disponible','Estado']);
   rows.push([
     gPres, tGast, gPres-tGast,
-    gPres>0?(tGast>gPres?'⚠ EXCEDE EN $'+(tGast-gPres):'OK — Disponible $'+(gPres-tGast)):'Sin presupuesto configurado'
+    gPres>0?(tGast>gPres?'âš  EXCEDE EN $'+(tGast-gPres):'OK â€” Disponible $'+(gPres-tGast)):'Sin presupuesto configurado'
   ]);
   rows.push([]);
 
-  // ── RESUMEN POR EMPRESA ──
+  // â”€â”€ RESUMEN POR EMPRESA â”€â”€
   rows.push(['RESUMEN POR EMPRESA']);
   rows.push(['Empresa','Total Gastado','% del Presupuesto Global']);
   EMPS_PRES.forEach(emp=>{
     const gast=allCompras.filter(c=>c.empresa===emp).reduce((s,c)=>s+(c.monto||0),0);
-    const pct=gPres>0?((gast/gPres)*100).toFixed(1)+'%':'—';
+    const pct=gPres>0?((gast/gPres)*100).toFixed(1)+'%':'â€”';
     rows.push([emp, gast, pct]);
   });
   rows.push([]);
 
-  // ── DETALLE DE COMPRAS (filtrado) ──
+  // â”€â”€ DETALLE DE COMPRAS (filtrado) â”€â”€
   const filterLabel = fEmp ? `EMPRESA: ${fEmp}` : 'TODAS LAS EMPRESAS';
-  rows.push([`DETALLE DE COMPRAS — ${filterLabel}${q?' — Búsqueda: '+q:''}`]);
-  rows.push(['N°','Fecha','Proveedor','Responsable','Empresa','Tipo de Pago','Banco','Monto','Descripción']);
+  rows.push([`DETALLE DE COMPRAS â€” ${filterLabel}${q?' â€” BÃºsqueda: '+q:''}`]);
+  rows.push(['NÂ°','Fecha','Proveedor','Responsable','Empresa','Tipo de Pago','Banco','Monto','DescripciÃ³n']);
   compras.forEach((c,i)=>{
     rows.push([
       i+1,
@@ -2527,17 +2836,17 @@ function exportarExcel() {
   showToast(`Exportado: ${compras.length} registros`);
 }
 
-// ── UPDATE populateCompraSelects to include responsable ──
+// â”€â”€ UPDATE populateCompraSelects to include responsable â”€â”€
 function populateCompraSelects() {
   const cfg=presState.config;
-  const ce=$('c_empresa');if(ce){ce.innerHTML='<option value="">— Empresa —</option>';EMPS_PRES.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;ce.appendChild(o);});}
-  const cp=$('c_proveedor');if(cp){cp.innerHTML='<option value="">— Proveedor —</option>';(cfg.proveedores||[]).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;cp.appendChild(o);});}
-  const cr=$('c_responsable');if(cr){cr.innerHTML='<option value="">— Responsable —</option>';(cfg.responsables_pres||[]).forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;cr.appendChild(o);});}
+  const ce=$('c_empresa');if(ce){ce.innerHTML='<option value="">â€” Empresa â€”</option>';EMPS_PRES.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;ce.appendChild(o);});}
+  const cp=$('c_proveedor');if(cp){cp.innerHTML='<option value="">â€” Proveedor â€”</option>';(cfg.proveedores||[]).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;cp.appendChild(o);});}
+  const cr=$('c_responsable');if(cr){cr.innerHTML='<option value="">â€” Responsable â€”</option>';(cfg.responsables_pres||[]).forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;cr.appendChild(o);});}
   const ct=$('c_tipopago');if(ct){ct.innerHTML='';(cfg.tiposPago||TIPOS_PAGO_DEFAULT).forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;ct.appendChild(o);});}
-  const cb=$('c_banco');if(cb){cb.innerHTML='<option value="">— Banco —</option>';(cfg.bancos_pres||[]).forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;cb.appendChild(o);});}
+  const cb=$('c_banco');if(cb){cb.innerHTML='<option value="">â€” Banco â€”</option>';(cfg.bancos_pres||[]).forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;cb.appendChild(o);});}
 }
 
-// ── UPDATE saveCompra to include responsable ──
+// â”€â”€ UPDATE saveCompra to include responsable â”€â”€
 async function saveCompra() {
   const empresa =($('c_empresa')||{value:''}).value;
   const proveedor=($('c_proveedor')||{value:''}).value;
@@ -2606,7 +2915,7 @@ async function saveAdd(){
   await save(S.mes); closeOv('addOverlay'); renderSec(S.cur); showToast('Guardado');
 }
 
-// ── UTILS ──
+// â”€â”€ UTILS â”€â”€
 function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; if(id==='catOverlay'){ editCtx=null; dynamicSelectTarget=null; } }
 function showLoader(v){
   let el=$('_ldr'); if(!el&&v){ el=Object.assign(document.createElement('div'),{id:'_ldr'}); el.style.cssText='position:fixed;inset:0;background:rgba(7,8,15,0.88);display:flex;align-items:center;justify-content:center;z-index:9998;font-family:var(--font-mono);font-size:11px;color:var(--teal);letter-spacing:2px'; el.textContent='CARGANDO...'; document.body.appendChild(el); }
@@ -2614,7 +2923,7 @@ function showLoader(v){
 }
 function showToast(msg,err=false){
   const c=$('toast'); if(!c) return;
-  const el=document.createElement('div'); el.className='toast-item '+(err?'err':'ok'); el.textContent=(err?'✕ ':'✓ ')+msg; c.appendChild(el);
+  const el=document.createElement('div'); el.className='toast-item '+(err?'err':'ok'); el.textContent=(err?'âœ• ':'âœ“ ')+msg; c.appendChild(el);
   setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); },2800);
 }
 document.addEventListener('click',e=>{ ['addOverlay','newMesOv','compraOverlay','catOverlay'].forEach(id=>{if(e.target.id===id)closeOv(id);}); });
