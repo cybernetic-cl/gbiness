@@ -370,10 +370,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
             <div class="card-hdr"><div class="card-title">// Comisiones</div><button class="btn-secondary" onclick="openDropdownManager('comisiones')">+ Agregar</button></div>
             <div class="card-body" id="cfg_comisiones"></div>
           </div>
-          <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Presupuesto</div><button class="btn-secondary" onclick="openDropdownManager('proveedores')">+ Agregar</button></div>
-            <div class="card-body" id="cfg_presupuesto_extra"></div>
-          </div>
         </div>
       </div>
     </div>
@@ -843,14 +839,6 @@ function renderDropdownConfigSec(){
   renderListItems('cfg_remuneraciones','remuneraciones');
   renderListItems('cfg_pendientes','pendientes');
   renderListItems('cfg_comisiones','comisiones');
-  const extra = $('cfg_presupuesto_extra');
-  if (extra) {
-    extra.innerHTML = `
-      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Proveedores</div><button class="btn-secondary" onclick="openDropdownManager('proveedores')">Gestionar</button></div>${(getDropdownItems('proveedores').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'proveedores')">✎</button><button class="btn-del" onclick="delCatItem('proveedores',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin proveedores</div>'}</div>
-      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Responsables</div><button class="btn-secondary" onclick="openDropdownManager('responsables_pres')">Gestionar</button></div>${(getDropdownItems('responsables_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'responsables_pres')">✎</button><button class="btn-del" onclick="delCatItem('responsables_pres',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin responsables</div>'}</div>
-      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Bancos</div><button class="btn-secondary" onclick="openDropdownManager('bancos_pres')">Gestionar</button></div>${(getDropdownItems('bancos_pres').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'bancos_pres')">✎</button><button class="btn-del" onclick="delCatItem('bancos_pres',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin bancos</div>'}</div>
-      <div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="card-title" style="color:var(--text)">Tipos de pago</div><button class="btn-secondary" onclick="openDropdownManager('tiposPago')">Gestionar</button></div>${(getDropdownItems('tiposPago').map((item,idx)=>`<div class="cat-item"><span>${item}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="editCatItem(${idx},'tiposPago')">✎</button><button class="btn-del" onclick="delCatItem('tiposPago',${idx})">✕</button></span></div>`).join('')) || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin tipos de pago</div>'}</div>`;
-  }
 }
 
 
