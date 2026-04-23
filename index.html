@@ -785,7 +785,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
   <div id="footer-fecha"></div>
 
   <div>
-    v<span style="color:var(--teal)">1.0.6</span>
+    v<span style="color:var(--teal)">1.0.0</span>
   </div>
 
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -2002,7 +2002,7 @@ function annualMonthLabelToKey(value=''){
 }
 function annualTemplateRow(monthKey){
   return {
-    anio: String(annualState.year || new Date().getFullYear()),
+    anio: annualState.year || String(new Date().getFullYear()),
     mes: MESES[+monthKey-1],
     compras_factura: 0,
     compras_exenta: 0,
@@ -2020,7 +2020,7 @@ function annualTemplateRow(monthKey){
 }
 function annualTemplateInstructions(){
   return [
-    {campo:'anio', descripcion:'Opcional. Si viene vacío, se usa el año seleccionado en pantalla. Si viene informado, crea o actualiza ese año en Firebase.', editable:'SI'},
+    {campo:'anio', descripcion:'Opcional pero recomendado. Si se informa, cada fila se guarda en ese año', editable:'SI'},
     {campo:'mes', descripcion:'Obligatorio. Usa Enero..Diciembre o 1..12', editable:'SI'},
     {campo:'compras_factura', descripcion:'Factura afecta compras', editable:'SI'},
     {campo:'compras_exenta', descripcion:'Factura exenta compras', editable:'SI'},
@@ -2036,11 +2036,6 @@ function annualTemplateInstructions(){
     {campo:'pendiente_facturar', descripcion:'Pendiente por facturar', editable:'SI'},
     {campo:'auto_calculados', descripcion:'Remanente anterior, crédito fiscal, débito fiscal, IVA, PPM, remanente siguiente, total impuesto y ganancia', editable:'NO'}
   ];
-}
-function annualResolveUploadYear(row){
-  const raw = String(row.anio ?? row.año ?? row['Año'] ?? row['anio'] ?? row.year ?? row.Year ?? annualState.year || '').trim();
-  const year = raw.replace(/[^\d]/g,'');
-  return /^\d{4}$/.test(year) ? year : String(annualState.year || new Date().getFullYear());
 }
 function annualDownloadTemplate(){
   try{
@@ -2077,24 +2072,22 @@ async function annualUploadTemplate(event){
       return;
     }
 
-    const company = getSelectedAnnualCompany();
-    if(!company){
-      showToast('Selecciona una empresa antes de cargar la planilla', true);
-      event.target.value = '';
-      return;
-    }
-
-    let loaded = 0;
     const touchedYears = new Set();
+    let loaded = 0;
 
     rows.forEach(row=>{
-      const key = annualMonthLabelToKey(row.mes ?? row.Mes ?? row.MES ?? row.month ?? row.Month);
+      const monthRaw = row.mes ?? row.Mes ?? row.MES ?? row.month ?? row.Month;
+      const key = annualMonthLabelToKey(monthRaw);
       if(!key || !ANNUAL_MONTH_KEYS.includes(key)) return;
 
-      const targetYear = annualResolveUploadYear(row);
-      if(!annualState.data[targetYear]) annualState.data[targetYear] = mkAnnualYear(targetYear);
-      const yearObj = annualState.data[targetYear];
-      const companyData = ensureAnnualCompanyYear(yearObj, company);
+      const rawYear = String(row.anio ?? row.año ?? row['Año'] ?? row['anio'] ?? row.year ?? row.Year ?? annualState.year ?? '').trim();
+      const year = /^\d{4}$/.test(rawYear) ? rawYear : String(annualState.year || new Date().getFullYear());
+      if(!annualState.data[year]) annualState.data[year] = mkAnnualYear(year);
+
+      const company = getSelectedAnnualCompany();
+      const yearObj = annualState.data[year];
+      const companyData = company ? ensureAnnualCompanyYear(yearObj, company) : null;
+      if(!companyData) return;
 
       companyData.months[key] = annualMonthMerged({
         ...companyData.months[key],
@@ -2113,29 +2106,27 @@ async function annualUploadTemplate(event){
       });
 
       recalcAnnualYear(yearObj);
-      touchedYears.add(targetYear);
+      touchedYears.add(year);
       loaded += 1;
     });
 
-    if(!loaded){
-      showToast('No se reconocieron meses válidos', true);
-      event.target.value = '';
-      return;
-    }
-
-    for(const year of Array.from(touchedYears).sort()){
+    for(const year of touchedYears){
       await saveAnnualYear(year);
     }
 
-    buildYearSel();
-    if(touchedYears.has(String(annualState.year || ''))){
-      renderAnnualMeses();
-      renderAnnualResumen();
-      renderAnnualSocios();
-      renderAnnualHistorial();
+    if(touchedYears.size){
+      const targetYear = annualState.year && touchedYears.has(annualState.year)
+        ? annualState.year
+        : Array.from(touchedYears).sort().reverse()[0];
+      if(targetYear){
+        annualState.year = targetYear;
+        buildYearSel();
+        $('yearSel').value = targetYear;
+      }
+      renderAnnualApp();
     }
 
-    showToast(`Planilla cargada en Firebase: ${loaded} meses · ${touchedYears.size} año(s)`);
+    showToast(loaded ? `Planilla cargada: ${loaded} meses actualizados en ${touchedYears.size} año(s)` : 'No se reconocieron meses válidos', !loaded);
   }catch(e){
     console.error('Error cargando planilla anual:', e);
     showToast('Error al cargar planilla', true);
@@ -3129,15 +3120,13 @@ async function saveAdd(){
   con su código de versión, fecha, descripción y etiqueta de tipo (feature, mejora o fix).
   Mantener esta instrucción como comentario permanente para que el sistema la reconozca.
 */
-// INSTRUCCION PERMANENTE DEL SISTEMA:
-// CADA CAMBIO NUEVO DEBE AGREGARSE TAMBIEN AL REGISTRO VERSIONES CON version, fecha, cambios y etiqueta tipo: feature, mejora o fix.
 const VERSIONES = [
   {
     version: "1.0.6",
     fecha: "2026-04-23",
     cambios: [
-      { tipo:"fix", txt:"La carga anual por Excel ahora guarda cada año tocado directamente en Firebase, incluyendo 2025 cuando venga informado en la planilla" },
-      { tipo:"mejora", txt:"La plantilla anual ahora incluye columna anio para cargar varios años sin depender del año seleccionado en pantalla" }
+      { tipo:"fix", txt:"La carga anual por Excel ahora guarda cada año tocado directamente en Firebase" },
+      { tipo:"mejora", txt:"La plantilla anual ahora incluye la columna anio para importar 2025, 2026 u otros años sin depender del año abierto" }
     ]
   },
   {
