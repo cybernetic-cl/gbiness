@@ -522,9 +522,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
       <div class="nav-group">Módulos</div>
       <div class="nav-item active" id="anav-resumen" onclick="goAnnualSec(this,'resumen')">◈ Resumen anual</div>
       <div class="nav-item" id="anav-meses" onclick="goAnnualSec(this,'meses')">🗓️ Mes a mes</div>
-      <div class="nav-item" id="anav-config" onclick="goAnnualSec(this,'config')">⚙ Configuración</div>
       <div class="nav-item" id="anav-historial" onclick="goAnnualSec(this,'historial')">📋 Historial anual</div>
       <div class="nav-item" id="anav-socios" onclick="goAnnualSec(this,'socios')">👥 Socios</div>
+      <div class="nav-item" id="anav-config" onclick="goAnnualSec(this,'config')">⚙ Configuración</div>
     </div>
     <div class="main">
       <div id="annualYearLabel" class="mes-label"></div>
@@ -590,7 +590,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         </div>
       </div>
 
-      <div id="asec-config" style="display:none">
+      <div id="asec-historial" style="display:none">
+        <div class="page-title">HISTORIAL <span>ANUAL</span></div>
+        <div class="page-sub">// Años creados y sus principales cifras</div>
+        <div class="section-card"><div class="card-body" id="annualHistoryBody"></div></div>
+      </div>
+
+
+      <div id="asec-socios" style="display:none">
+        <div class="page-title">DETALLE DE <span>SOCIOS</span></div>
+        <div class="page-sub">// Vista por empresa, por socio y consolidado global del año seleccionado</div>
+        <div class="kpi-grid" id="annualSociosKpiGrid"></div>
+
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Resumen por empresa</div></div>
+          <div class="card-body" id="annualSociosEmpresaTable"></div>
+        </div>
+
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Detalle por socio y empresa</div></div>
+          <div class="card-body" id="annualSociosDetalleTable"></div>
+        </div>
+
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Consolidado global por socio</div></div>
+          <div class="card-body" id="annualSociosGlobalTable"></div>
+        </div>
+      </div><div id="asec-config" style="display:none">
         <div class="page-title">CONFIGURACIÓN <span>ANUAL</span></div>
         <div class="page-sub">// Cada empresa puede tener sus propios socios y porcentaje accionario</div>
         <div class="kpi-grid" id="annualConfigKpi"></div>
@@ -618,33 +644,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
         </div>
       </div>
 
-      <div id="asec-historial" style="display:none">
-        <div class="page-title">HISTORIAL <span>ANUAL</span></div>
-        <div class="page-sub">// Años creados y sus principales cifras</div>
-        <div class="section-card"><div class="card-body" id="annualHistoryBody"></div></div>
-      </div>
-
-
-      <div id="asec-socios" style="display:none">
-        <div class="page-title">DETALLE DE <span>SOCIOS</span></div>
-        <div class="page-sub">// Vista por empresa, por socio y consolidado global del año seleccionado</div>
-        <div class="kpi-grid" id="annualSociosKpiGrid"></div>
-
-        <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Resumen por empresa</div></div>
-          <div class="card-body" id="annualSociosEmpresaTable"></div>
-        </div>
-
-        <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Detalle por socio y empresa</div></div>
-          <div class="card-body" id="annualSociosDetalleTable"></div>
-        </div>
-
-        <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Consolidado global por socio</div></div>
-          <div class="card-body" id="annualSociosGlobalTable"></div>
-        </div>
-      </div>
+      
     </div>
   </div>
 </div>
@@ -3090,6 +3090,13 @@ async function saveAdd(){
   Mantener esta instrucción como comentario permanente para que el sistema la reconozca.
 */
 const VERSIONES = [
+  {
+    version: "1.0.5",
+    fecha: "2026-04-23",
+    cambios: [
+      { tipo:"mejora", txt:"Configuración movida al final del menú anual" }
+    ]
+  },
   {
     version: "1.0.2",
     fecha: "2026-04-23",
