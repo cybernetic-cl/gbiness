@@ -551,7 +551,7 @@ window.fbLoad = async () => {
   return s.docs.map(d=>({_id:d.id,...d.data()}));
 };
 
-document.addEventListener('DOMContentLoaded', () => { if(window._boot) window._boot(); });
+document.addEventListener('DOMContentLoaded', () => { /* espera login */ });
 </script>
 
 <!-- APP JS -->
@@ -631,10 +631,15 @@ async function boot(){
   try{
     if(window.fbLoad){ const ls=await window.fbLoad(); ls.forEach(c=>{S.data[c._id]=c;}); }
     await loadPresupuesto();
-  }catch(e){console.error(e);}
-  if(!Object.keys(S.data).length){ const n=new Date(); const id=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; S.data[id]=mkEmpty(id); await save(id); }
-  buildSel(); S.mes=Object.keys(S.data).sort().reverse()[0]; document.getElementById('mesSel').value=S.mes; setLbl();
-  showLoader(false); draw();
+    if(!Object.keys(S.data).length){ const n=new Date(); const id=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; S.data[id]=mkEmpty(id); await save(id); }
+    buildSel(); S.mes=Object.keys(S.data).sort().reverse()[0]; document.getElementById('mesSel').value=S.mes; setLbl();
+    draw();
+  }catch(e){
+    console.error(e);
+    showToast('Error cargando datos de Firebase', true);
+  } finally {
+    showLoader(false);
+  }
 }
 function mkEmpty(id){ return {_id:id,saldos:[],bancos:[],remuneraciones:[],pendientes:[],comisiones:[]}; }
 function cur(){ return S.data[S.mes]||mkEmpty(S.mes); }
@@ -1126,15 +1131,21 @@ function presTab(el, tab) {
 
 async function bootPresupuesto() {
   showLoader(true);
-  try { await loadPresupuesto(); } catch(e) { console.error(e); }
-  buildMesSel2();
-  const mes = Object.keys(presState.compras).sort().reverse()[0]
-    || (()=>{ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; })();
-  S.mes = mes;
-  const sel2 = $('mesSel2'); if(sel2) sel2.value = mes;
-  setPresLabel();
-  showLoader(false);
-  renderPresupuestoApp();
+  try {
+    await loadPresupuesto();
+    buildMesSel2();
+    const mes = Object.keys(presState.compras).sort().reverse()[0]
+      || (()=>{ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; })();
+    S.mes = mes;
+    const sel2 = $('mesSel2'); if(sel2) sel2.value = mes;
+    setPresLabel();
+    renderPresupuestoApp();
+  } catch(e) {
+    console.error(e);
+    showToast('Error cargando presupuesto desde Firebase', true);
+  } finally {
+    showLoader(false);
+  }
 }
 
 function buildMesSel2() {
