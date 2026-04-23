@@ -181,8 +181,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 
       <!-- RESUMEN -->
       <div id="sec-resumen">
-        <div class="page-title">RESUMEN <span>FINANCIERO</span></div>
-        <div class="page-sub">// Estado consolidado · se actualiza en tiempo real</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div>
+            <div class="page-title">RESUMEN <span>FINANCIERO</span></div>
+            <div class="page-sub">// Estado consolidado · se actualiza en tiempo real</div>
+          </div>
+          <button class="btn-primary" onclick="exportResumenPDF()">⬇ Exportar PDF</button>
+        </div>
         <div class="kpi-grid" id="kpiGrid"></div>
         <div class="section-card">
           <div class="card-hdr"><div class="card-title">// Desglose de gastos del mes</div></div>
@@ -540,6 +545,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
   </div>
 </div>
 
+<div id="appCredits" style="position:fixed;left:12px;bottom:8px;z-index:50;font-family:var(--font-mono);font-size:9px;letter-spacing:0.5px;color:rgba(160,168,200,0.75);pointer-events:none">
+  Creado con Inteligencia Artificial ChatGPT, Claude e Inteligencia Humana Rich GPT
+</div>
+
 <div id="toast"></div>
 
 <!-- FIREBASE -->
@@ -592,7 +601,11 @@ window.fbLoad = async () => {
 document.addEventListener('DOMContentLoaded', () => { /* espera login */ });
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
 <!-- APP JS -->
+
 <script>
 const HASH_CIERRE = 'cf270c49b23a2dbc737575b4e7b8d447eb5d10fc9b0309b4fd9e7da0fa559d0e'; // Cy207980
 const HASH_PRES   = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f';   // Cy1234
@@ -842,7 +855,298 @@ function renderDropdownConfigSec(){
 }
 
 
+
+function pdfMoney(n){
+  return '$' + Math.round(Number(n||0)).toLocaleString('es-CL');
+}
+function buildResumenMetrics(){
+  const d = cur();
+  const tBNeg = d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
+  const tBPos = d.bancos.reduce((s,r)=>s+(r.positivo||0),0);
+  const tR = d.remuneraciones.reduce((s,r)=>s+(r.monto||0),0);
+  const tP = d.pendientes.reduce((s,r)=>s+(r.monto||0),0);
+  const tC = d.comisiones.reduce((s,r)=>s+(r.monto||0),0);
+  const totalGastos = tBNeg + tR + tP + tC;
+  const totalSaldos = d.saldos.reduce((s,r)=>s+(r.liberado||0)+(r.pendiente||0),0);
+  const totalLiberado = d.saldos.reduce((s,r)=>s+(r.liberado||0),0);
+  const totalPendCobro = d.saldos.reduce((s,r)=>s+(r.pendiente||0),0);
+  const totalIngresos = totalSaldos + tBPos;
+  const disponible = totalIngresos - totalGastos;
+  return { d, tBNeg, tBPos, tR, tP, tC, totalGastos, totalSaldos, totalLiberado, totalPendCobro, totalIngresos, disponible };
+}
+function getMesTituloPDF(){
+  if(!S.mes) return 'Cierre mensual';
+  const [y,m] = S.mes.split('-');
+  return `${MESES[+m-1]} ${y}`;
+}
+function exportResumenPDF(){
+  try{
+    const jspdfNS = window.jspdf || window.jsPDF;
+    const JsPDFCtor = jspdfNS?.jsPDF || window.jsPDF;
+    if(!JsPDFCtor){
+      showToast('No se pudo cargar la librería PDF', true);
+      return;
+    }
+
+    const doc = new JsPDFCtor({orientation:'p', unit:'pt', format:'a4'});
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 42;
+    const contentW = pageW - margin*2;
+    const colors = {
+      bg:'#0d0f1a',
+      card:'#141728',
+      teal:'#00d4aa',
+      green:'#00e5a0',
+      amber:'#f5a623',
+      red:'#ff4757',
+      text:'#e8eaf6',
+      muted:'#7f88aa',
+      line:'#23283d'
+    };
+    const m = buildResumenMetrics();
+    const monthLabel = getMesTituloPDF();
+
+    const hasAutoTable = typeof doc.autoTable === 'function';
+
+    function addPageBg(){
+      doc.setFillColor(colors.bg);
+      doc.rect(0,0,pageW,pageH,'F');
+    }
+    function addHeader(){
+      addPageBg();
+      doc.setFillColor(20,23,40);
+      doc.roundedRect(margin, margin, contentW, 64, 8, 8, 'F');
+
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(colors.teal);
+      doc.setFontSize(24);
+      doc.text('GBISNESS', margin+18, margin+28);
+
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(colors.text);
+      doc.setFontSize(18);
+      doc.text('Resumen de cierre mensual', margin+18, margin+50);
+
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(colors.muted);
+      doc.setFontSize(10);
+      doc.text(`Periodo: ${monthLabel}`, pageW - margin - 120, margin+28);
+      doc.text(`Generado: ${new Date().toLocaleString('es-CL')}`, pageW - margin - 170, margin+50);
+      return margin + 86;
+    }
+
+    function drawKpi(y, x, w, h, label, value, sub, accent){
+      doc.setFillColor(20,23,40);
+      doc.roundedRect(x, y, w, h, 8, 8, 'F');
+      doc.setFillColor(accent);
+      doc.roundedRect(x, y, w, 4, 4, 4, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(colors.muted);
+      doc.setFontSize(9);
+      doc.text(label.toUpperCase(), x+12, y+18);
+      doc.setTextColor(colors.text);
+      doc.setFontSize(18);
+      doc.text(value, x+12, y+40);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(colors.muted);
+      doc.setFontSize(8);
+      const lines = doc.splitTextToSize(sub, w-24);
+      doc.text(lines, x+12, y+55);
+    }
+
+    function addSimpleTable(startY, title, headers, rows){
+      let y = startY;
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(colors.text);
+      doc.setFontSize(12);
+      if(title){
+        doc.text(title, margin, y);
+        y += 14;
+      }
+
+      const availableW = contentW;
+      const cols = headers.length;
+      const colW = availableW / cols;
+      const headerH = 20;
+      const rowH = 18;
+
+      doc.setFillColor(20,23,40);
+      doc.rect(margin, y, availableW, headerH, 'F');
+      doc.setDrawColor(35,40,61);
+      doc.setLineWidth(0.5);
+      doc.rect(margin, y, availableW, headerH);
+
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(colors.text);
+      doc.setFontSize(8);
+      headers.forEach((h, i) => {
+        doc.text(String(h), margin + i*colW + 6, y + 13);
+        if(i>0){
+          doc.line(margin + i*colW, y, margin + i*colW, y + headerH);
+        }
+      });
+      y += headerH;
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      rows.forEach((row, ridx) => {
+        if(y + rowH > pageH - margin){
+          doc.addPage();
+          addPageBg();
+          y = margin;
+        }
+        doc.setFillColor(ridx % 2 === 0 ? 13 : 17, ridx % 2 === 0 ? 15 : 20, ridx % 2 === 0 ? 26 : 32);
+        doc.rect(margin, y, availableW, rowH, 'F');
+        doc.setDrawColor(35,40,61);
+        doc.rect(margin, y, availableW, rowH);
+
+        row.forEach((cell, i) => {
+          const text = String(cell ?? '');
+          doc.setTextColor(colors.text);
+          const isMoneyCol = i > 1 || headers[i]?.toLowerCase().includes('monto') || headers[i]?.toLowerCase().includes('total') || headers[i]?.toLowerCase().includes('negativo') || headers[i]?.toLowerCase().includes('positivo');
+          const tx = isMoneyCol ? margin + (i+1)*colW - 6 : margin + i*colW + 6;
+          doc.text(text, tx, y + 12, {align: isMoneyCol ? 'right' : 'left', maxWidth: colW - 12});
+          if(i>0){
+            doc.line(margin + i*colW, y, margin + i*colW, y + rowH);
+          }
+        });
+        y += rowH;
+      });
+      return y + 8;
+    }
+
+    let y = addHeader();
+
+    const gap = 12;
+    const kpiW = (contentW - gap) / 2;
+    const kpiH = 78;
+    drawKpi(y, margin, kpiW, kpiH, 'Total ingresos', pdfMoney(m.totalIngresos), `Saldos: ${pdfMoney(m.totalSaldos)} · Bancos(+): ${pdfMoney(m.tBPos)}`, colors.teal);
+    drawKpi(y, margin + kpiW + gap, kpiW, kpiH, 'Total gastos', pdfMoney(m.totalGastos), `Bancos(-), remuneraciones, pendientes y comisiones`, colors.red);
+    y += kpiH + 12;
+    drawKpi(y, margin, kpiW, kpiH, 'Disponible', pdfMoney(m.disponible), m.disponible >= 0 ? 'Saldo disponible del cierre del mes' : 'El cierre del mes quedó en negativo', m.disponible >= 0 ? colors.green : colors.red);
+    drawKpi(y, margin + kpiW + gap, kpiW, kpiH, 'Pendiente de cobro', pdfMoney(m.totalPendCobro), `Liberado: ${pdfMoney(m.totalLiberado)} · Pendiente por liberar`, colors.amber);
+    y += kpiH + 22;
+
+    const executiveRows = [
+      ['Bancos y servicios (-)', pdfMoney(m.tBNeg), 'Salidas bancarias del mes'],
+      ['Bancos y servicios (+)', pdfMoney(m.tBPos), 'Ingresos registrados en bancos'],
+      ['Remuneraciones e impuestos', pdfMoney(m.tR), 'Sueldos, Previred y SII'],
+      ['Pendientes', pdfMoney(m.tP), 'Pagos por operador y cuentas por pagar'],
+      ['Comisiones y publicidad', pdfMoney(m.tC), 'Plataformas y marketing'],
+    ];
+
+    if(hasAutoTable){
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(colors.text);
+      doc.setFontSize(12);
+      doc.text('Desglose ejecutivo', margin, y);
+      y += 10;
+      doc.autoTable({
+        startY: y,
+        theme: 'grid',
+        margin: {left: margin, right: margin},
+        headStyles: {fillColor: [20,23,40], textColor: [232,234,246], lineColor:[35,40,61], lineWidth:0.5, fontSize:9},
+        bodyStyles: {fillColor: [13,15,26], textColor: [232,234,246], lineColor:[35,40,61], lineWidth:0.5, fontSize:9},
+        alternateRowStyles: {fillColor: [17,20,32]},
+        columnStyles: {1: {halign:'right'}, 2:{halign:'left'}},
+        head: [['Categoría','Monto','Detalle']],
+        body: executiveRows
+      });
+    } else {
+      addSimpleTable(y, 'Desglose ejecutivo', ['Categoría','Monto','Detalle'], executiveRows);
+    }
+
+    function rowsSaldos(){
+      return (m.d.saldos||[]).map(r=>[
+        String(r.cuenta||''),
+        String(r.empresa||''),
+        pdfMoney(r.liberado||0),
+        pdfMoney(r.pendiente||0),
+        pdfMoney((r.liberado||0)+(r.pendiente||0))
+      ]);
+    }
+    function rowsBancos(){
+      return (m.d.bancos||[]).map(r=>[
+        String(r.categoria||''),
+        String(r.descripcion||''),
+        pdfMoney(r.negativo||0),
+        pdfMoney(r.positivo||0),
+        String(r.estado||'')
+      ]);
+    }
+    function rowsSimple(arr){
+      return (arr||[]).map(r=>[
+        String(r.categoria || r.plataforma || ''),
+        String(r.descripcion || r.responsable || ''),
+        pdfMoney(r.monto||0),
+        String(r.estado||'')
+      ]);
+    }
+
+    const sections = [
+      {title:'Saldos por cuenta', head:[['Cuenta','Empresa','Liberado','Pendiente','Total']], body: rowsSaldos()},
+      {title:'Bancos y servicios', head:[['Categoría','Descripción','Negativo','Positivo','Estado']], body: rowsBancos()},
+      {title:'Remuneraciones e impuestos', head:[['Categoría','Detalle','Monto','Estado']], body: rowsSimple(m.d.remuneraciones)},
+      {title:'Pagos pendientes', head:[['Categoría','Detalle','Monto','Estado']], body: rowsSimple(m.d.pendientes)},
+      {title:'Comisiones y publicidad', head:[['Plataforma','Responsable','Monto','Estado']], body: rowsSimple(m.d.comisiones)}
+    ];
+
+    sections.forEach(sec => {
+      doc.addPage();
+      addPageBg();
+
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(colors.teal);
+      doc.setFontSize(18);
+      doc.text('GBISNESS', margin, margin+8);
+      doc.setTextColor(colors.text);
+      doc.setFontSize(14);
+      doc.text(sec.title, margin, margin+32);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(colors.muted);
+      doc.setFontSize(9);
+      doc.text(`Periodo: ${monthLabel}`, pageW - margin - 100, margin+8);
+
+      const normalizedBody = sec.body.length ? sec.body : [Array.from({length: sec.head[0].length}, (_,i)=>i===0?'Sin registros':'')];
+
+      if(hasAutoTable){
+        doc.autoTable({
+          startY: margin + 46,
+          theme: 'grid',
+          margin: {left: margin, right: margin},
+          headStyles: {fillColor: [20,23,40], textColor: [232,234,246], lineColor:[35,40,61], lineWidth:0.5, fontSize:9},
+          bodyStyles: {fillColor: [13,15,26], textColor: [232,234,246], lineColor:[35,40,61], lineWidth:0.5, fontSize:9},
+          alternateRowStyles: {fillColor: [17,20,32]},
+          head: sec.head,
+          body: normalizedBody
+        });
+      } else {
+        addSimpleTable(margin + 46, '', sec.head[0], normalizedBody);
+      }
+    });
+
+    const lastPage = doc.getNumberOfPages();
+    for(let i=1;i<=lastPage;i++){
+      doc.setPage(i);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(colors.muted);
+      doc.text('Creado con Inteligencia Artificial ChatGPT, Claude e Inteligencia Humana Rich GPT', margin, pageH - 16);
+      doc.text(`Página ${i} de ${lastPage}`, pageW - margin - 45, pageH - 16);
+    }
+
+    const safeMonth = monthLabel.toLowerCase().replace(/\s+/g,'_');
+    doc.save(`cierre_${safeMonth}.pdf`);
+    showToast('PDF exportado correctamente');
+  }catch(e){
+    console.error(e);
+    showToast('No se pudo exportar el PDF', true);
+  }
+}
+
 // ── RESUMEN ──
+
 function renderResumen(){
   const d=cur();
   const tBNeg=d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
