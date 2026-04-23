@@ -784,8 +784,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 ">
   <div id="footer-fecha"></div>
 
-  <div>
-    v<span style="color:var(--teal)">1.0.0</span>
+  <div id="footer-version">
+    v<span style="color:var(--teal)">...</span>
   </div>
 
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -966,6 +966,7 @@ async function boot(){
     if(!Object.keys(S.data).length){ const n=new Date(); const id=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; S.data[id]=mkEmpty(id); await save(id); }
     buildSel(); S.mes=Object.keys(S.data).sort().reverse()[0]; document.getElementById('mesSel').value=S.mes; setLbl();
     draw();
+    renderFooterVersion();
   }catch(e){
     console.error(e);
     showToast('Error cargando datos de Firebase', true);
@@ -1612,6 +1613,7 @@ async function bootPresupuesto() {
     const sel2 = $('mesSel2'); if(sel2) sel2.value = mes;
     setPresLabel();
     renderPresupuestoApp();
+    renderFooterVersion();
   } catch(e) {
     console.error(e);
     showToast('Error cargando presupuesto desde Firebase', true);
@@ -2563,6 +2565,7 @@ function bootAnnual(){
     setAnnualLabel();
     persistAnnualSelection();
     renderAnnualApp();
+    renderFooterVersion();
   }).catch(e=>{
     console.error(e);
     showToast('Error cargando cierre anual', true);
@@ -3242,99 +3245,224 @@ async function saveAdd(){
   Cada cambio nuevo que se haga en este archivo debe agregarse también al registro VERSIONES
   con su código de versión, fecha, descripción y etiqueta de tipo (feature, mejora o fix).
   Mantener esta instrucción como comentario permanente para que el sistema la reconozca.
+
+  REGLA DE VERSIONADO AUTOMÁTICO:
+  Cada cambio nuevo debe registrarse mediante registrarCambio(...)
+  o creando una nueva versión con nuevaVersionBase() y luego agregando cambios con
+  registrarCambioEnVersionActual(...). El footer siempre debe reflejar la última
+  versión registrada en VERSIONES.
 */
 const VERSIONES = [
+  {
+    version: "1.0.7",
+    fecha: "2026-04-23",
+    cambios: [
+      { tipo:"feature", codigo:"FEAT-007", txt:"Versionado automático integrado con footer dinámico, historial sincronizado y persistencia local" }
+    ]
+  },
   {
     version: "1.0.6",
     fecha: "2026-04-23",
     cambios: [
-      { tipo:"fix", txt:"La carga anual por Excel ahora guarda cada año tocado directamente en Firebase" },
-      { tipo:"mejora", txt:"La plantilla anual ahora incluye la columna anio para importar 2025, 2026 u otros años sin depender del año abierto" }
+      { tipo:"fix", codigo:"FIX-006", txt:"La carga anual por Excel ahora guarda cada año tocado directamente en Firebase" },
+      { tipo:"mejora", codigo:"MEJ-006", txt:"La plantilla anual ahora incluye la columna anio para importar 2025, 2026 u otros años sin depender del año abierto" }
     ]
   },
   {
     version: "1.0.5",
     fecha: "2026-04-23",
     cambios: [
-      { tipo:"mejora", txt:"Configuración movida al final del menú anual" }
+      { tipo:"mejora", codigo:"MEJ-005", txt:"Configuración movida al final del menú anual" }
     ]
   },
   {
     version: "1.0.2",
     fecha: "2026-04-23",
     cambios: [
-      { tipo:"mejora", txt:"La pestaña Socios fue movida al final del menú y del layout anual" }
+      { tipo:"mejora", codigo:"MEJ-002", txt:"La pestaña Socios fue movida al final del menú y del layout anual" }
     ]
   },
   {
     version: "1.0.1",
     fecha: "2026-04-23",
     cambios: [
-      { tipo:"mejora", txt:"Se eliminó Resultado final global en la pestaña Socios por duplicar la utilidad final" },
-      { tipo:"fix", txt:"Se ajustaron tablas y cálculos de socios para mostrar solo utilidad, PPM, utilidad final y sueldo estimado" }
+      { tipo:"mejora", codigo:"MEJ-001", txt:"Se eliminó Resultado final global en la pestaña Socios por duplicar la utilidad final" },
+      { tipo:"fix", codigo:"FIX-001", txt:"Se ajustaron tablas y cálculos de socios para mostrar solo utilidad, PPM, utilidad final y sueldo estimado" }
     ]
   },
   {
     version: "1.0.0",
     fecha: "2026-04-23",
     cambios: [
-      { tipo:"feature", txt:"Carga masiva por Excel para armado mensual" },
-      { tipo:"mejora", txt:"Footer de créditos reintegrado al layout sin fondo" },
-      { tipo:"fix", txt:"Corrección del guardado y apertura del cierre anual" }
+      { tipo:"feature", codigo:"FEAT-001", txt:"Carga masiva por Excel para armado mensual" },
+      { tipo:"mejora", codigo:"MEJ-000", txt:"Footer de créditos reintegrado al layout sin fondo" },
+      { tipo:"fix", codigo:"FIX-000", txt:"Corrección del guardado y apertura del cierre anual" }
     ]
   },
   {
     version: "0.9.0",
     fecha: "2026-04-22",
     cambios: [
-      { tipo:"feature", txt:"Modal visual para empresas y socios" },
-      { tipo:"mejora", txt:"Bloqueo de campos autocalculados en anual" },
-      { tipo:"fix", txt:"Corrección de edición de socios en configuración" }
+      { tipo:"feature", codigo:"FEAT-090", txt:"Modal visual para empresas y socios" },
+      { tipo:"mejora", codigo:"MEJ-090", txt:"Bloqueo de campos autocalculados en anual" },
+      { tipo:"fix", codigo:"FIX-090", txt:"Corrección de edición de socios en configuración" }
     ]
   },
   {
     version: "0.8.0",
     fecha: "2026-04-21",
     cambios: [
-      { tipo:"feature", txt:"Módulo de cierre anual multiempresa" },
-      { tipo:"mejora", txt:"Resumen anual por empresa" },
-      { tipo:"fix", txt:"Ajustes de selector de años y empresas" }
+      { tipo:"feature", codigo:"FEAT-080", txt:"Módulo de cierre anual multiempresa" },
+      { tipo:"mejora", codigo:"MEJ-080", txt:"Resumen anual por empresa" },
+      { tipo:"fix", codigo:"FIX-080", txt:"Ajustes de selector de años y empresas" }
     ]
   }
 ];
 
-function openVersionModal(){
-  const container = document.getElementById('versionHistoryBody');
-
-  const getBadge = (tipo)=>{
-    if(tipo === 'feature') return `<span class="badge-tag badge-feature">FEATURE</span>`;
-    if(tipo === 'fix') return `<span class="badge-tag badge-fix">FIX</span>`;
-    if(tipo === 'mejora') return `<span class="badge-tag badge-mejora">MEJORA</span>`;
-    return `<span class="badge-tag">OTRO</span>`;
-  };
-
-  container.innerHTML = VERSIONES.map(v => `
-    <div style="margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:10px">
-      <div style="font-family:var(--font-display);color:var(--teal);font-size:16px">v${v.version}</div>
-      <div style="font-size:10px;color:var(--text3);margin-bottom:6px">${v.fecha}</div>
-      <ul style="padding-left:14px;font-size:12px;color:var(--text2)">
-        ${v.cambios.map(c => `<li style="margin-bottom:4px">${getBadge(c.tipo)} ${c.txt}</li>`).join('')}
-      </ul>
-    </div>
-  `).join('');
-
-  document.getElementById('versionOv').classList.add('open');
+function padVersionValue(n){ return String(n).padStart(2,'0'); }
+function fechaHoyVersionado(){
+  const d = new Date();
+  return `${padVersionValue(d.getDate())}-${padVersionValue(d.getMonth()+1)}-${d.getFullYear()}`;
 }
-
-function updateFooterClock(){
+function horaAhoraVersionado(){
+  const d = new Date();
+  let h = d.getHours();
+  const m = padVersionValue(d.getMinutes());
+  const s = padVersionValue(d.getSeconds());
+  const ampm = h >= 12 ? 'p. m.' : 'a. m.';
+  h = h % 12;
+  if(h === 0) h = 12;
+  return `${padVersionValue(h)}:${m}:${s} ${ampm}`;
+}
+function getCurrentVersion(){
+  if(Array.isArray(VERSIONES) && VERSIONES.length && VERSIONES[0]?.version){
+    return VERSIONES[0].version;
+  }
+  return '1.0.0';
+}
+function incrementarVersion(versionActual){
+  const partes = String(versionActual || '1.0.0').split('.').map(n => parseInt(n,10) || 0);
+  while(partes.length < 3) partes.push(0);
+  let [major, minor, patch] = partes;
+  patch += 1;
+  return `${major}.${minor}.${patch}`;
+}
+function getBadgeClass(tipo){
+  const t = String(tipo || '').toLowerCase();
+  if(t === 'feature') return 'badge-feature';
+  if(t === 'fix') return 'badge-fix';
+  return 'badge-mejora';
+}
+function getTipoLabel(tipo){
+  const t = String(tipo || '').toLowerCase();
+  if(t === 'feature') return 'FEATURE';
+  if(t === 'fix') return 'FIX';
+  return 'MEJORA';
+}
+function renderFooterVersion(){
+  const el = document.getElementById('footer-version');
+  if(!el) return;
+  const v = getCurrentVersion();
+  el.innerHTML = `v<span style="color:var(--teal)">${v}</span>`;
+}
+function renderFooterDate(){
   const el = document.getElementById('footer-fecha');
   if(!el) return;
-  const now = new Date();
-  el.textContent = now.toLocaleDateString('es-CL') + ' · ' + now.toLocaleTimeString('es-CL');
+  el.textContent = `${fechaHoyVersionado()} · ${horaAhoraVersionado()}`;
+}
+function renderVersionModal(){
+  const container = document.getElementById('versionHistoryBody');
+  if(!container) return;
+  if(!Array.isArray(VERSIONES) || !VERSIONES.length){
+    container.innerHTML = `<div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin historial de cambios.</div>`;
+    return;
+  }
+  container.innerHTML = VERSIONES.map(v => `
+    <div style="border:1px solid var(--border);padding:12px 14px;margin-bottom:12px;border-radius:3px;background:rgba(255,255,255,0.02)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="font-family:var(--font-display);font-size:20px;letter-spacing:1px;color:var(--teal)">v${v.version}</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${v.fecha || ''}</div>
+      </div>
+      <div>
+        ${(v.cambios || []).map(c => `
+          <div style="padding:7px 0;border-top:1px solid rgba(255,255,255,0.05)">
+            <span class="badge-tag ${getBadgeClass(c.tipo)}">${getTipoLabel(c.tipo)}</span>
+            ${c.codigo ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-right:8px">${c.codigo}</span>` : ''}
+            <span style="font-size:13px;color:var(--text)">${c.txt || ''}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+function openVersionModal(){
+  renderVersionModal();
+  document.getElementById('versionOv')?.classList.add('open');
+}
+function guardarVersionesLocal(){
+  try{
+    localStorage.setItem('gbisness_versiones', JSON.stringify(VERSIONES));
+  }catch(e){
+    console.error('No se pudieron guardar las versiones en localStorage', e);
+  }
+}
+function cargarVersionesLocal(){
+  try{
+    const raw = localStorage.getItem('gbisness_versiones');
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    if(Array.isArray(data) && data.length){
+      VERSIONES.length = 0;
+      data.forEach(v => VERSIONES.push(v));
+    }
+  }catch(e){
+    console.error('No se pudieron cargar las versiones desde localStorage', e);
+  }
+}
+function registrarCambio({tipo='mejora', codigo='', txt=''} = {}){
+  if(!txt || !String(txt).trim()) return null;
+  const actual = getCurrentVersion();
+  const nueva = incrementarVersion(actual);
+  VERSIONES.unshift({
+    version: nueva,
+    fecha: fechaHoyVersionado(),
+    cambios: [{ tipo, codigo, txt: String(txt).trim() }]
+  });
+  guardarVersionesLocal();
+  renderFooterVersion();
+  renderVersionModal();
+  return nueva;
+}
+function nuevaVersionBase(){
+  const actual = getCurrentVersion();
+  const nueva = incrementarVersion(actual);
+  VERSIONES.unshift({ version: nueva, fecha: fechaHoyVersionado(), cambios: [] });
+  guardarVersionesLocal();
+  renderFooterVersion();
+  renderVersionModal();
+  return nueva;
+}
+function registrarCambioEnVersionActual({tipo='mejora', codigo='', txt=''} = {}){
+  if(!txt || !String(txt).trim()) return null;
+  if(!Array.isArray(VERSIONES) || !VERSIONES.length){
+    VERSIONES.unshift({ version: '1.0.0', fecha: fechaHoyVersionado(), cambios: [] });
+  }
+  VERSIONES[0].cambios.unshift({ tipo, codigo, txt: String(txt).trim() });
+  guardarVersionesLocal();
+  renderFooterVersion();
+  renderVersionModal();
+  return VERSIONES[0].version;
+}
+function updateFooterClock(){
+  renderFooterDate();
 }
 setInterval(updateFooterClock, 1000);
-document.addEventListener('DOMContentLoaded', updateFooterClock);
-
+document.addEventListener('DOMContentLoaded', () => {
+  cargarVersionesLocal();
+  renderFooterVersion();
+  renderFooterDate();
+  renderVersionModal();
+});
 
 // ── UTILS ──
 function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; if(id==='catOverlay'){ editCtx=null; dynamicSelectTarget=null; } }
