@@ -1820,49 +1820,58 @@ async function delRendPlataforma(idx){
 
 // ── SHARED LINE CHART RENDERER ──
 function buildLineChart(datos, color, isBrutas){
-  if(!datos || datos.length<1) return '<div style="text-align:center;padding:32px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin datos suficientes — registra ventas en al menos 1 mes</div>';
-  const W=700, H=220, padL=70, padR=20, padT=30, padB=40;
+  if(!datos || datos.length<1) return '<div style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin datos suficientes — registra ventas en al menos 1 mes</div>';
+  const W=680, H=160, padL=80, padR=16, padT=28, padB=32;
   const vals = datos.map(function(d){ return d.val; });
   const maxV = Math.max.apply(null,vals.concat([1]));
-  const minV = 0;
   const pts = datos.map(function(d,i){
-    const x = padL + (datos.length<2?((W-padL-padR)/2):(i*(W-padL-padR)/(datos.length-1)));
-    const y = padT + (H-padT-padB)*(1-(d.val-minV)/(maxV-minV||1));
-    return {x:Math.round(x),y:Math.round(y),val:d.val,label:d.label};
+    const x = padL + (datos.length<2 ? (W-padL-padR)/2 : i*(W-padL-padR)/(datos.length-1));
+    const y = padT + (H-padT-padB)*(1-(d.val/maxV));
+    return {x:Math.round(x), y:Math.round(y), val:d.val, label:d.label};
   });
-  // Grid lines
-  let svg = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" xmlns="http://www.w3.org/2000/svg">';
-  svg += '<rect width="'+W+'" height="'+H+'" fill="transparent"/>';
-  [0,0.25,0.5,0.75,1].forEach(function(t){
-    const y = padT + (H-padT-padB)*(1-t);
-    const v = Math.round(maxV*t);
-    svg += '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>';
-    svg += '<text x="'+(padL-6)+'" y="'+(y+4)+'" text-anchor="end" fill="#606888" font-size="9" font-family="Space Mono">'+fmt(v)+'</text>';
+  let svg = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">';
+  // Subtle grid
+  [0,0.5,1].forEach(function(t){
+    const y = padT+(H-padT-padB)*(1-t);
+    svg += '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>';
+    svg += '<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" fill="#4a5270" font-size="8" font-family="Space Mono">'+fmt(Math.round(maxV*t))+'</text>';
   });
-  // Area fill
+  // Gradient area
+  const gid = 'lg'+Math.random().toString(36).slice(2,6);
+  svg += '<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0.01"/></linearGradient></defs>';
   if(pts.length>1){
-    let area = 'M '+pts[0].x+','+(H-padB);
-    pts.forEach(function(p){ area += ' L '+p.x+','+p.y; });
-    area += ' L '+pts[pts.length-1].x+','+(H-padB)+' Z';
-    svg += '<path d="'+area+'" fill="'+color+'" opacity="0.08"/>';
-    // Line
-    let path = 'M '+pts[0].x+','+pts[0].y;
-    pts.slice(1).forEach(function(p){ path += ' L '+p.x+','+p.y; });
-    svg += '<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+    let area='M '+pts[0].x+','+(H-padB);
+    pts.forEach(function(p){ area+=' L '+p.x+','+p.y; });
+    area+=' L '+pts[pts.length-1].x+','+(H-padB)+' Z';
+    svg+='<path d="'+area+'" fill="url(#'+gid+')"/>';
+    let path='M '+pts[0].x+','+pts[0].y;
+    pts.slice(1).forEach(function(p){ path+=' L '+p.x+','+p.y; });
+    svg+='<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
   }
-  // Points, labels, x-axis labels
+  // Points + labels
   pts.forEach(function(p,i){
-    svg += '<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="'+color+'" stroke="#0d0f1a" stroke-width="2"/>';
-    const above = p.y > padT+20;
-    svg += '<text x="'+p.x+'" y="'+(above?p.y-10:p.y+18)+'" text-anchor="middle" fill="#e8eaf6" font-size="9" font-family="Space Mono">'+fmt(p.val)+'</text>';
-    svg += '<text x="'+p.x+'" y="'+(H-padB+16)+'" text-anchor="middle" fill="#a0a8c8" font-size="9" font-family="Space Mono">'+p.label+'</text>';
+    svg+='<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="'+color+'" stroke="#0d0f1a" stroke-width="1.5"/>';
+    // % delta label above/below point
+    let extra = '';
+    if(i>0){
+      const prev=pts[i-1];
+      if(prev.val>0){
+        const pct=((p.val-prev.val)/prev.val*100);
+        const sign=pct>=0?'+':'';
+        const col=pct>=0?'#00e5a0':'#ff4757';
+        extra='<text x="'+p.x+'" y="'+(p.y-14)+'" text-anchor="middle" fill="'+col+'" font-size="8" font-family="Space Mono" font-weight="bold">'+sign+pct.toFixed(1)+'%</text>';
+      }
+    }
+    svg+=extra;
+    svg+='<text x="'+p.x+'" y="'+(p.y+(p.y>padT+30?-7:14))+'" text-anchor="middle" fill="#c0c8e0" font-size="8" font-family="Space Mono">'+fmt(p.val)+'</text>';
+    svg+='<text x="'+p.x+'" y="'+(H-padB+13)+'" text-anchor="middle" fill="#606888" font-size="8" font-family="Space Mono">'+p.label+'</text>';
   });
-  svg += '</svg>';
-  return '<div class="section-card" style="padding:18px;overflow-x:auto;background:var(--card)">'+svg+'</div>';
+  svg+='</svg>';
+  return '<div style="padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:2px;overflow-x:auto">'+svg+'</div>';
 }
 
 function buildReporteTable(meses, getData, empresas, isBrutas){
-  const cols = meses.filter(function(mes){ return getData(mes).some(function(v){ return v; }); });
+  const cols = meses.filter(function(mes){ return getData(mes).length>0 && getData(mes).some(function(v){ return (isBrutas?(v.brutas||0):(v.netas||0))>0; }); });
   if(!cols.length) return '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:12px 0">Sin datos disponibles</div>';
   let html = '<table class="tbl"><thead><tr><th>Empresa</th>';
   cols.forEach(function(mes){ const pts=mes.split('-'); html += '<th style="text-align:right">'+MESES[+pts[1]-1].substring(0,3)+' '+pts[0]+'</th>'; });
@@ -1873,17 +1882,26 @@ function buildReporteTable(meses, getData, empresas, isBrutas){
     });
     const tot = vals.reduce(function(s,v){ return s+v; },0);
     html += '<tr><td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">'+e+'</span></td>';
-    vals.forEach(function(v){ html += '<td style="text-align:right;font-family:var(--font-mono);color:var(--teal)">'+(v?fmt(v):'-')+'</td>'; });
+    vals.forEach(function(v,i){
+      let delta='';
+      if(i>0 && vals[i-1]>0){
+        const pct=(v-vals[i-1])/vals[i-1]*100;
+        const col=pct>=0?'#00e5a0':'#ff4757';
+        delta=' <span style="font-size:9px;color:'+col+'">'+(pct>=0?'▲':'▼')+Math.abs(pct).toFixed(1)+'%</span>';
+      }
+      html += '<td style="text-align:right;font-family:var(--font-mono);color:var(--teal)">'+(v?fmt(v)+delta:'-')+'</td>';
+    });
     html += '<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:var(--teal)">'+fmt(tot)+'</td></tr>';
   });
   html += '<tr style="border-top:1px solid var(--border)"><td style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">TOTAL</td>';
-  let grand = 0;
-  cols.forEach(function(mes){
+  let grand=0;
+  cols.forEach(function(mes,i){
     const v=getData(mes).reduce(function(s,v2){ return s+(isBrutas?(v2.brutas||0):(v2.netas||0)); },0);
-    grand += v; html += '<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:var(--green)">'+(v?fmt(v):'-')+'</td>';
+    grand+=v;
+    html+='<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:var(--green)">'+(v?fmt(v):'-')+'</td>';
   });
-  html += '<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:var(--green)">'+fmt(grand)+'</td></tr>';
-  html += '</tbody></table>';
+  html+='<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:var(--green)">'+fmt(grand)+'</td></tr>';
+  html+='</tbody></table>';
   return html;
 }
 
@@ -4117,18 +4135,55 @@ async function saveAdd(){
 
 
 /*
-  REGLA DEL SISTEMA:
-  Cada cambio nuevo que se haga en este archivo debe agregarse también al registro VERSIONES
-  con su código de versión, fecha, descripción y etiqueta de tipo (feature, mejora o fix).
-  Mantener esta instrucción como comentario permanente para que el sistema la reconozca.
-
-  REGLA DE VERSIONADO AUTOMÁTICO:
-  Cada cambio nuevo debe registrarse mediante registrarCambio(...)
-  o creando una nueva versión con nuevaVersionBase() y luego agregando cambios con
-  registrarCambioEnVersionActual(...). El footer siempre debe reflejar la última
-  versión registrada en VERSIONES.
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    ⚠️  REGLA OBLIGATORIA DE VERSIONADO ⚠️                    ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  CUALQUIER IA O DESARROLLADOR QUE MODIFIQUE ESTE ARCHIVO DEBE:              ║
+║                                                                              ║
+║  1. Agregar una nueva entrada al array VERSIONES (justo debajo de este       ║
+║     comentario) con versión incrementada, fecha actual y descripción clara.  ║
+║                                                                              ║
+║  2. El número de versión sigue el formato MAJOR.MINOR.PATCH:                ║
+║     - PATCH (+0.0.1): corrección de bug o ajuste visual pequeño             ║
+║     - MINOR (+0.1.0): nueva funcionalidad o mejora significativa             ║
+║     - MAJOR (+1.0.0): cambio estructural o rediseño importante              ║
+║                                                                              ║
+║  3. Tipos válidos de cambio: "feature" | "mejora" | "fix"                   ║
+║                                                                              ║
+║  4. El footer del sistema se actualiza automáticamente al guardar            ║
+║     la nueva versión en VERSIONES[0].                                        ║
+║                                                                              ║
+║  EJEMPLO MÍNIMO:                                                             ║
+║  {                                                                           ║
+║    version: "2.1.0",                                                         ║
+║    fecha: "24-04-2026",                                                      ║
+║    cambios: [                                                                 ║
+║      { tipo:"feature", codigo:"FEAT-XXX", txt:"Descripción del cambio" }    ║
+║    ]                                                                         ║
+║  }                                                                           ║
+║                                                                              ║
+║  SI NO REGISTRAS EL CAMBIO, LA VERSIÓN NO AVANZA Y EL HISTORIAL             ║
+║  QUEDA DESACTUALIZADO. NO OMITAS ESTE PASO.                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 */
 const VERSIONES = [
+  {
+    version: "2.0.0",
+    fecha: "24-04-2026",
+    cambios: [
+      { tipo:"feature", codigo:"FEAT-200", txt:"Módulo Rendimiento FULL: canal Fulfillment con registro, reportería y configuración independiente" },
+      { tipo:"feature", codigo:"FEAT-201", txt:"Banner de avisos tipo ticker en los 3 módulos, configurable desde Configuración con múltiples mensajes y emoji" },
+      { tipo:"feature", codigo:"FEAT-202", txt:"Gráfico de línea con gradiente, porcentaje de variación entre puntos y tabla con delta % vs mes anterior" },
+      { tipo:"mejora", codigo:"MEJ-200", txt:"Rendimiento e Historial de cierres movidos a sección Módulos en el sidebar" },
+      { tipo:"mejora", codigo:"MEJ-201", txt:"Registro de ventas muestra % de ganancia/pérdida vs mes anterior por empresa y por fila empresa+plataforma" },
+      { tipo:"mejora", codigo:"MEJ-202", txt:"Todos los campos monetarios usan input CLP con separador de miles, prefijo $ CLP y sin flechas de spinner" },
+      { tipo:"mejora", codigo:"MEJ-203", txt:"Reporte de presupuesto muestra solo monto utilizado por empresa, sin indicadores de exceso ni disponible" },
+      { tipo:"mejora", codigo:"MEJ-204", txt:"rendFCfg (config Rendimiento FULL) guardado junto a rendConfig en Firebase bajo campo 'full'" },
+      { tipo:"fix", codigo:"FIX-200", txt:"Prefijo $ CLP ya no se superpone al texto del input — padding-left 58px y display block en contenedor" },
+      { tipo:"fix", codigo:"FIX-201", txt:"Animación ticker corregida: espera 2 frames antes de arrancar para leer offsetWidth correctamente" },
+      { tipo:"fix", codigo:"FIX-202", txt:"Error de sintaxis JS corregido en renderRendReporte por template literals anidados" }
+    ]
+  },
   {
     version: "1.0.7",
     fecha: "2026-04-23",
@@ -4362,20 +4417,22 @@ async function saveBannerConfig(){
 }
 
 function _runTicker(trackEl, slideEl){
-  var pos = trackEl.clientWidth;
-  var speed = 80; // px per second
+  // Cancel any existing animation for this track
+  if(_tickerRAFs[trackEl.id]) cancelAnimationFrame(_tickerRAFs[trackEl.id]);
+  var trackW = trackEl.offsetWidth || trackEl.parentElement.offsetWidth || window.innerWidth - 200;
+  var pos = trackW;
+  var speed = 90;
   var last = null;
   function step(ts){
     if(!last) last = ts;
-    var dt = (ts - last) / 1000;
+    var dt = Math.min((ts-last)/1000, 0.05); // cap dt to avoid jump on tab switch
     last = ts;
     pos -= speed * dt;
-    var w = slideEl.scrollWidth;
-    if(pos < -w) pos = trackEl.clientWidth;
+    var slideW = slideEl.scrollWidth;
+    if(pos < -slideW) pos = trackW;
     slideEl.style.transform = 'translateX('+Math.round(pos)+'px)';
     _tickerRAFs[trackEl.id] = requestAnimationFrame(step);
   }
-  if(_tickerRAFs[trackEl.id]) cancelAnimationFrame(_tickerRAFs[trackEl.id]);
   _tickerRAFs[trackEl.id] = requestAnimationFrame(step);
 }
 
@@ -4389,18 +4446,29 @@ function mountTicker(){
   configs.forEach(function(cfg){
     var banner = document.getElementById(cfg.bid);
     if(!banner) return;
+    // Cancel existing animation
+    var existingTrack = document.getElementById(cfg.tid);
+    if(existingTrack && _tickerRAFs[existingTrack.id]) cancelAnimationFrame(_tickerRAFs[existingTrack.id]);
     if(!hasMsg){ banner.classList.remove('visible'); return; }
     var track = document.getElementById(cfg.tid);
     var slide = document.getElementById(cfg.cid);
     if(!track || !slide) return;
     var html = '';
-    bannerCfg.messages.forEach(function(m){
-      var emoji = m.emoji ? m.emoji+' ' : '';
-      html += '<span class="ticker-item">'+emoji+escHtml(m.text)+'</span>';
-    });
+    // Repeat messages enough times to fill at least 3x screen width
+    for(var r=0;r<5;r++){
+      bannerCfg.messages.forEach(function(m){
+        var emoji = m.emoji ? m.emoji+' ' : '';
+        html += '<span class="ticker-item">'+emoji+escHtml(m.text)+'</span>';
+      });
+    }
     slide.innerHTML = html;
     banner.classList.add('visible');
-    setTimeout(function(){ _runTicker(track, slide); }, 100);
+    // Wait two frames so layout is complete and offsetWidth is accurate
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        _runTicker(track, slide);
+      });
+    });
   });
 }
 
