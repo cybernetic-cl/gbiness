@@ -1222,20 +1222,43 @@ window.fbLoadRendConfig = async () => {
 window.fbSaveBannerConfig = async (data) => {
   try {
     const clean = JSON.parse(JSON.stringify(data));
-    await setDoc(doc(db,'banner_config','main'), clean);
-    console.log('[Banner] Guardado OK', clean);
+    // Save in banner_config (primary) AND as field inside dropdown_config (fallback)
+    let saved = false;
+    try {
+      await setDoc(doc(db,'banner_config','main'), clean);
+      saved = true;
+      console.log('[Banner] Guardado en banner_config OK');
+    } catch(e1) {
+      console.warn('[Banner] banner_config falló (posiblemente reglas Firestore):', e1.code, e1.message);
+    }
+    // Always also save inside dropdown_config.banner as fallback
+    const {getDoc:gd2} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const existing = await gd2(doc(db,'dropdown_config','main'));
+    const base = existing.exists() ? existing.data() : {};
+    await setDoc(doc(db,'dropdown_config','main'), {...base, _banner: clean});
+    saved = true;
+    console.log('[Banner] Guardado en dropdown_config._banner OK');
+    if(!saved) throw new Error('No se pudo guardar en ninguna colección');
   } catch(e) {
-    console.error('[Banner] Error al guardar:', e);
+    console.error('[Banner] Error final:', e.code, e.message);
     throw e;
   }
 };
 window.fbLoadBannerConfig = async () => {
   try {
     const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    const snap = await gd(doc(db,'banner_config','main'));
-    const result = snap.exists() ? snap.data() : null;
-    console.log('[Banner] Cargado:', result);
-    return result;
+    // Try banner_config first
+    try {
+      const snap = await gd(doc(db,'banner_config','main'));
+      if(snap.exists()){ console.log('[Banner] Cargado desde banner_config'); return snap.data(); }
+    } catch(e1){ console.warn('[Banner] No se pudo leer banner_config:', e1.code); }
+    // Fallback: read from dropdown_config._banner
+    const snap2 = await gd(doc(db,'dropdown_config','main'));
+    if(snap2.exists() && snap2.data()._banner){
+      console.log('[Banner] Cargado desde dropdown_config._banner');
+      return snap2.data()._banner;
+    }
+    return null;
   } catch(e) {
     console.error('[Banner] Error al cargar:', e);
     return null;
@@ -4218,6 +4241,13 @@ async function saveAdd(){
 ╚══════════════════════════════════════════════════════════════════════════════╝
 */
 const VERSIONES = [
+  {
+    version: "2.1.2",
+    fecha: "24-04-2026",
+    cambios: [
+      { tipo:"fix", codigo:"FIX-212", txt:"Banner config ahora se guarda con doble fallback: intenta banner_config primero, si las reglas Firestore no lo permiten guarda dentro de dropdown_config._banner que ya tiene permisos garantizados" }
+    ]
+  },
   {
     version: "2.1.1",
     fecha: "24-04-2026",
