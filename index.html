@@ -609,18 +609,55 @@ input.fi-money{padding-left:58px!important;width:100%}
 
 <!-- MODAL BANNER -->
 <div class="overlay" id="bannerOverlay">
-  <div class="modal" style="max-width:440px">
+  <div class="modal" style="max-width:480px">
     <button class="close-btn" onclick="closeOv('bannerOverlay')">✕</button>
     <div class="modal-title" id="bannerModalTitle">Agregar Aviso</div>
-    <div class="modal-sub">El texto aparecerá en el banner superior del sistema</div>
+    <div class="modal-sub">Configura el texto y cuándo se muestra este aviso</div>
+
     <div class="fw">
       <label class="fl">Texto del aviso <span style="color:var(--red)">*</span></label>
-      <input type="text" id="bannerMsgInput" class="fi" placeholder="Ej: Cierre de mes el viernes 30..." onkeydown="if(event.key==='Enter')saveBannerMsg()">
+      <input type="text" id="bannerMsgInput" class="fi" placeholder="Ej: Recuerda pagar Previred antes del 13..." onkeydown="if(event.key==='Enter')saveBannerMsg()">
     </div>
     <div class="fw">
       <label class="fl">Emoji / icono (opcional)</label>
       <input type="text" id="bannerMsgEmoji" class="fi" placeholder="🔔" style="width:80px">
     </div>
+
+    <!-- Modo de activación -->
+    <div class="fw">
+      <label class="fl">Cuándo mostrar</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--text2);background:var(--bg3);padding:6px 12px;border-radius:2px;border:1px solid var(--border2)" id="bmodeLabel-always">
+          <input type="radio" name="bannerMode" id="bmode-always" value="always" onchange="onBannerModeChange()" style="accent-color:var(--teal)"> Siempre
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--text2);background:var(--bg3);padding:6px 12px;border-radius:2px;border:1px solid var(--border2)" id="bmodeLabel-range">
+          <input type="radio" name="bannerMode" id="bmode-range" value="range" onchange="onBannerModeChange()" style="accent-color:var(--teal)"> Rango de días del mes
+        </label>
+      </div>
+    </div>
+
+    <!-- Rango de días (oculto por defecto) -->
+    <div id="bannerRangeFields" style="display:none;background:rgba(0,212,170,0.05);border:1px solid rgba(0,212,170,0.2);border-radius:2px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--teal);margin-bottom:10px">RANGO ACTIVO CADA MES</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fw" style="margin:0">
+          <label class="fl">Día de inicio</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="bannerDayFrom" class="fi" placeholder="1" min="1" max="31" style="width:80px;text-align:center">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">del mes</span>
+          </div>
+        </div>
+        <div class="fw" style="margin:0">
+          <label class="fl">Día de fin</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="bannerDayTo" class="fi" placeholder="31" min="1" max="31" style="width:80px;text-align:center">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">del mes</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:8px">Ej: del 10 al 20 → el aviso aparece solo entre el día 10 y 20 de cada mes</div>
+    </div>
+
     <div id="bannerEditIdx" style="display:none"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeOv('bannerOverlay')">Cancelar</button>
@@ -4168,6 +4205,14 @@ async function saveAdd(){
 */
 const VERSIONES = [
   {
+    version: "2.1.0",
+    fecha: "24-04-2026",
+    cambios: [
+      { tipo:"feature", codigo:"FEAT-210", txt:"Avisos del banner ahora soportan modo Siempre o Rango de días del mes (ej: del 10 al 20). Solo se muestran los avisos activos según la fecha actual" },
+      { tipo:"mejora", codigo:"MEJ-210", txt:"Lista de avisos muestra etiqueta SIEMPRE o DÍAS X AL Y con indicador HOY si está activo hoy" }
+    ]
+  },
+  {
     version: "2.0.0",
     fecha: "24-04-2026",
     cambios: [
@@ -4416,8 +4461,19 @@ async function saveBannerConfig(){
   renderBannerConfig();
 }
 
+// Returns true if message should show today based on its schedule
+function isBannerMsgActive(m){
+  if(!m.mode || m.mode === 'always') return true;
+  if(m.mode === 'range'){
+    const today = new Date().getDate();
+    const from = parseInt(m.dayFrom)||1;
+    const to   = parseInt(m.dayTo)||31;
+    return today >= from && today <= to;
+  }
+  return true;
+}
+
 function _runTicker(trackEl, slideEl){
-  // Cancel any existing animation for this track
   if(_tickerRAFs[trackEl.id]) cancelAnimationFrame(_tickerRAFs[trackEl.id]);
   var trackW = trackEl.offsetWidth || trackEl.parentElement.offsetWidth || window.innerWidth - 200;
   var pos = trackW;
@@ -4425,7 +4481,7 @@ function _runTicker(trackEl, slideEl){
   var last = null;
   function step(ts){
     if(!last) last = ts;
-    var dt = Math.min((ts-last)/1000, 0.05); // cap dt to avoid jump on tab switch
+    var dt = Math.min((ts-last)/1000, 0.05);
     last = ts;
     pos -= speed * dt;
     var slideW = slideEl.scrollWidth;
@@ -4437,16 +4493,18 @@ function _runTicker(trackEl, slideEl){
 }
 
 function mountTicker(){
-  var configs = [
+  var cfgs = [
     {bid:'tickerBanner',  cid:'tickerContent',  tid:'tickerTrack'},
     {bid:'tickerBanner2', cid:'tickerContent2', tid:'tickerTrack2'},
     {bid:'tickerBanner3', cid:'tickerContent3', tid:'tickerTrack3'}
   ];
-  var hasMsg = bannerCfg.enabled && bannerCfg.messages && bannerCfg.messages.length;
-  configs.forEach(function(cfg){
+  // Filter only messages active today
+  var activeMessages = (bannerCfg.messages||[]).filter(function(m){ return isBannerMsgActive(m); });
+  var hasMsg = bannerCfg.enabled && activeMessages.length > 0;
+
+  cfgs.forEach(function(cfg){
     var banner = document.getElementById(cfg.bid);
     if(!banner) return;
-    // Cancel existing animation
     var existingTrack = document.getElementById(cfg.tid);
     if(existingTrack && _tickerRAFs[existingTrack.id]) cancelAnimationFrame(_tickerRAFs[existingTrack.id]);
     if(!hasMsg){ banner.classList.remove('visible'); return; }
@@ -4454,20 +4512,16 @@ function mountTicker(){
     var slide = document.getElementById(cfg.cid);
     if(!track || !slide) return;
     var html = '';
-    // Repeat messages enough times to fill at least 3x screen width
     for(var r=0;r<5;r++){
-      bannerCfg.messages.forEach(function(m){
+      activeMessages.forEach(function(m){
         var emoji = m.emoji ? m.emoji+' ' : '';
         html += '<span class="ticker-item">'+emoji+escHtml(m.text)+'</span>';
       });
     }
     slide.innerHTML = html;
     banner.classList.add('visible');
-    // Wait two frames so layout is complete and offsetWidth is accurate
     requestAnimationFrame(function(){
-      requestAnimationFrame(function(){
-        _runTicker(track, slide);
-      });
+      requestAnimationFrame(function(){ _runTicker(track, slide); });
     });
   });
 }
@@ -4477,21 +4531,41 @@ function closeTicker(){ var b=document.getElementById('tickerBanner'); if(b) b.c
 function closeTicker2(){ var b=document.getElementById('tickerBanner2'); if(b) b.classList.remove('visible'); }
 function closeTicker3(){ var b=document.getElementById('tickerBanner3'); if(b) b.classList.remove('visible'); }
 
+function onBannerModeChange(){
+  const mode = document.querySelector('input[name="bannerMode"]:checked')?.value || 'always';
+  const rf = document.getElementById('bannerRangeFields');
+  if(rf) rf.style.display = mode === 'range' ? 'block' : 'none';
+}
+
 function renderBannerConfig(){
   const cb = document.getElementById('bannerEnabled');
   if(cb) cb.checked = !!bannerCfg.enabled;
   const list = document.getElementById('bannerMsgList');
   if(!list) return;
   const msgs = bannerCfg.messages || [];
+  const today = new Date().getDate();
   if(!msgs.length){
     list.innerHTML='<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:8px 0">Sin avisos configurados</div>';
     return;
   }
   list.innerHTML = msgs.map(function(m,i){
     const preview = (m.emoji ? m.emoji+' ' : '') + m.text;
-    return '<div class="cat-item" style="gap:10px">'
-      +'<span style="flex:1;font-size:13px">'+preview+'</span>'
-      +'<span style="display:flex;gap:4px">'
+    const isActive = isBannerMsgActive(m);
+    let scheduleTag = '';
+    if(!m.mode || m.mode==='always'){
+      scheduleTag = '<span style="font-family:var(--font-mono);font-size:9px;background:rgba(0,212,170,0.12);color:var(--teal);padding:2px 7px;border-radius:2px;letter-spacing:1px">SIEMPRE</span>';
+    } else {
+      const col = isActive ? 'var(--green)' : 'var(--text3)';
+      const bg  = isActive ? 'rgba(0,229,160,0.1)' : 'rgba(255,255,255,0.04)';
+      const label = 'DÍAS '+m.dayFrom+' AL '+m.dayTo + (isActive ? ' ✓ HOY' : ' (inactivo)');
+      scheduleTag = '<span style="font-family:var(--font-mono);font-size:9px;background:'+bg+';color:'+col+';padding:2px 7px;border-radius:2px;letter-spacing:1px">'+label+'</span>';
+    }
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04)">'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13px;color:var(--text);margin-bottom:4px">'+escHtml(preview)+'</div>'
+      +scheduleTag
+      +'</div>'
+      +'<span style="display:flex;gap:4px;flex-shrink:0">'
       +'<button class="btn-del" onclick="openEditBanner('+i+')">✎</button>'
       +'<button class="btn-del" onclick="delBannerMsg('+i+')">✕</button>'
       +'</span></div>';
@@ -4503,9 +4577,16 @@ function openAddBanner(){
   document.getElementById('bannerMsgInput').value = '';
   document.getElementById('bannerMsgEmoji').value = '';
   document.getElementById('bannerEditIdx').textContent = '';
+  // Reset to "always"
+  const r = document.getElementById('bmode-always');
+  if(r){ r.checked = true; }
+  document.getElementById('bannerRangeFields').style.display = 'none';
+  document.getElementById('bannerDayFrom').value = '';
+  document.getElementById('bannerDayTo').value = '';
   document.getElementById('bannerOverlay').classList.add('open');
   setTimeout(function(){ document.getElementById('bannerMsgInput').focus(); }, 100);
 }
+
 function openEditBanner(idx){
   const m = (bannerCfg.messages||[])[idx];
   if(!m) return;
@@ -4513,14 +4594,32 @@ function openEditBanner(idx){
   document.getElementById('bannerMsgInput').value = m.text || '';
   document.getElementById('bannerMsgEmoji').value = m.emoji || '';
   document.getElementById('bannerEditIdx').textContent = idx;
+  // Set mode radio
+  const mode = m.mode || 'always';
+  const radio = document.getElementById('bmode-'+mode);
+  if(radio) radio.checked = true;
+  const rf = document.getElementById('bannerRangeFields');
+  if(rf) rf.style.display = mode === 'range' ? 'block' : 'none';
+  document.getElementById('bannerDayFrom').value = m.dayFrom || '';
+  document.getElementById('bannerDayTo').value   = m.dayTo   || '';
   document.getElementById('bannerOverlay').classList.add('open');
   setTimeout(function(){ document.getElementById('bannerMsgInput').focus(); }, 100);
 }
+
 async function saveBannerMsg(){
   const txt = (document.getElementById('bannerMsgInput').value||'').trim();
   if(!txt){ showToast('El texto es obligatorio',true); return; }
   const emoji = (document.getElementById('bannerMsgEmoji').value||'').trim();
-  const obj = { text: txt, emoji: emoji };
+  const mode  = document.querySelector('input[name="bannerMode"]:checked')?.value || 'always';
+  const obj = { text: txt, emoji: emoji, mode: mode };
+  if(mode === 'range'){
+    const from = parseInt(document.getElementById('bannerDayFrom').value)||1;
+    const to   = parseInt(document.getElementById('bannerDayTo').value)||31;
+    if(from < 1 || from > 31 || to < 1 || to > 31){ showToast('Días deben ser entre 1 y 31',true); return; }
+    if(from > to){ showToast('El día de inicio no puede ser mayor al día de fin',true); return; }
+    obj.dayFrom = from;
+    obj.dayTo   = to;
+  }
   if(!bannerCfg.messages) bannerCfg.messages = [];
   const editIdx = document.getElementById('bannerEditIdx').textContent;
   if(editIdx !== ''){
@@ -4534,6 +4633,7 @@ async function saveBannerMsg(){
   renderBannerConfig();
   showToast('Aviso guardado');
 }
+
 async function delBannerMsg(idx){
   if(!confirm('Eliminar este aviso?')) return;
   bannerCfg.messages.splice(idx,1);
