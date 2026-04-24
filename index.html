@@ -1220,12 +1220,26 @@ window.fbLoadRendConfig = async () => {
   return snap.exists() ? snap.data() : null;
 };
 window.fbSaveBannerConfig = async (data) => {
-  await setDoc(doc(db,'banner_config','main'), JSON.parse(JSON.stringify(data)));
+  try {
+    const clean = JSON.parse(JSON.stringify(data));
+    await setDoc(doc(db,'banner_config','main'), clean);
+    console.log('[Banner] Guardado OK', clean);
+  } catch(e) {
+    console.error('[Banner] Error al guardar:', e);
+    throw e;
+  }
 };
 window.fbLoadBannerConfig = async () => {
-  const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const snap = await gd(doc(db,'banner_config','main'));
-  return snap.exists() ? snap.data() : null;
+  try {
+    const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap = await gd(doc(db,'banner_config','main'));
+    const result = snap.exists() ? snap.data() : null;
+    console.log('[Banner] Cargado:', result);
+    return result;
+  } catch(e) {
+    console.error('[Banner] Error al cargar:', e);
+    return null;
+  }
 };
 
 document.addEventListener('DOMContentLoaded', () => { /* espera login */ });
@@ -4205,6 +4219,13 @@ async function saveAdd(){
 */
 const VERSIONES = [
   {
+    version: "2.1.1",
+    fecha: "24-04-2026",
+    cambios: [
+      { tipo:"fix", codigo:"FIX-211", txt:"Avisos del banner ahora se guardan correctamente en Firebase: retry automático si el módulo Firebase aún no cargó, manejo explícito de errores con toast, logs en consola para debug" }
+    ]
+  },
+  {
     version: "2.1.0",
     fecha: "24-04-2026",
     cambios: [
@@ -4445,18 +4466,47 @@ document.addEventListener('DOMContentLoaded', () => {
 let bannerCfg = { enabled: false, messages: [] };
 let _tickerRAFs = {};
 
+// Wait until fbSaveBannerConfig is available (module may load async)
+function waitFbBanner(cb, retries){
+  if(window.fbSaveBannerConfig){ cb(); return; }
+  if((retries||0) > 20){ showToast('Firebase no disponible',true); return; }
+  setTimeout(function(){ waitFbBanner(cb, (retries||0)+1); }, 150);
+}
+
 async function loadBannerConfig(){
   try {
-    const remote = window.fbLoadBannerConfig ? await window.fbLoadBannerConfig() : null;
+    if(!window.fbLoadBannerConfig) return;
+    const remote = await window.fbLoadBannerConfig();
     if(remote && typeof remote === 'object'){
       bannerCfg = { enabled: false, messages: [], ...remote };
+      // Ensure messages is always an array
+      if(!Array.isArray(bannerCfg.messages)) bannerCfg.messages = [];
     }
-  } catch(e){ console.error('[BannerConfig]',e); }
+  } catch(e){ console.error('[BannerConfig load]',e); }
 }
+
+async function _saveBannerToFirebase(){
+  return new Promise(function(resolve, reject){
+    waitFbBanner(async function(){
+      try {
+        await window.fbSaveBannerConfig(bannerCfg);
+        resolve();
+      } catch(e){
+        console.error('[Banner save error]', e);
+        showToast('Error al guardar aviso en Firebase', true);
+        reject(e);
+      }
+    });
+  });
+}
+
 async function saveBannerConfig(){
   const cb = document.getElementById('bannerEnabled');
   if(cb) bannerCfg.enabled = cb.checked;
-  if(window.fbSaveBannerConfig) await window.fbSaveBannerConfig(bannerCfg).catch(e=>console.error(e));
+  try {
+    await _saveBannerToFirebase();
+    showToast('Configuración del banner guardada');
+  } catch(e){}
   mountTicker();
   renderBannerConfig();
 }
@@ -4627,20 +4677,25 @@ async function saveBannerMsg(){
   } else {
     bannerCfg.messages.push(obj);
   }
-  if(window.fbSaveBannerConfig) await window.fbSaveBannerConfig(bannerCfg).catch(e=>console.error(e));
   closeOv('bannerOverlay');
+  showToast('Guardando aviso...');
+  try {
+    await _saveBannerToFirebase();
+    showToast('Aviso guardado ✓');
+  } catch(e){ return; }
   mountTicker();
   renderBannerConfig();
-  showToast('Aviso guardado');
 }
 
 async function delBannerMsg(idx){
   if(!confirm('Eliminar este aviso?')) return;
   bannerCfg.messages.splice(idx,1);
-  if(window.fbSaveBannerConfig) await window.fbSaveBannerConfig(bannerCfg).catch(e=>console.error(e));
+  try {
+    await _saveBannerToFirebase();
+    showToast('Aviso eliminado');
+  } catch(e){ return; }
   mountTicker();
   renderBannerConfig();
-  showToast('Aviso eliminado');
 }
 
 function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; if(id==='catOverlay'){ editCtx=null; dynamicSelectTarget=null; } }
