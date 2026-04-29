@@ -153,7 +153,7 @@ input.fi-money{padding-left:58px!important;width:100%}
     <div class="login-sub">// Cybernetic SpA · Selecciona el módulo</div>
 
     <!-- Module cards -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px">
       <div id="mod-cierre" class="module-card active" onclick="selectModule('cierre')">
         <div class="module-icon">💰</div>
         <div class="module-name">Cierre Mensual</div>
@@ -168,6 +168,11 @@ input.fi-money{padding-left:58px!important;width:100%}
         <div class="module-icon">📆</div>
         <div class="module-name">Cierre Anual</div>
         <div class="module-sub">Año y resumen</div>
+      </div>
+      <div id="mod-rrhh" class="module-card" onclick="selectModule('rrhh')">
+        <div class="module-icon">👤</div>
+        <div class="module-name">Gestión RRHH</div>
+        <div class="module-sub">Trabajadores y vacaciones</div>
       </div>
     </div>
 
@@ -210,6 +215,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <div class="nav-item" onclick="goSec(this,'rendimiento-full')">🚀 Rendimiento FULL</div>
       <div class="nav-item" onclick="goSec(this,'historial')">📋 Historial de cierres</div>
       <div class="nav-group" style="margin-top:10px">Gestión</div>
+      <div class="nav-item" onclick="goSec(this,'rrhh')">👤 Gestión RRHH</div>
       <div class="nav-item" onclick="goSec(this,'configuracion')">⚙ Configuración</div>
     </div>
 
@@ -224,6 +230,78 @@ input.fi-money{padding-left:58px!important;width:100%}
         <div class="section-card">
           <div class="card-hdr"><div class="card-title">// Desglose de gastos del mes</div></div>
           <div class="card-body" id="desgloce"></div>
+        </div>
+      </div>
+
+      <!-- RRHH -->
+      <div id="sec-rrhh" style="display:none">
+        <div class="page-title">GESTIÓN <span>RRHH</span></div>
+        <div class="page-sub">// Trabajadores · vacaciones legales · fichas de personal</div>
+        <!-- TABS -->
+        <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px">
+          <button class="ptab active" id="rrhh-tab-trabajadores" onclick="rrhhTab(this,'trabajadores')">👤 Trabajadores</button>
+          <button class="ptab" id="rrhh-tab-vacaciones" onclick="rrhhTab(this,'vacaciones')">🏖 Resumen Vacaciones</button>
+          <button class="ptab" id="rrhh-tab-cumpleanos" onclick="rrhhTab(this,'cumpleanos')">🎂 Cumpleaños</button>
+        </div>
+        <!-- TAB TRABAJADORES -->
+        <div id="rrhh-trabajadores">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="text" id="rrhh-search" class="fi" style="width:220px" placeholder="Buscar trabajador..." oninput="renderTrabajadores()">
+              <select id="rrhh-filter-estado" class="fi" style="width:160px" onchange="renderTrabajadores()">
+                <option value="">Todos los estados</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+                <option value="licencia">En licencia</option>
+              </select>
+            </div>
+            <button class="btn-primary" onclick="openNuevoTrabajador()">+ Nuevo Trabajador</button>
+          </div>
+          <div class="kpi-grid" id="rrhh-kpis" style="margin-bottom:18px"></div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Nómina de trabajadores</div></div>
+            <div class="card-body" style="padding:0">
+              <table class="tbl">
+                <thead><tr>
+                  <th>Trabajador</th><th>RUT</th><th>Cargo</th><th>Empresa</th>
+                  <th>Ingreso</th><th>Contrato</th><th>Estado</th>
+                  <th style="text-align:right">Días Vacc.</th><th></th>
+                </tr></thead>
+                <tbody id="rrhh-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- TAB VACACIONES RESUMEN -->
+        <div id="rrhh-vacaciones" style="display:none">
+          <div class="kpi-grid" id="rrhh-vacc-kpis" style="margin-bottom:18px"></div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Solicitudes de vacaciones pendientes</div></div>
+            <div class="card-body" id="rrhh-vacc-pendientes"></div>
+          </div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Historial de vacaciones tomadas</div></div>
+            <div class="card-body" id="rrhh-vacc-historial"></div>
+          </div>
+        </div>
+        <!-- TAB CUMPLEAÑOS -->
+        <div id="rrhh-cumpleanos" style="display:none">
+          <div class="kpi-grid" id="rrhh-cumple-kpis" style="margin-bottom:18px"></div>
+          <div class="section-card">
+            <div class="card-hdr">
+              <div class="card-title">// Calendario de cumpleaños</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn-secondary" onclick="cumpleNavMes(-1)">‹</button>
+                <span id="rrhh-cumple-mes-label" style="font-family:var(--font-mono);font-size:11px;color:var(--teal);min-width:140px;text-align:center"></span>
+                <button class="btn-secondary" onclick="cumpleNavMes(1)">›</button>
+              </div>
+            </div>
+            <div class="card-body" id="rrhh-cumple-cal"></div>
+          </div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Próximos cumpleaños (12 meses)</div></div>
+            <div class="card-body" id="rrhh-cumple-lista"></div>
+          </div>
         </div>
       </div>
 
@@ -365,6 +443,7 @@ input.fi-money{padding-left:58px!important;width:100%}
             <div style="display:flex;gap:8px">
               <button class="ptab active" id="rrpt-brutas" onclick="rendRptTab(this,'brutas')">Ventas Brutas</button>
               <button class="ptab" id="rrpt-netas" onclick="rendRptTab(this,'netas')">Ventas Netas</button>
+              <button class="ptab" id="rrpt-utilidad" onclick="rendRptTab(this,'utilidad')">Utilidad Est.</button>
             </div>
           </div>
           <div id="rend-rpt-chart-wrap" style="margin-bottom:24px"></div>
@@ -852,6 +931,89 @@ input.fi-money{padding-left:58px!important;width:100%}
 
 <!-- APP CIERRE ANUAL -->
 
+
+<!-- APP RRHH -->
+<div id="app-rrhh" style="display:none;min-height:100vh;background:var(--bg)">
+  <div class="topbar">
+    <div class="topbar-logo">👤 GBISNESS · RRHH</div>
+    <button class="btn-logout" onclick="doLogout()">SALIR</button>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-group">RRHH</div>
+      <div class="nav-item active" id="rrhh-nav-trabajadores" onclick="rrhhStandaloneNav(this,'trabajadores')">👤 Trabajadores</div>
+      <div class="nav-item" id="rrhh-nav-vacaciones" onclick="rrhhStandaloneNav(this,'vacaciones')">🏖 Resumen Vacaciones</div>
+      <div class="nav-item" id="rrhh-nav-cumpleanos" onclick="rrhhStandaloneNav(this,'cumpleanos')">🎂 Cumpleaños</div>
+    </div>
+    <div class="main">
+      <div class="page-title">GESTIÓN <span>RRHH</span></div>
+      <div class="page-sub">// Trabajadores · vacaciones legales · fichas de personal</div>
+
+      <!-- TAB TRABAJADORES -->
+      <div id="rrhh-sa-trabajadores">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="rrhh-sa-search" class="fi" style="width:220px" placeholder="Buscar trabajador..." oninput="renderTrabajadoresSA()">
+            <select id="rrhh-sa-filter-estado" class="fi" style="width:160px" onchange="renderTrabajadoresSA()">
+              <option value="">Todos los estados</option>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+              <option value="licencia">En licencia</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="openNuevoTrabajador()">+ Nuevo Trabajador</button>
+        </div>
+        <div class="kpi-grid" id="rrhh-sa-kpis" style="margin-bottom:18px"></div>
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Nómina de trabajadores</div></div>
+          <div class="card-body" style="padding:0">
+            <table class="tbl">
+              <thead><tr>
+                <th>Trabajador</th><th>RUT</th><th>Cargo</th><th>Empresa</th>
+                <th>Ingreso</th><th>Contrato</th><th>Estado</th>
+                <th style="text-align:right">Días Vacc.</th><th></th>
+              </tr></thead>
+              <tbody id="rrhh-sa-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB VACACIONES RESUMEN -->
+      <div id="rrhh-sa-vacaciones" style="display:none">
+        <div class="kpi-grid" id="rrhh-sa-vacc-kpis" style="margin-bottom:18px"></div>
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Saldos de vacaciones por trabajador</div></div>
+          <div class="card-body" id="rrhh-sa-vacc-pendientes"></div>
+        </div>
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Historial de vacaciones tomadas</div></div>
+          <div class="card-body" id="rrhh-sa-vacc-historial"></div>
+        </div>
+      </div>
+      <!-- TAB CUMPLEAÑOS SA -->
+      <div id="rrhh-sa-cumpleanos" style="display:none">
+        <div class="kpi-grid" id="rrhh-sa-cumple-kpis" style="margin-bottom:18px"></div>
+        <div class="section-card">
+          <div class="card-hdr">
+            <div class="card-title">// Calendario de cumpleaños</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn-secondary" onclick="cumpleNavMes(-1)">‹</button>
+              <span id="rrhh-sa-cumple-mes-label" style="font-family:var(--font-mono);font-size:11px;color:var(--teal);min-width:140px;text-align:center"></span>
+              <button class="btn-secondary" onclick="cumpleNavMes(1)">›</button>
+            </div>
+          </div>
+          <div class="card-body" id="rrhh-sa-cumple-cal"></div>
+        </div>
+        <div class="section-card">
+          <div class="card-hdr"><div class="card-title">// Próximos cumpleaños (12 meses)</div></div>
+          <div class="card-body" id="rrhh-sa-cumple-lista"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="app-anual" style="display:none;min-height:100vh;background:var(--bg)">
   <div class="topbar">
     <div class="topbar-logo">📆 GBISNESS · CIERRE ANUAL</div>
@@ -1113,6 +1275,148 @@ input.fi-money{padding-left:58px!important;width:100%}
   </div>
 </div>
 
+<!-- MODAL TRABAJADOR -->
+<div class="overlay" id="rrhhOverlay">
+  <div class="modal" style="max-width:620px;max-height:92vh;overflow-y:auto">
+    <button class="close-btn" onclick="closeOv('rrhhOverlay')">✕</button>
+    <div class="modal-title" id="rrhh-modal-title">Nuevo Trabajador</div>
+    <div class="modal-sub">Ficha de trabajador · campos requeridos marcados con *</div>
+    <input type="hidden" id="rrhh-edit-id">
+
+    <!-- TABS de la ficha -->
+    <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px">
+      <button class="ptab active" id="ft-tab-personal" onclick="fichaTab(this,'personal')">Personal</button>
+      <button class="ptab" id="ft-tab-contrato" onclick="fichaTab(this,'contrato')">Contrato</button>
+      <button class="ptab" id="ft-tab-vacaciones" onclick="fichaTab(this,'vacaciones')">Vacaciones</button>
+    </div>
+
+    <!-- PANEL PERSONAL -->
+    <div id="ft-personal">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fw"><label class="fl">Nombres <span style="color:var(--red)">*</span></label><input type="text" id="t_nombres" class="fi" placeholder="Ej: Juan Antonio"></div>
+        <div class="fw"><label class="fl">Apellidos <span style="color:var(--red)">*</span></label><input type="text" id="t_apellidos" class="fi" placeholder="Ej: González Pérez"></div>
+        <div class="fw"><label class="fl">RUT <span style="color:var(--red)">*</span></label><input type="text" id="t_rut" class="fi" placeholder="12.345.678-9" oninput="formatRut(this)"></div>
+        <div class="fw"><label class="fl">Fecha de Nacimiento</label><input type="date" id="t_nacimiento" class="fi"></div>
+        <div class="fw"><label class="fl">Email</label><input type="email" id="t_email" class="fi" placeholder="correo@empresa.cl"></div>
+        <div class="fw"><label class="fl">Teléfono</label><input type="text" id="t_telefono" class="fi" placeholder="+56 9 XXXX XXXX"></div>
+        <div class="fw" style="grid-column:1/-1"><label class="fl">Dirección</label><input type="text" id="t_direccion" class="fi" placeholder="Calle, número, ciudad"></div>
+        <div class="fw"><label class="fl">Nacionalidad</label><input type="text" id="t_nacionalidad" class="fi" placeholder="Chilena" value="Chilena"></div>
+        <div class="fw"><label class="fl">Estado Civil</label>
+          <select id="t_estado_civil" class="fi">
+            <option value="">— Seleccionar —</option>
+            <option>Soltero/a</option><option>Casado/a</option><option>Conviviente civil</option><option>Divorciado/a</option><option>Viudo/a</option>
+          </select>
+        </div>
+        <div class="fw"><label class="fl">Nivel de Estudios</label>
+          <select id="t_estudios" class="fi">
+            <option value="">— Seleccionar —</option>
+            <option>Básica</option><option>Media</option><option>Técnico nivel medio</option><option>Técnico nivel superior</option><option>Universitario</option><option>Posgrado</option>
+          </select>
+        </div>
+        <div class="fw"><label class="fl">Banco</label><input type="text" id="t_banco" class="fi" placeholder="Ej: BancoEstado"></div>
+        <div class="fw"><label class="fl">N° Cuenta bancaria</label><input type="text" id="t_cuenta" class="fi" placeholder="Número de cuenta"></div>
+        <div class="fw"><label class="fl">AFP</label>
+          <select id="t_afp" class="fi">
+            <option value="">— Seleccionar —</option>
+            <option>Capital</option><option>Cuprum</option><option>Habitat</option><option>Modelo</option><option>Planvital</option><option>ProVida</option><option>Uno</option>
+          </select>
+        </div>
+        <div class="fw"><label class="fl">Sistema de Salud</label>
+          <select id="t_salud" class="fi">
+            <option value="">— Seleccionar —</option>
+            <option>Fonasa A</option><option>Fonasa B</option><option>Fonasa C</option><option>Fonasa D</option><option>Isapre</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL CONTRATO -->
+    <div id="ft-contrato" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fw"><label class="fl">Empresa <span style="color:var(--red)">*</span></label><input type="text" id="t_empresa" class="fi" placeholder="Nombre empresa"></div>
+        <div class="fw"><label class="fl">Cargo / Función <span style="color:var(--red)">*</span></label><input type="text" id="t_cargo" class="fi" placeholder="Ej: Jefe de Bodega"></div>
+        <div class="fw"><label class="fl">Área / Departamento</label><input type="text" id="t_area" class="fi" placeholder="Ej: Operaciones"></div>
+        <div class="fw"><label class="fl">Tipo de Contrato</label>
+          <select id="t_tipo_contrato" class="fi">
+            <option value="">— Seleccionar —</option>
+            <option>Indefinido</option><option>Plazo fijo</option><option>Por obra o faena</option><option>Part-time</option>
+          </select>
+        </div>
+        <div class="fw"><label class="fl">Fecha de Ingreso <span style="color:var(--red)">*</span></label><input type="date" id="t_ingreso" class="fi" onchange="calcularVaccInfo()"></div>
+        <div class="fw"><label class="fl">Fecha término contrato</label><input type="date" id="t_termino" class="fi"></div>
+        <div class="fw"><label class="fl">Sueldo Base (CLP) <span style="color:var(--red)">*</span></label>
+          <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_sueldo" class="fi fi-money" placeholder="0" oninput="clpInput(this)"></div>
+        </div>
+        <div class="fw"><label class="fl">Jornada (horas/semana)</label>
+          <select id="t_jornada" class="fi">
+            <option value="45">45 horas (jornada completa)</option>
+            <option value="44">44 horas</option>
+            <option value="40">40 horas</option>
+            <option value="30">30 horas (part-time)</option>
+            <option value="otro">Otra</option>
+          </select>
+        </div>
+        <div class="fw"><label class="fl">Estado</label>
+          <select id="t_estado" class="fi">
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo / Desvinculado</option>
+            <option value="licencia">En licencia médica</option>
+          </select>
+        </div>
+        <div class="fw"><label class="fl">Observaciones contrato</label></div>
+        <div class="fw" style="grid-column:1/-1"><textarea id="t_obs" class="fi" rows="3" placeholder="Notas o condiciones especiales del contrato..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- PANEL VACACIONES -->
+    <div id="ft-vacaciones" style="display:none">
+      <!-- Saldo resumen -->
+      <div id="vacc-info-box" style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:14px;margin-bottom:16px;font-family:var(--font-mono);font-size:11px;color:var(--text2)">
+        Ingresa la fecha de ingreso en la pestaña Contrato para calcular vacaciones.
+      </div>
+      <!-- Botón principal separado -->
+      <button class="btn-primary" style="width:100%;margin-bottom:20px;font-size:16px;padding:12px" onclick="openSolicitarVaccModal()">
+        🏖 Solicitar Vacaciones
+      </button>
+      <!-- Historial -->
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:10px;text-transform:uppercase">// Historial de solicitudes</div>
+      <div id="vacc-historial-ficha">Sin vacaciones registradas.</div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeOv('rrhhOverlay')">Cancelar</button>
+      <button class="btn-primary" onclick="saveTrabajador()">Guardar Trabajador</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SOLICITAR VACACIONES -->
+<div class="overlay" id="vaccOverlay">
+  <div class="modal" style="max-width:500px">
+    <button class="close-btn" onclick="closeOv('vaccOverlay')">✕</button>
+    <div class="modal-title">🏖 Solicitar Vacaciones</div>
+    <div class="modal-sub" id="vacc-modal-sub">Selecciona el período de vacaciones</div>
+
+    <!-- Saldo disponible -->
+    <div id="vacc-modal-saldo" style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:12px;margin-bottom:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
+    </div>
+
+    <!-- Fechas -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="fw"><label class="fl">Fecha inicio <span style="color:var(--red)">*</span></label><input type="date" id="vacc_inicio" class="fi" onchange="calcularPeriodoVacc()"></div>
+      <div class="fw"><label class="fl">Fecha término <span style="color:var(--red)">*</span></label><input type="date" id="vacc_fin" class="fi" onchange="calcularPeriodoVacc()"></div>
+    </div>
+
+    <!-- Resultado cálculo -->
+    <div id="vacc-calc-result" style="display:none;background:var(--bg3);border:1px solid rgba(0,212,170,0.3);border-radius:2px;padding:14px;margin-bottom:16px"></div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeOv('vaccOverlay')">Cancelar</button>
+      <button class="btn-primary" id="vacc-solicitar-btn" style="display:none" onclick="solicitarVacaciones()">✓ Registrar y Generar Certificado</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CAT ITEM -->
 <div class="overlay" id="catOverlay">
   <div class="modal" style="max-width:520px">
@@ -1207,6 +1511,17 @@ window.fbLoadDropdownConfig = async () => {
   return snap.exists() ? snap.data() : null;
 };
 
+window.fbSaveRRHH = async (id, data) => {
+  await setDoc(doc(db,'rrhh_trabajadores',id), JSON.parse(JSON.stringify(data)));
+};
+window.fbLoadRRHH = async () => {
+  const s = await getDocs(collection(db,'rrhh_trabajadores'));
+  return s.docs.map(d=>({_id:d.id,...d.data()}));
+};
+window.fbDeleteRRHH = async (id) => {
+  const {deleteDoc:dd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  await dd(doc(db,'rrhh_trabajadores',id));
+};
 window.fbLoad = async () => {
   const s = await getDocs(collection(db,'cierres'));
   return s.docs.map(d=>({_id:d.id,...d.data()}));
@@ -1294,7 +1609,7 @@ function selectModule(mod) {
   activeModule = mod;
   document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
   document.getElementById('mod-'+mod).classList.add('active');
-  const labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual' };
+  const labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual', rrhh:'// Gestión RRHH' };
   document.getElementById('login-module-label').textContent = labels[mod];
   document.getElementById('loginError').style.display = 'none';
   document.getElementById('loginPass').value = '';
@@ -1340,7 +1655,7 @@ const S = { mes:null, data:{}, cur:'resumen', ctx:null };
 async function sha(s){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
 function doLogin(){
   sha(document.getElementById('loginPass').value).then(h=>{
-    const expectedHash = activeModule==='cierre' ? HASH_CIERRE : activeModule==='presupuesto' ? HASH_PRES : HASH_ANUAL;
+    const expectedHash = activeModule==='cierre' ? HASH_CIERRE : activeModule==='presupuesto' ? HASH_PRES : activeModule==='rrhh' ? HASH_CIERRE : HASH_ANUAL;
     if(h===expectedHash){
       document.getElementById('loginScreen').style.display='none';
       document.getElementById('app').style.display='none';
@@ -1352,6 +1667,9 @@ function doLogin(){
       } else if(activeModule==='presupuesto'){
         document.getElementById('app-presupuesto').style.display='block';
         bootPresupuesto();
+      } else if(activeModule==='rrhh'){
+        document.getElementById('app-rrhh').style.display='block';
+        bootRRHH();
       } else {
         document.getElementById('app-anual').style.display='block';
         bootAnnual();
@@ -1366,6 +1684,7 @@ function doLogout(){
   document.getElementById('app').style.display='none';
   document.getElementById('app-presupuesto').style.display='none';
   if(document.getElementById('app-anual')) document.getElementById('app-anual').style.display='none';
+  if(document.getElementById('app-rrhh')) document.getElementById('app-rrhh').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('loginPass').value='';
 }
@@ -1380,6 +1699,7 @@ async function boot(){
     await loadBannerConfig();
     if(window.fbLoad){ const ls=await window.fbLoad(); ls.forEach(c=>{S.data[c._id]=c;}); }
     await loadPresupuesto();
+    await loadRRHH();
     if(!Object.keys(S.data).length){ const n=new Date(); const id=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; S.data[id]=mkEmpty(id); await save(id); }
     buildSel(); S.mes=Object.keys(S.data).sort().reverse()[0]; document.getElementById('mesSel').value=S.mes; setLbl();
     draw();
@@ -1456,6 +1776,7 @@ function renderSec(n){
   else if(n==='rendimiento-full') renderRendFull();
   else if(n==='historial') renderHist();
   else if(n==='configuracion'){ renderDropdownConfigSec(); renderBannerConfig(); }
+  else if(n==='rrhh') renderRRHH();
 }
 
 // ── HELPERS ──
@@ -1977,17 +2298,21 @@ function buildLineChart(datos, color, isBrutas){
   return '<div style="padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:2px;overflow-x:auto">'+svg+'</div>';
 }
 
-function buildReporteTable(meses, getData, empresas, isBrutas){
-  const cols = meses.filter(function(mes){ return getData(mes).length>0 && getData(mes).some(function(v){ return (isBrutas?(v.brutas||0):(v.netas||0))>0; }); });
+function buildReporteTable(meses, getData, empresas, isBrutas, isUtil){
+  const getV = function(v){ return isUtil?(v.utilidad||0):(isBrutas?(v.brutas||0):(v.netas||0)); };
+  const valColor = isUtil ? 'var(--amber)' : 'var(--teal)';
+  const totColor = isUtil ? '#f5a623' : '#00e5a0';
+  const cols = meses.filter(function(mes){ return getData(mes).length>0 && getData(mes).some(function(v){ return getV(v)>0; }); });
   if(!cols.length) return '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:12px 0">Sin datos disponibles</div>';
   let html = '<table class="tbl"><thead><tr><th>Empresa</th>';
   cols.forEach(function(mes){ const pts=mes.split('-'); html += '<th style="text-align:right">'+MESES[+pts[1]-1].substring(0,3)+' '+pts[0]+'</th>'; });
   html += '<th style="text-align:right">Total</th></tr></thead><tbody>';
   empresas.forEach(function(e){
     const vals = cols.map(function(mes){
-      return getData(mes).filter(function(v){ return v.empresa===e; }).reduce(function(s,v){ return s+(isBrutas?(v.brutas||0):(v.netas||0)); },0);
+      return getData(mes).filter(function(v){ return v.empresa===e; }).reduce(function(s,v){ return s+getV(v); },0);
     });
     const tot = vals.reduce(function(s,v){ return s+v; },0);
+    if(!tot) return;
     html += '<tr><td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">'+e+'</span></td>';
     vals.forEach(function(v,i){
       let delta='';
@@ -1996,18 +2321,18 @@ function buildReporteTable(meses, getData, empresas, isBrutas){
         const col=pct>=0?'#00e5a0':'#ff4757';
         delta=' <span style="font-size:9px;color:'+col+'">'+(pct>=0?'▲':'▼')+Math.abs(pct).toFixed(1)+'%</span>';
       }
-      html += '<td style="text-align:right;font-family:var(--font-mono);color:var(--teal)">'+(v?fmt(v)+delta:'-')+'</td>';
+      html += '<td style="text-align:right;font-family:var(--font-mono);color:'+valColor+'">'+(v?fmt(v)+delta:'-')+'</td>';
     });
-    html += '<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:var(--teal)">'+fmt(tot)+'</td></tr>';
+    html += '<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:'+valColor+'">'+fmt(tot)+'</td></tr>';
   });
   html += '<tr style="border-top:1px solid var(--border)"><td style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">TOTAL</td>';
   let grand=0;
   cols.forEach(function(mes,i){
-    const v=getData(mes).reduce(function(s,v2){ return s+(isBrutas?(v2.brutas||0):(v2.netas||0)); },0);
+    const v=getData(mes).reduce(function(s,v2){ return s+getV(v2); },0);
     grand+=v;
-    html+='<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:var(--green)">'+(v?fmt(v):'-')+'</td>';
+    html+='<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:'+totColor+'">'+(v?fmt(v):'-')+'</td>';
   });
-  html+='<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:var(--green)">'+fmt(grand)+'</td></tr>';
+  html+='<td style="text-align:right;font-family:var(--font-display);font-size:14px;color:'+totColor+'">'+fmt(grand)+'</td></tr>';
   html+='</tbody></table>';
   return html;
 }
@@ -2015,12 +2340,18 @@ function buildReporteTable(meses, getData, empresas, isBrutas){
 function renderRendReporte(){
   const selEmp = ($('rend-rpt-emp')||{value:''}).value;
   const meses = Object.keys(S.data).sort();
+  const isUtil = rendRptMode === 'utilidad';
   const isBrutas = rendRptMode === 'brutas';
-  const color = isBrutas ? '#00d4aa' : '#00e5a0';
+  const color = isUtil ? '#f5a623' : (isBrutas ? '#00d4aa' : '#00e5a0');
+
+  const getVal = function(v){
+    if(isUtil) return v.utilidad||0;
+    return isBrutas?(v.brutas||0):(v.netas||0);
+  };
 
   const datos = meses.map(function(mes){
     const ventas = (S.data[mes].ventas||[]).filter(function(v){ return !selEmp||v.empresa===selEmp; });
-    const val = ventas.reduce(function(s,v){ return s+(isBrutas?(v.brutas||0):(v.netas||0)); },0);
+    const val = ventas.reduce(function(s,v){ return s+getVal(v); },0);
     const pts=mes.split('-');
     return { mes:mes, label:MESES[+pts[1]-1].substring(0,3)+' '+pts[0], val:val };
   }).filter(function(d){ return d.val>0; });
@@ -2028,14 +2359,15 @@ function renderRendReporte(){
   const wrap = $('rend-rpt-chart-wrap');
   if(wrap) wrap.innerHTML = buildLineChart(datos, color, isBrutas);
 
+  const modeLabel = isUtil ? 'Utilidad Est.' : (isBrutas ? 'Brutas' : 'Netas');
   const ttitle = $('rend-rpt-table-title');
-  if(ttitle) ttitle.textContent = '// Evolucion mensual - Ventas '+(isBrutas?'Brutas':'Netas')+(selEmp?' - '+selEmp:'');
+  if(ttitle) ttitle.textContent = '// Evolucion mensual - Ventas '+modeLabel+(selEmp?' - '+selEmp:'');
   const tbl = $('rend-rpt-table');
   if(!tbl) return;
   const empresas = selEmp ? [selEmp] : EMPS.filter(function(e){
     return meses.some(function(mes){ return (S.data[mes].ventas||[]).some(function(v){ return v.empresa===e; }); });
   });
-  tbl.innerHTML = buildReporteTable(meses, function(mes){ return S.data[mes].ventas||[]; }, empresas, isBrutas);
+  tbl.innerHTML = buildReporteTable(meses, function(mes){ return S.data[mes].ventas||[]; }, empresas, isBrutas, isUtil);
 }
 
 // ── RENDIMIENTO FULL ──
@@ -4856,6 +5188,1022 @@ async function delBannerMsg(idx){
   renderBannerConfig();
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// ══  MÓDULO GESTIÓN RRHH  ══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+
+// Feriados legales Chile 2026 — Map con nombre del feriado
+const FERIADOS_2026_MAP = {
+  '2026-01-01': 'Año Nuevo',
+  '2026-01-19': 'Año Nuevo (traslado)',
+  '2026-04-03': 'Viernes Santo',
+  '2026-04-04': 'Sábado Santo',
+  '2026-05-01': 'Día del Trabajador',
+  '2026-05-21': 'Glorias Navales',
+  '2026-06-29': 'San Pedro y San Pablo',
+  '2026-07-16': 'Virgen del Carmen',
+  '2026-08-15': 'Asunción de la Virgen',
+  '2026-09-18': 'Independencia Nacional',
+  '2026-09-19': 'Día de las Glorias del Ejército',
+  '2026-10-12': 'Encuentro de Dos Mundos',
+  '2026-10-31': 'Iglesias Evangélicas',
+  '2026-11-01': 'Todos los Santos',
+  '2026-12-08': 'Inmaculada Concepción',
+  '2026-12-25': 'Navidad',
+};
+// Set compatible para cálculos de días hábiles
+const FERIADOS_2026 = new Set(Object.keys(FERIADOS_2026_MAP));
+
+let rrhhState = { trabajadores: [] };
+
+async function loadRRHH() {
+  try {
+    if (window.fbLoadRRHH) {
+      const list = await window.fbLoadRRHH();
+      rrhhState.trabajadores = list;
+    }
+  } catch(e) { console.error('[RRHH load]', e); }
+}
+
+async function saveRRHH(t) {
+  rrhhState.trabajadores = rrhhState.trabajadores.filter(x=>x._id!==t._id);
+  rrhhState.trabajadores.push(t);
+  if (window.fbSaveRRHH) await window.fbSaveRRHH(t._id, t).catch(e=>console.error('[RRHH save]',e));
+}
+
+async function deleteRRHH(id) {
+  rrhhState.trabajadores = rrhhState.trabajadores.filter(x=>x._id!==id);
+  if (window.fbDeleteRRHH) await window.fbDeleteRRHH(id).catch(e=>console.error('[RRHH del]',e));
+}
+
+function rrhhTab(el, tab) {
+  document.querySelectorAll('#sec-rrhh .ptab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ['trabajadores','vacaciones','cumpleanos'].forEach(t=>{
+    const el2=$('rrhh-'+t); if(el2) el2.style.display=t===tab?'block':'none';
+  });
+  if(tab==='vacaciones') renderRRHHVacaciones();
+  else if(tab==='cumpleanos') { cumpleMesOffset=0; renderCumpleanos(); renderCumpleanosLista(); }
+  else renderTrabajadores();
+}
+
+function fichaTab(el, tab) {
+  document.querySelectorAll('#rrhhOverlay .ptab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ['personal','contrato','vacaciones'].forEach(t=>{
+    const el2=$('ft-'+t); if(el2) el2.style.display=t===tab?'block':'none';
+  });
+  if(tab==='vacaciones') { calcularVaccInfo(); renderHistorialFicha(); }
+}
+
+function renderRRHH() {
+  renderRRHHKpis();
+  renderTrabajadores();
+}
+
+function renderRRHHKpis() {
+  const list = rrhhState.trabajadores;
+  const activos = list.filter(t=>t.estado==='activo').length;
+  const inactivos = list.filter(t=>t.estado==='inactivo').length;
+  const licencia = list.filter(t=>t.estado==='licencia').length;
+  // Días de vacaciones acumulados totales pendientes
+  const totalDiasPend = list.filter(t=>t.estado==='activo').reduce((s,t)=>{
+    const info = calcVaccLegal(t.ingreso);
+    const tomados = (t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);
+    return s + Math.max(0, info.diasAcumulados - tomados);
+  },0);
+  const kpi = $('rrhh-kpis');
+  if(!kpi) return;
+  kpi.innerHTML=`
+    <div class="kpi-card cteal"><div class="kpi-label">Total Trabajadores</div><div class="kpi-val" style="color:var(--teal)">${list.length}</div><div class="kpi-sub">En nómina</div></div>
+    <div class="kpi-card cgreen"><div class="kpi-label">Activos</div><div class="kpi-val" style="color:var(--green)">${activos}</div><div class="kpi-sub">Con contrato vigente</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">En licencia</div><div class="kpi-val" style="color:var(--amber)">${licencia}</div><div class="kpi-sub">Licencia médica</div></div>
+    <div class="kpi-card cred"><div class="kpi-label">Desvinculados</div><div class="kpi-val" style="color:var(--red)">${inactivos}</div><div class="kpi-sub">Inactivos</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">Días Vacc. Pendientes</div><div class="kpi-val" style="color:var(--amber)">${totalDiasPend}</div><div class="kpi-sub">Días hábiles acumulados sin tomar</div></div>
+  `;
+}
+
+function renderTrabajadores() {
+  const q = ($('rrhh-search')||{value:''}).value.toLowerCase();
+  const fe = ($('rrhh-filter-estado')||{value:''}).value;
+  let list = [...rrhhState.trabajadores];
+  if(q) list=list.filter(t=>(t.nombres+' '+t.apellidos).toLowerCase().includes(q)||(t.rut||'').includes(q));
+  if(fe) list=list.filter(t=>t.estado===fe);
+  list.sort((a,b)=>((a.apellidos||'')+(a.nombres||'')).localeCompare((b.apellidos||'')+(b.nombres||'')));
+  const tbody=$('rrhh-tbody'); if(!tbody) return;
+  if(!list.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin trabajadores registrados</td></tr>';return;}
+  const estadoColor={activo:'var(--green)',inactivo:'var(--red)',licencia:'var(--amber)'};
+  const estadoLabel={activo:'Activo',inactivo:'Inactivo',licencia:'Licencia'};
+  tbody.innerHTML=list.map(t=>{
+    const info=calcVaccLegal(t.ingreso);
+    const tomados=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);
+    const pendientes=Math.max(0,info.diasAcumulados-tomados);
+    const col=pendientes>15?'var(--red)':pendientes>7?'var(--amber)':'var(--green)';
+    return `<tr style="cursor:pointer" onclick="openFichaTrabajador('${t._id}')">
+      <td><span style="font-weight:500;color:var(--text)">${t.nombres||''} ${t.apellidos||''}</span></td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${t.rut||'—'}</td>
+      <td style="color:var(--text2);font-size:12px">${t.cargo||'—'}</td>
+      <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${t.empresa||'—'}</span></td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${fmtFecha(t.ingreso)}</td>
+      <td style="font-size:12px;color:var(--text2)">${t.tipo_contrato||'—'}</td>
+      <td><span class="cbadge" style="background:${estadoColor[t.estado]||'var(--text3)'}22;color:${estadoColor[t.estado]||'var(--text3)'};border:1px solid ${estadoColor[t.estado]||'var(--text3)'}44">${estadoLabel[t.estado]||t.estado||'—'}</span></td>
+      <td style="text-align:right;font-family:var(--font-mono);color:${col};font-weight:700">${pendientes}</td>
+      <td onclick="event.stopPropagation()" style="display:flex;gap:4px">
+        <button class="btn-del" onclick="openFichaTrabajador('${t._id}')" title="Editar" style="color:var(--teal)">✎</button>
+        <button class="btn-del" onclick="confirmDelTrabajador('${t._id}')" title="Eliminar">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Cálculo vacaciones legales (Código del Trabajo Chile) ──
+function calcVaccLegal(fechaIngreso) {
+  if(!fechaIngreso) return {meses:0,anos:0,diasBase:0,diasAcumulados:0,esZona:false};
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const ing=new Date(fechaIngreso+'T00:00:00');
+  const diffMs=hoy-ing;
+  const diffDias=Math.floor(diffMs/86400000);
+  const mesesTotales=Math.floor(diffDias/30.4375);
+  const anosCompletos=Math.floor(mesesTotales/12);
+  // Art. 67 CT: 15 días hábiles al completar 1 año
+  // Trabajador zona austral (art. 69): 20 días (no aplica por default)
+  // Vacaciones proporcionales: 1.25 días hábiles por mes (15/12)
+  const diasBase=15;
+  const diasPorMes=diasBase/12; // 1.25 por mes
+  const diasAcumulados=Math.floor(mesesTotales*diasPorMes);
+  return { meses:mesesTotales, anos:anosCompletos, diasBase, diasAcumulados, diasPorMes: diasPorMes.toFixed(2) };
+}
+
+// Días hábiles entre dos fechas (excluyendo sáb, dom, feriados 2026)
+function calcDiasHabiles(inicio, fin) {
+  const d1=new Date(inicio+'T00:00:00'); const d2=new Date(fin+'T00:00:00');
+  if(d1>d2) return 0;
+  let count=0; const cur=new Date(d1);
+  while(cur<=d2){
+    const dow=cur.getDay();
+    const iso=cur.toISOString().slice(0,10);
+    if(dow!==0&&dow!==6&&!FERIADOS_2026.has(iso)) count++;
+    cur.setDate(cur.getDate()+1);
+  }
+  return count;
+}
+
+function calcularVaccInfo() {
+  const ingreso=$('t_ingreso')?$('t_ingreso').value:'';
+  const box=$('vacc-info-box'); if(!box) return;
+  if(!ingreso){box.innerHTML='Ingresa la fecha de ingreso en la pestaña Contrato para calcular vacaciones.';return;}
+  const info=calcVaccLegal(ingreso);
+  const id=$('rrhh-edit-id')?$('rrhh-edit-id').value:'';
+  const t=rrhhState.trabajadores.find(x=>x._id===id)||{};
+  const tomados=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);
+  const pendientes=Math.max(0,info.diasAcumulados-tomados);
+  const puede=(info.meses>=12)?'✓ Puede tomar vacaciones':'✗ No cumple 1 año (art. 67 CT)';
+  const puedeColor=(info.meses>=12)?'var(--green)':'var(--amber)';
+  box.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:10px">
+      <div><div style="color:var(--text3);font-size:9px;letter-spacing:1px;margin-bottom:3px">ANTIGÜEDAD</div><div style="color:var(--teal);font-size:16px;font-family:var(--font-display)">${info.anos} años ${info.meses%12} meses</div></div>
+      <div><div style="color:var(--text3);font-size:9px;letter-spacing:1px;margin-bottom:3px">DÍAS ACUMULADOS</div><div style="color:var(--blue);font-size:16px;font-family:var(--font-display)">${info.diasAcumulados} días</div></div>
+      <div><div style="color:var(--text3);font-size:9px;letter-spacing:1px;margin-bottom:3px">DÍAS TOMADOS</div><div style="color:var(--red);font-size:16px;font-family:var(--font-display)">${tomados} días</div></div>
+      <div><div style="color:var(--text3);font-size:9px;letter-spacing:1px;margin-bottom:3px">DÍAS DISPONIBLES</div><div style="color:var(--green);font-size:16px;font-family:var(--font-display)">${pendientes} días</div></div>
+    </div>
+    <div style="font-size:11px;color:${puedeColor};font-family:var(--font-mono)">${puede}</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--font-mono)">Base legal: 15 días hábiles al año · ${info.diasPorMes} días/mes · Art. 67 Código del Trabajo</div>
+  `;
+}
+
+function calcularPeriodoVacc() {
+  const inicio=$('vacc_inicio')?$('vacc_inicio').value:'';
+  const fin=$('vacc_fin')?$('vacc_fin').value:'';
+  const res=$('vacc-calc-result'); const btn=$('vacc-solicitar-btn');
+  if(!inicio||!fin||inicio>fin){if(res)res.style.display='none';if(btn)btn.style.display='none';return;}
+  const dias=calcDiasHabiles(inicio,fin);
+  const d1=new Date(inicio+'T00:00:00'); const d2=new Date(fin+'T00:00:00');
+  const totalDias=Math.round((d2-d1)/86400000)+1;
+  const findesem=totalDias-dias-contarFeriados(inicio,fin);
+  const feriados=contarFeriados(inicio,fin);
+  const id=$('rrhh-edit-id')?$('rrhh-edit-id').value:'';
+  const t=rrhhState.trabajadores.find(x=>x._id===id)||{};
+  const info=calcVaccLegal($('t_ingreso')?$('t_ingreso').value:'');
+  const tomados=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);
+  const disponibles=Math.max(0,info.diasAcumulados-tomados);
+  const alcanza=dias<=disponibles;
+  if(res){
+    res.style.display='block';
+    res.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:10px">
+        <div><div style="color:var(--text3);font-size:9px;letter-spacing:1px;margin-bottom:2px">DÍAS CORRIDOS</div><div style="color:var(--teal);font-size:18px;font-family:var(--font-display)">${totalDias}</div></div>
+        <div><div style="color:var(--text3);font-size:9px;letter-spacing:1px;margin-bottom:2px">FINES DE SEMANA</div><div style="color:var(--text2);font-size:18px;font-family:var(--font-display)">${findesem}</div></div>
+        <div><div style="color:var(--text3);font-size:9px;letter-spacing:1px;margin-bottom:2px">FERIADOS</div><div style="color:var(--amber);font-size:18px;font-family:var(--font-display)">${feriados}</div></div>
+        <div><div style="color:var(--text3);font-size:9px;letter-spacing:1px;margin-bottom:2px">DÍAS HÁBILES</div><div style="color:${alcanza?'var(--green)':'var(--red)'};font-size:18px;font-family:var(--font-display)">${dias}</div></div>
+      </div>
+      <div style="font-size:11px;color:${alcanza?'var(--green)':'var(--red)'};font-family:var(--font-mono)">
+        ${alcanza?'✓ El trabajador tiene días disponibles suficientes ('+disponibles+' disponibles)':'✗ No tiene suficientes días disponibles ('+disponibles+' disponibles, solicita '+dias+')'}
+      </div>
+    `;
+  }
+  if(btn) btn.style.display=alcanza?'block':'none';
+}
+
+function contarFeriados(inicio, fin) {
+  const d1=new Date(inicio+'T00:00:00'); const d2=new Date(fin+'T00:00:00');
+  let count=0; const cur=new Date(d1);
+  while(cur<=d2){
+    const iso=cur.toISOString().slice(0,10);
+    const dow=cur.getDay();
+    if(dow!==0&&dow!==6&&FERIADOS_2026.has(iso)) count++;
+    cur.setDate(cur.getDate()+1);
+  }
+  return count;
+}
+
+// ── SOLICITAR VACACIONES ──
+function openSolicitarVaccModal() {
+  const id=$('rrhh-edit-id')?$('rrhh-edit-id').value:'';
+  if(!id){showToast('Guarda primero el trabajador',true);return;}
+  const t=rrhhState.trabajadores.find(x=>x._id===id);
+  if(!t){showToast('Trabajador no encontrado',true);return;}
+  // Fill saldo box
+  const info=calcVaccLegal(t.ingreso);
+  const tomados=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);
+  const disponibles=Math.max(0,info.diasAcumulados-tomados);
+  const sub=$('vacc-modal-sub');
+  if(sub) sub.textContent=t.nombres+' '+t.apellidos+' · '+t.cargo;
+  const saldo=$('vacc-modal-saldo');
+  if(saldo) saldo.innerHTML=`
+    <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px">ACUMULADOS</div><div style="font-family:var(--font-display);font-size:22px;color:var(--blue)">${info.diasAcumulados}</div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">días hábiles</div></div>
+    <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px">TOMADOS</div><div style="font-family:var(--font-display);font-size:22px;color:var(--red)">${tomados}</div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">días hábiles</div></div>
+    <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px">DISPONIBLES</div><div style="font-family:var(--font-display);font-size:22px;color:var(--green)">${disponibles}</div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">días hábiles</div></div>
+  `;
+  // Reset fields
+  if($('vacc_inicio')) $('vacc_inicio').value='';
+  if($('vacc_fin'))    $('vacc_fin').value='';
+  const res=$('vacc-calc-result'); if(res) res.style.display='none';
+  const btn=$('vacc-solicitar-btn'); if(btn) btn.style.display='none';
+  $('vaccOverlay').classList.add('open');
+}
+
+async function solicitarVacaciones() {
+  const id=$('rrhh-edit-id')?$('rrhh-edit-id').value:'';
+  if(!id){showToast('Guarda primero el trabajador',true);return;}
+  const inicio=$('vacc_inicio').value; const fin=$('vacc_fin').value;
+  if(!inicio||!fin){showToast('Selecciona fechas de vacaciones',true);return;}
+  const dias=calcDiasHabiles(inicio,fin);
+  const t=rrhhState.trabajadores.find(x=>x._id===id);
+  if(!t){showToast('Trabajador no encontrado',true);return;}
+  if(!t.vacaciones) t.vacaciones=[];
+  const solicitud={
+    id:'v_'+Date.now(), inicio, fin, dias_habiles:dias,
+    estado:'aprobada', fecha_solicitud:new Date().toISOString().slice(0,10),
+    folio:'SOL-'+Date.now().toString().slice(-6)
+  };
+  t.vacaciones.push(solicitud);
+  await saveRRHH(t);
+  closeOv('vaccOverlay');
+  showToast('Vacaciones registradas ✓');
+  calcularVaccInfo();
+  renderHistorialFicha();
+  // Auto-generate certificate
+  setTimeout(()=>generarCertificado(t, solicitud), 300);
+}
+
+function renderHistorialFicha() {
+  const id=$('rrhh-edit-id')?$('rrhh-edit-id').value:'';
+  const box=$('vacc-historial-ficha'); if(!box) return;
+  const t=rrhhState.trabajadores.find(x=>x._id===id);
+  const vaccs=(t&&t.vacaciones)||[];
+  if(!vaccs.length){
+    box.innerHTML='<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:12px 0">Sin solicitudes de vacaciones registradas.</div>';
+    return;
+  }
+  box.innerHTML=`<table class="tbl" style="margin-top:0">
+    <thead><tr>
+      <th>Folio</th><th>Solicitud</th><th>Desde</th><th>Hasta</th>
+      <th style="text-align:right">Días háb.</th><th>Estado</th><th style="text-align:center">Acciones</th>
+    </tr></thead><tbody>
+    ${[...vaccs].reverse().map((v,ri)=>{
+      const i=vaccs.length-1-ri;
+      return `<tr>
+        <td style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">${v.folio||'—'}</td>
+        <td style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${fmtFecha(v.fecha_solicitud)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.inicio)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.fin)}</td>
+        <td style="text-align:right;font-family:var(--font-mono);color:var(--blue);font-weight:700">${v.dias_habiles}</td>
+        <td><span class="cbadge" style="background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.3)">✓ Aprobada</span></td>
+        <td style="text-align:center;display:flex;gap:6px;justify-content:center">
+          <button onclick="generarCertificado(rrhhState.trabajadores.find(x=>x._id==='${id}'),${JSON.stringify(v).replace(/'/g,'&apos;')})"
+            style="background:var(--teal);color:#000;border:none;font-family:var(--font-mono);font-size:9px;padding:4px 10px;border-radius:2px;cursor:pointer;letter-spacing:1px;white-space:nowrap">
+            ⬇ CERTIFICADO
+          </button>
+          <button class="btn-del" onclick="eliminarVaccFicha('${id}',${i})">✕</button>
+        </td>
+      </tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+
+async function eliminarVaccFicha(tid, idx) {
+  if(!confirm('¿Eliminar esta solicitud de vacaciones?')) return;
+  const t=rrhhState.trabajadores.find(x=>x._id===tid); if(!t||!t.vacaciones) return;
+  t.vacaciones.splice(idx,1);
+  await saveRRHH(t);
+  showToast('Solicitud eliminada');
+  calcularVaccInfo(); renderHistorialFicha();
+}
+
+// ── GENERADOR DE CERTIFICADO ──
+function generarCertificado(t, v) {
+  if(!t||!v){showToast('Error al generar certificado',true);return;}
+  const hoy=new Date();
+  const fmtLong=(iso)=>{
+    if(!iso) return '—';
+    const [y,m,d]=iso.split('-');
+    const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
+  };
+  const info=calcVaccLegal(t.ingreso);
+  const html=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Certificado de Vacaciones · ${t.nombres} ${t.apellidos}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',Arial,sans-serif;background:#fff;color:#1a1a2e;padding:0}
+  .page{width:210mm;min-height:297mm;margin:0 auto;padding:20mm 22mm;background:#fff;position:relative}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10mm;padding-bottom:6mm;border-bottom:3px solid #00d4aa}
+  .logo-area h1{font-size:28px;font-weight:800;letter-spacing:3px;color:#07080f;margin-bottom:2px}
+  .logo-area h1 span{color:#00d4aa}
+  .logo-area p{font-size:11px;color:#606888;letter-spacing:1px}
+  .folio-area{text-align:right}
+  .folio-area .folio{font-family:monospace;font-size:13px;font-weight:700;color:#00d4aa;background:#07080f;padding:6px 14px;border-radius:3px;letter-spacing:2px}
+  .folio-area .fecha-emit{font-size:10px;color:#606888;margin-top:5px}
+  .doc-title{text-align:center;margin:8mm 0;padding:6mm 0;border-top:1px solid #e0e4f0;border-bottom:1px solid #e0e4f0}
+  .doc-title h2{font-size:22px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#07080f}
+  .doc-title p{font-size:11px;color:#606888;letter-spacing:1px;margin-top:4px}
+  .section{margin-bottom:7mm}
+  .section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#606888;border-bottom:1px solid #e8eaf6;padding-bottom:3px;margin-bottom:4mm}
+  .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm 8mm}
+  .data-item label{font-size:9px;color:#606888;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:2px}
+  .data-item span{font-size:13px;color:#1a1a2e;font-weight:500}
+  .highlight-box{background:#f0fdf9;border:2px solid #00d4aa;border-radius:4px;padding:6mm;margin:7mm 0;display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;text-align:center}
+  .highlight-item .num{font-size:28px;font-weight:700;color:#00d4aa;font-family:monospace;line-height:1}
+  .highlight-item .lbl{font-size:9px;color:#606888;letter-spacing:1px;text-transform:uppercase;margin-top:3px}
+  .legal-box{background:#fafbff;border:1px solid #e0e4f0;border-left:3px solid #4a9eff;border-radius:2px;padding:5mm;margin-bottom:7mm}
+  .legal-box p{font-size:10px;color:#606888;line-height:1.6}
+  .firma-area{margin-top:14mm;display:grid;grid-template-columns:1fr 1fr;gap:20mm}
+  .firma-box{text-align:center}
+  .firma-line{border-top:1.5px solid #1a1a2e;padding-top:4px;margin-bottom:3px}
+  .firma-label{font-size:10px;color:#606888;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+  .firma-sub{font-size:9px;color:#a0a8c8}
+  .footer{position:absolute;bottom:10mm;left:22mm;right:22mm;border-top:1px solid #e8eaf6;padding-top:4px;display:flex;justify-content:space-between}
+  .footer span{font-size:8px;color:#a0a8c8;letter-spacing:1px}
+  @media print{
+    body{background:#fff}
+    .page{padding:15mm 18mm;margin:0;width:100%;min-height:auto}
+    .no-print{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="logo-area">
+      <h1>G<span>BISNESS</span></h1>
+      <p>CYBERNETIC SPA · GESTIÓN RRHH</p>
+    </div>
+    <div class="folio-area">
+      <div class="folio">${v.folio||'SOL-000000'}</div>
+      <div class="fecha-emit">Emitido: ${fmtLong(hoy.toISOString().slice(0,10))}</div>
+    </div>
+  </div>
+
+  <div class="doc-title">
+    <h2>Certificado de Vacaciones</h2>
+    <p>DOCUMENTO OFICIAL · CÓDIGO DEL TRABAJO DE CHILE · ART. 67</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Datos del Trabajador</div>
+    <div class="data-grid">
+      <div class="data-item"><label>Nombre completo</label><span>${t.nombres} ${t.apellidos}</span></div>
+      <div class="data-item"><label>RUT</label><span>${t.rut||'—'}</span></div>
+      <div class="data-item"><label>Cargo / Función</label><span>${t.cargo||'—'}</span></div>
+      <div class="data-item"><label>Empresa</label><span>${t.empresa||'—'}</span></div>
+      <div class="data-item"><label>Área / Departamento</label><span>${t.area||'—'}</span></div>
+      <div class="data-item"><label>Tipo de contrato</label><span>${t.tipo_contrato||'—'}</span></div>
+      <div class="data-item"><label>Fecha de ingreso</label><span>${fmtLong(t.ingreso)}</span></div>
+      <div class="data-item"><label>Antigüedad</label><span>${info.anos} año${info.anos!==1?'s':''} ${info.meses%12} mes${info.meses%12!==1?'es':''}</span></div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <div class="highlight-item"><div class="num">${v.dias_habiles}</div><div class="lbl">Días hábiles</div></div>
+    <div class="highlight-item"><div class="num" style="color:#1a1a2e;font-size:15px;padding-top:6px">${fmtLong(v.inicio)}</div><div class="lbl">Fecha inicio</div></div>
+    <div class="highlight-item"><div class="num" style="color:#1a1a2e;font-size:15px;padding-top:6px">${fmtLong(v.fin)}</div><div class="lbl">Fecha término</div></div>
+    <div class="highlight-item"><div class="num" style="color:#1a1a2e;font-size:15px;padding-top:6px">${fmtLong(v.fecha_solicitud)}</div><div class="lbl">Fecha solicitud</div></div>
+  </div>
+
+  <div class="legal-box">
+    <p>De conformidad con lo establecido en el <strong>Artículo 67 del Código del Trabajo de Chile</strong>, el trabajador individualizado precedentemente ha acumulado y tiene derecho a gozar de vacaciones legales anuales, con goce de remuneración. El presente documento certifica el período de vacaciones autorizado por la empresa, comprendido entre las fechas indicadas, excluyendo días sábado, domingo y feriados legales conforme al calendario oficial del año en curso.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Resumen de Saldo</div>
+    <div class="data-grid">
+      <div class="data-item"><label>Días acumulados (base legal)</label><span>${info.diasAcumulados} días hábiles</span></div>
+      <div class="data-item"><label>Base de cálculo</label><span>15 días / año · ${info.diasPorMes} días / mes</span></div>
+    </div>
+  </div>
+
+  <div class="firma-area">
+    <div class="firma-box">
+      <div class="firma-line"></div>
+      <div class="firma-label">${t.nombres} ${t.apellidos}</div>
+      <div class="firma-sub">RUT: ${t.rut||'—'} · Trabajador</div>
+    </div>
+    <div class="firma-box">
+      <div class="firma-line"></div>
+      <div class="firma-label">Representante Legal</div>
+      <div class="firma-sub">${t.empresa||'Empresa'}</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>GBISNESS · GESTIÓN RRHH · ${t.empresa||''}</span>
+    <span>FOLIO: ${v.folio||'—'} · DOC. GENERADO AUTOMÁTICAMENTE</span>
+  </div>
+</div>
+<script>window.print();<\/script>
+</body></html>`;
+
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`Certificado_Vacaciones_${(t.nombres+'_'+t.apellidos).replace(/\s+/g,'_')}_${v.folio||v.id}.html`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000);
+  showToast('Certificado descargado ✓');
+}
+
+function renderRRHHVacaciones() {
+  const list=rrhhState.trabajadores.filter(t=>t.estado==='activo');
+  // KPIs
+  const kv=$('rrhh-vacc-kpis'); if(kv){
+    const conVacc=list.filter(t=>{const i=calcVaccLegal(t.ingreso);const tom=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);return i.diasAcumulados-tom>0;}).length;
+    kv.innerHTML=`
+      <div class="kpi-card cteal"><div class="kpi-label">Trabajadores activos</div><div class="kpi-val" style="color:var(--teal)">${list.length}</div></div>
+      <div class="kpi-card camber"><div class="kpi-label">Con días pendientes</div><div class="kpi-val" style="color:var(--amber)">${conVacc}</div><div class="kpi-sub">Tienen días por tomar</div></div>
+    `;
+  }
+  // Tabla resumen
+  const pp=$('rrhh-vacc-pendientes'); if(pp){
+    if(!list.length){pp.innerHTML='<div style="color:var(--text3);font-size:12px;padding:12px">Sin trabajadores activos.</div>';return;}
+    pp.innerHTML=`<table class="tbl"><thead><tr><th>Trabajador</th><th>Cargo</th><th>Antigüedad</th><th style="text-align:right">Acumulados</th><th style="text-align:right">Tomados</th><th style="text-align:right">Disponibles</th></tr></thead><tbody>
+      ${list.map(t=>{
+        const info=calcVaccLegal(t.ingreso);
+        const tom=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);
+        const disp=Math.max(0,info.diasAcumulados-tom);
+        const col=disp>15?'var(--red)':disp>7?'var(--amber)':'var(--green)';
+        return `<tr>
+          <td style="color:var(--text);cursor:pointer" onclick="openFichaTrabajador('${t._id}')">${t.nombres} ${t.apellidos}</td>
+          <td style="color:var(--text2);font-size:12px">${t.cargo||'—'}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${info.anos}a ${info.meses%12}m</td>
+          <td style="text-align:right;font-family:var(--font-mono);color:var(--blue)">${info.diasAcumulados}</td>
+          <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${tom}</td>
+          <td style="text-align:right;font-family:var(--font-mono);font-weight:700;color:${col}">${disp}</td>
+        </tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }
+  // Historial global
+  const hg=$('rrhh-vacc-historial'); if(hg){
+    const all=[];
+    rrhhState.trabajadores.forEach(t=>{
+      (t.vacaciones||[]).forEach(v=>{ all.push({...v, nombre:t.nombres+' '+t.apellidos, cargo:t.cargo}); });
+    });
+    all.sort((a,b)=>b.inicio.localeCompare(a.inicio));
+    if(!all.length){hg.innerHTML='<div style="color:var(--text3);font-size:12px;padding:12px">Sin vacaciones registradas.</div>';return;}
+    hg.innerHTML=`<table class="tbl"><thead><tr><th>Trabajador</th><th>Desde</th><th>Hasta</th><th style="text-align:right">Días hábiles</th><th>Estado</th></tr></thead><tbody>
+      ${all.map(v=>`<tr>
+        <td style="color:var(--text)">${v.nombre}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.inicio)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.fin)}</td>
+        <td style="text-align:right;font-family:var(--font-mono);color:var(--blue)">${v.dias_habiles}</td>
+        <td><span class="cbadge" style="background:rgba(0,229,160,0.12);color:var(--green)">Aprobada</span></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+}
+
+function openNuevoTrabajador() {
+  $('rrhh-edit-id').value='';
+  $('rrhh-modal-title').textContent='Nuevo Trabajador';
+  ['t_nombres','t_apellidos','t_rut','t_email','t_telefono','t_direccion','t_cargo','t_area','t_empresa','t_banco','t_cuenta','t_obs'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  ['t_nacimiento','t_ingreso','t_termino'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  ['t_estado_civil','t_estudios','t_afp','t_salud','t_tipo_contrato'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  $('t_estado').value='activo';
+  $('t_nacionalidad').value='Chilena';
+  $('t_sueldo').value='';
+  $('t_jornada').value='45';
+  fichaTab($('ft-tab-personal'),'personal');
+  $('rrhhOverlay').classList.add('open');
+}
+
+function openFichaTrabajador(id) {
+  const t=rrhhState.trabajadores.find(x=>x._id===id); if(!t) return;
+  $('rrhh-edit-id').value=id;
+  $('rrhh-modal-title').textContent='Ficha: '+t.nombres+' '+t.apellidos;
+  const set=(eid,val)=>{const el=$(eid);if(el)el.value=val||'';};
+  set('t_nombres',t.nombres);set('t_apellidos',t.apellidos);set('t_rut',t.rut);
+  set('t_email',t.email);set('t_telefono',t.telefono);set('t_direccion',t.direccion);
+  set('t_nacimiento',t.nacimiento);set('t_nacionalidad',t.nacionalidad||'Chilena');
+  set('t_estado_civil',t.estado_civil);set('t_estudios',t.estudios);
+  set('t_banco',t.banco);set('t_cuenta',t.cuenta);
+  set('t_afp',t.afp);set('t_salud',t.salud);
+  set('t_empresa',t.empresa);set('t_cargo',t.cargo);set('t_area',t.area);
+  set('t_tipo_contrato',t.tipo_contrato);set('t_ingreso',t.ingreso);set('t_termino',t.termino);
+  set('t_obs',t.obs);
+  $('t_estado').value=t.estado||'activo';
+  $('t_jornada').value=t.jornada||'45';
+  if(t.sueldo){ $('t_sueldo').value=clpFormat(t.sueldo); }else{ $('t_sueldo').value=''; }
+  fichaTab($('ft-tab-personal'),'personal');
+  $('rrhhOverlay').classList.add('open');
+}
+
+async function saveTrabajador() {
+  const nombres=($('t_nombres')||{value:''}).value.trim();
+  const apellidos=($('t_apellidos')||{value:''}).value.trim();
+  const rut=($('t_rut')||{value:''}).value.trim();
+  const empresa=($('t_empresa')||{value:''}).value.trim();
+  const cargo=($('t_cargo')||{value:''}).value.trim();
+  const ingreso=($('t_ingreso')||{value:''}).value;
+  const sueldo=clpVal('t_sueldo');
+  if(!nombres||!apellidos||!rut){showToast('Nombres, apellidos y RUT son obligatorios',true);fichaTab($('ft-tab-personal'),'personal');return;}
+  if(!empresa||!ingreso){showToast('Empresa y fecha de ingreso son obligatorias',true);fichaTab($('ft-tab-contrato'),'contrato');return;}
+  const id=$('rrhh-edit-id').value||'rrhh_'+Date.now();
+  const existing=rrhhState.trabajadores.find(x=>x._id===id)||{};
+  const t={
+    ...existing, _id:id,
+    nombres,apellidos,rut,
+    email:($('t_email')||{value:''}).value.trim(),
+    telefono:($('t_telefono')||{value:''}).value.trim(),
+    direccion:($('t_direccion')||{value:''}).value.trim(),
+    nacimiento:($('t_nacimiento')||{value:''}).value,
+    nacionalidad:($('t_nacionalidad')||{value:'Chilena'}).value,
+    estado_civil:($('t_estado_civil')||{value:''}).value,
+    estudios:($('t_estudios')||{value:''}).value,
+    banco:($('t_banco')||{value:''}).value.trim(),
+    cuenta:($('t_cuenta')||{value:''}).value.trim(),
+    afp:($('t_afp')||{value:''}).value,
+    salud:($('t_salud')||{value:''}).value,
+    empresa, cargo,
+    area:($('t_area')||{value:''}).value.trim(),
+    tipo_contrato:($('t_tipo_contrato')||{value:''}).value,
+    ingreso, termino:($('t_termino')||{value:''}).value,
+    sueldo, jornada:($('t_jornada')||{value:'45'}).value,
+    estado:($('t_estado')||{value:'activo'}).value,
+    obs:($('t_obs')||{value:''}).value.trim(),
+    vacaciones: existing.vacaciones||[]
+  };
+  showToast('Guardando...');
+  await saveRRHH(t);
+  closeOv('rrhhOverlay');
+  renderRRHH();
+  if(document.getElementById('app-rrhh') && document.getElementById('app-rrhh').style.display!=='none') renderRRHHSA();
+  showToast('Trabajador guardado ✓');
+}
+
+async function confirmDelTrabajador(id) {
+  const t=rrhhState.trabajadores.find(x=>x._id===id);
+  if(!confirm('¿Eliminar a '+((t&&t.nombres+' '+t.apellidos)||id)+'?')) return;
+  await deleteRRHH(id);
+  renderRRHH();
+  if(document.getElementById('app-rrhh') && document.getElementById('app-rrhh').style.display!=='none') renderRRHHSA();
+  showToast('Trabajador eliminado');
+}
+
+function formatRut(el) {
+  let v=el.value.replace(/[^0-9kK]/g,'').toUpperCase();
+  if(v.length>9) v=v.slice(0,9);
+  if(v.length>1){
+    const body=v.slice(0,-1); const dv=v.slice(-1);
+    let fmt=''; let i=0;
+    const rev=[...body].reverse().join('');
+    for(const c of rev){ fmt=c+fmt; i++; if(i%3===0&&i<rev.length) fmt='.'+fmt; }
+    el.value=fmt+'-'+dv;
+  }
+}
+
+function fmtFecha(iso) {
+  if(!iso) return '—';
+  const [y,m,d]=iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+
+// ── RRHH STANDALONE APP ──
+async function bootRRHH() {
+  showLoader(true);
+  try {
+    await loadRRHH();
+    renderRRHHSA();
+  } catch(e) {
+    console.error(e);
+    showToast('Error cargando datos RRHH', true);
+  } finally {
+    showLoader(false);
+  }
+}
+
+function rrhhStandaloneNav(el, tab) {
+  document.querySelectorAll('#app-rrhh .nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  $('rrhh-sa-trabajadores').style.display = tab==='trabajadores' ? 'block' : 'none';
+  $('rrhh-sa-vacaciones').style.display   = tab==='vacaciones'   ? 'block' : 'none';
+  $('rrhh-sa-cumpleanos').style.display   = tab==='cumpleanos'   ? 'block' : 'none';
+  if(tab==='vacaciones') renderRRHHVacacionesSA();
+  else if(tab==='cumpleanos') { cumpleMesOffset=0; renderCumpleanos(); renderCumpleanosLista(); }
+  else renderTrabajadoresSA();
+}
+
+function renderRRHHSA() {
+  renderRRHHKpisSA();
+  renderTrabajadoresSA();
+}
+
+function renderRRHHKpisSA() {
+  const list = rrhhState.trabajadores;
+  const activos  = list.filter(t=>t.estado==='activo').length;
+  const inactivos= list.filter(t=>t.estado==='inactivo').length;
+  const licencia = list.filter(t=>t.estado==='licencia').length;
+  const totalDiasPend = list.filter(t=>t.estado==='activo').reduce((s,t)=>{
+    const info=calcVaccLegal(t.ingreso);
+    const tomados=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);
+    return s+Math.max(0,info.diasAcumulados-tomados);
+  },0);
+  const kpi=$('rrhh-sa-kpis'); if(!kpi) return;
+  kpi.innerHTML=`
+    <div class="kpi-card cteal"><div class="kpi-label">Total Trabajadores</div><div class="kpi-val" style="color:var(--teal)">${list.length}</div><div class="kpi-sub">En nómina</div></div>
+    <div class="kpi-card cgreen"><div class="kpi-label">Activos</div><div class="kpi-val" style="color:var(--green)">${activos}</div><div class="kpi-sub">Con contrato vigente</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">En licencia</div><div class="kpi-val" style="color:var(--amber)">${licencia}</div><div class="kpi-sub">Licencia médica</div></div>
+    <div class="kpi-card cred"><div class="kpi-label">Desvinculados</div><div class="kpi-val" style="color:var(--red)">${inactivos}</div><div class="kpi-sub">Inactivos</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">Días Vacc. Pendientes</div><div class="kpi-val" style="color:var(--amber)">${totalDiasPend}</div><div class="kpi-sub">Días hábiles acumulados sin tomar</div></div>
+  `;
+}
+
+function renderTrabajadoresSA() {
+  const q  = ($('rrhh-sa-search')||{value:''}).value.toLowerCase();
+  const fe = ($('rrhh-sa-filter-estado')||{value:''}).value;
+  let list = [...rrhhState.trabajadores];
+  if(q)  list=list.filter(t=>(t.nombres+' '+t.apellidos).toLowerCase().includes(q)||(t.rut||'').includes(q));
+  if(fe) list=list.filter(t=>t.estado===fe);
+  list.sort((a,b)=>((a.apellidos||'')+(a.nombres||'')).localeCompare((b.apellidos||'')+(b.nombres||'')));
+  const tbody=$('rrhh-sa-tbody'); if(!tbody) return;
+  if(!list.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin trabajadores registrados</td></tr>';return;}
+  const estadoColor={activo:'var(--green)',inactivo:'var(--red)',licencia:'var(--amber)'};
+  const estadoLabel={activo:'Activo',inactivo:'Inactivo',licencia:'Licencia'};
+  tbody.innerHTML=list.map(t=>{
+    const info=calcVaccLegal(t.ingreso);
+    const tomados=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);
+    const pendientes=Math.max(0,info.diasAcumulados-tomados);
+    const col=pendientes>15?'var(--red)':pendientes>7?'var(--amber)':'var(--green)';
+    return `<tr style="cursor:pointer" onclick="openFichaTrabajador('${t._id}')">
+      <td><span style="font-weight:500;color:var(--text)">${t.nombres||''} ${t.apellidos||''}</span></td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${t.rut||'—'}</td>
+      <td style="color:var(--text2);font-size:12px">${t.cargo||'—'}</td>
+      <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${t.empresa||'—'}</span></td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${fmtFecha(t.ingreso)}</td>
+      <td style="font-size:12px;color:var(--text2)">${t.tipo_contrato||'—'}</td>
+      <td><span class="cbadge" style="background:${estadoColor[t.estado]||'var(--text3)'}22;color:${estadoColor[t.estado]||'var(--text3)'};border:1px solid ${estadoColor[t.estado]||'var(--text3)'}44">${estadoLabel[t.estado]||t.estado||'—'}</span></td>
+      <td style="text-align:right;font-family:var(--font-mono);color:${col};font-weight:700">${pendientes}</td>
+      <td onclick="event.stopPropagation()" style="display:flex;gap:4px">
+        <button class="btn-del" onclick="openFichaTrabajador('${t._id}')" style="color:var(--teal)">✎</button>
+        <button class="btn-del" onclick="confirmDelTrabajador('${t._id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRRHHVacacionesSA() {
+  const list=rrhhState.trabajadores.filter(t=>t.estado==='activo');
+  const kv=$('rrhh-sa-vacc-kpis');
+  if(kv){
+    const conVacc=list.filter(t=>{const i=calcVaccLegal(t.ingreso);const tom=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);return i.diasAcumulados-tom>0;}).length;
+    kv.innerHTML=`
+      <div class="kpi-card cteal"><div class="kpi-label">Trabajadores activos</div><div class="kpi-val" style="color:var(--teal)">${list.length}</div></div>
+      <div class="kpi-card camber"><div class="kpi-label">Con días pendientes</div><div class="kpi-val" style="color:var(--amber)">${conVacc}</div><div class="kpi-sub">Tienen días por tomar</div></div>
+    `;
+  }
+  const pp=$('rrhh-sa-vacc-pendientes');
+  if(pp){
+    if(!list.length){pp.innerHTML='<div style="color:var(--text3);font-size:12px;padding:12px">Sin trabajadores activos.</div>';return;}
+    pp.innerHTML=`<table class="tbl"><thead><tr><th>Trabajador</th><th>Cargo</th><th>Antigüedad</th><th style="text-align:right">Acumulados</th><th style="text-align:right">Tomados</th><th style="text-align:right">Disponibles</th></tr></thead><tbody>
+      ${list.map(t=>{
+        const info=calcVaccLegal(t.ingreso);
+        const tom=(t.vacaciones||[]).filter(v=>v.estado!=='rechazada').reduce((a,v)=>a+(v.dias_habiles||0),0);
+        const disp=Math.max(0,info.diasAcumulados-tom);
+        const col=disp>15?'var(--red)':disp>7?'var(--amber)':'var(--green)';
+        return `<tr>
+          <td style="color:var(--text);cursor:pointer" onclick="openFichaTrabajador('${t._id}')">${t.nombres} ${t.apellidos}</td>
+          <td style="color:var(--text2);font-size:12px">${t.cargo||'—'}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${info.anos}a ${info.meses%12}m</td>
+          <td style="text-align:right;font-family:var(--font-mono);color:var(--blue)">${info.diasAcumulados}</td>
+          <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${tom}</td>
+          <td style="text-align:right;font-family:var(--font-mono);font-weight:700;color:${col}">${disp}</td>
+        </tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }
+  const hg=$('rrhh-sa-vacc-historial');
+  if(hg){
+    const all=[];
+    rrhhState.trabajadores.forEach(t=>{(t.vacaciones||[]).forEach(v=>{all.push({...v,nombre:t.nombres+' '+t.apellidos,cargo:t.cargo});});});
+    all.sort((a,b)=>b.inicio.localeCompare(a.inicio));
+    if(!all.length){hg.innerHTML='<div style="color:var(--text3);font-size:12px;padding:12px">Sin vacaciones registradas.</div>';return;}
+    hg.innerHTML=`<table class="tbl"><thead><tr><th>Trabajador</th><th>Desde</th><th>Hasta</th><th style="text-align:right">Días hábiles</th><th>Estado</th></tr></thead><tbody>
+      ${all.map(v=>`<tr>
+        <td style="color:var(--text)">${v.nombre}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.inicio)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.fin)}</td>
+        <td style="text-align:right;font-family:var(--font-mono);color:var(--blue)">${v.dias_habiles}</td>
+        <td><span class="cbadge" style="background:rgba(0,229,160,0.12);color:var(--green)">Aprobada</span></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+}
+
+// Override saveTrabajador to refresh correct view
+const _origSaveTrabajador = saveTrabajador;
+
+// ═══════════════════════════════════════════════════════════
+// ══  MÓDULO CUMPLEAÑOS  ════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+
+let cumpleMesOffset = 0; // 0 = mes actual
+
+function cumpleNavMes(dir) {
+  cumpleMesOffset += dir;
+  renderCumpleanos();
+  renderCumpleanosLista();
+}
+
+function renderCumpleanos() {
+  // Detect which view is active
+  const isMain = document.getElementById('rrhh-cumpleanos') && document.getElementById('rrhh-cumpleanos').style.display !== 'none';
+  const isSA   = document.getElementById('rrhh-sa-cumpleanos') && document.getElementById('rrhh-sa-cumpleanos').style.display !== 'none';
+
+  const calMain  = $('rrhh-cumple-cal');
+  const calSA    = $('rrhh-sa-cumple-cal');
+  const lblMain  = $('rrhh-cumple-mes-label');
+  const lblSA    = $('rrhh-sa-cumple-mes-label');
+  const kpiMain  = $('rrhh-cumple-kpis');
+  const kpiSA    = $('rrhh-sa-cumple-kpis');
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const viewDate = new Date(today.getFullYear(), today.getMonth() + cumpleMesOffset, 1);
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth(); // 0-indexed
+
+  const mesLabel = MESES[month] + ' ' + year;
+  if(lblMain) lblMain.textContent = mesLabel;
+  if(lblSA)   lblSA.textContent   = mesLabel;
+
+  const trabajadores = rrhhState.trabajadores.filter(t => t.nacimiento);
+
+  // Build birthday map for this month { day: [trabajadores] }
+  const cumpleMap = {};
+  trabajadores.forEach(t => {
+    const [by, bm, bd] = t.nacimiento.split('-').map(Number);
+    if((bm - 1) === month) {
+      if(!cumpleMap[bd]) cumpleMap[bd] = [];
+      cumpleMap[bd].push(t);
+    }
+  });
+
+  // KPIs
+  const thisMonthCount = Object.values(cumpleMap).reduce((s,arr)=>s+arr.length,0);
+  const hoy = today;
+  const cumpleHoy = (cumpleMap[hoy.getDate()] && hoy.getMonth()===month && hoy.getFullYear()===year) ? cumpleMap[hoy.getDate()] : [];
+  const proximosDias = getProximosCumple(7);
+
+  const kpiHtml = `
+    <div class="kpi-card cteal"><div class="kpi-label">Este mes</div><div class="kpi-val" style="color:var(--teal)">${thisMonthCount}</div><div class="kpi-sub">Cumpleaños en ${MESES[month]}</div></div>
+    <div class="kpi-card camber"><div class="kpi-label">Hoy</div><div class="kpi-val" style="color:var(--amber)">${cumpleHoy.length}</div><div class="kpi-sub">${cumpleHoy.length ? cumpleHoy.map(t=>t.nombres.split(' ')[0]).join(', ') : 'Sin cumpleaños hoy'}</div></div>
+    <div class="kpi-card cgreen"><div class="kpi-label">Próximos 7 días</div><div class="kpi-val" style="color:var(--green)">${proximosDias.length}</div><div class="kpi-sub">Trabajadores activos</div></div>
+  `;
+  if(kpiMain) kpiMain.innerHTML = kpiHtml;
+  if(kpiSA)   kpiSA.innerHTML   = kpiHtml;
+
+  // Calendar grid
+  const calHtml = buildCalendarioCumple(year, month, cumpleMap, today);
+  if(calMain) calMain.innerHTML = calHtml;
+  if(calSA)   calSA.innerHTML   = calHtml;
+}
+
+function buildCalendarioCumple(year, month, cumpleMap, today) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const startCol = (firstDay === 0) ? 6 : firstDay - 1;
+
+  const dayNames = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+  // Leyenda
+  let html = `<div style="display:flex;gap:14px;flex-wrap:wrap;padding:10px 0 14px;border-bottom:1px solid var(--border);margin-bottom:12px;font-family:var(--font-mono);font-size:9px;letter-spacing:1px">
+    <span style="display:flex;align-items:center;gap:5px;color:var(--text3)"><span style="display:inline-block;width:12px;height:12px;background:rgba(0,212,170,0.2);border:1px solid var(--teal);border-radius:2px"></span>HOY</span>
+    <span style="display:flex;align-items:center;gap:5px;color:var(--text3)"><span style="display:inline-block;width:12px;height:12px;background:rgba(74,158,255,0.18);border:1px solid rgba(74,158,255,0.5);border-radius:2px"></span>FERIADO</span>
+    <span style="display:flex;align-items:center;gap:5px;color:var(--text3)"><span style="display:inline-block;width:12px;height:12px;background:rgba(245,166,35,0.18);border:1px solid rgba(245,166,35,0.5);border-radius:2px"></span>CUMPLEAÑOS</span>
+    <span style="display:flex;align-items:center;gap:5px;color:var(--text3)"><span style="display:inline-block;width:12px;height:12px;background:rgba(255,71,87,0.12);border:1px solid rgba(255,71,87,0.3);border-radius:2px"></span>FIN DE SEMANA</span>
+  </div>`;
+
+  html += `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;user-select:none">`;
+
+  // Day headers
+  dayNames.forEach((d,i) => {
+    const wkend = i >= 5;
+    html += `<div style="text-align:center;font-family:var(--font-mono);font-size:9px;letter-spacing:1px;color:${wkend?'var(--red)':'var(--text2)'};padding:8px 2px;border-bottom:1px solid var(--border)">${d}</div>`;
+  });
+
+  // Empty cells before first day
+  for(let i=0; i<startCol; i++) {
+    html += `<div style="background:transparent;border:1px solid transparent;border-radius:3px;min-height:54px"></div>`;
+  }
+
+  // Day cells
+  for(let d=1; d<=daysInMonth; d++) {
+    const date    = new Date(year, month, d);
+    const dow     = (date.getDay() + 6) % 7; // 0=Mon
+    const iso     = date.toISOString().slice(0,10);
+    const isWeekend  = dow >= 5;
+    const isFeriado  = FERIADOS_2026_MAP.hasOwnProperty(iso);
+    const feriadoNombre = isFeriado ? FERIADOS_2026_MAP[iso] : '';
+    const isToday    = date.getTime() === today.getTime();
+    const cumples    = cumpleMap[d] || [];
+    const hasCumple  = cumples.length > 0;
+
+    // Priority: today > cumple > feriado > weekend
+    let bg     = isWeekend ? 'rgba(255,71,87,0.05)' : 'transparent';
+    let border = isWeekend ? '1px solid rgba(255,71,87,0.12)' : '1px solid rgba(255,255,255,0.04)';
+    let dayColor = isWeekend ? 'var(--red)' : 'var(--text2)';
+
+    if(isFeriado && !isWeekend) {
+      bg='rgba(74,158,255,0.08)';
+      border='1px solid rgba(74,158,255,0.3)';
+      dayColor='var(--blue)';
+    }
+    if(isFeriado && isWeekend) {
+      bg='rgba(74,158,255,0.08)';
+      border='1px solid rgba(74,158,255,0.3)';
+      dayColor='var(--blue)';
+    }
+    if(hasCumple) {
+      bg='rgba(245,166,35,0.12)';
+      border='1px solid rgba(245,166,35,0.45)';
+      if(!isFeriado) dayColor='var(--amber)';
+    }
+    if(isToday) {
+      bg='rgba(0,212,170,0.15)';
+      border='2px solid var(--teal)';
+      dayColor='var(--teal)';
+    }
+    if(isToday && hasCumple) {
+      bg='rgba(245,166,35,0.22)';
+      border='2px solid var(--amber)';
+      dayColor='var(--amber)';
+    }
+
+    const tooltipParts = [];
+    if(isFeriado) tooltipParts.push(feriadoNombre);
+    if(hasCumple) cumples.forEach(t=>{
+      const edad = year - parseInt(t.nacimiento.split('-')[0]);
+      tooltipParts.push(t.nombres+' '+t.apellidos+' ('+edad+' anios)');
+    });
+    const tooltip = tooltipParts.join(' | ');
+    const clickable = hasCumple || isFeriado;
+
+    html += `<div title="${tooltip}"
+      style="background:${bg};border:${border};border-radius:3px;padding:5px 4px;min-height:58px;position:relative;cursor:${clickable?'pointer':'default'}"
+      ${hasCumple?`onclick="showCumpleDayDetail(${d},${month},${year})"`:''}>
+      <div style="font-family:var(--font-mono);font-size:10px;color:${dayColor};font-weight:${isToday?'700':'400'};margin-bottom:2px">${d}</div>
+      ${isFeriado ? `<div style="margin-top:2px;background:rgba(74,158,255,0.2);color:var(--blue);border-radius:2px;padding:1px 4px;font-size:7px;font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.4" title="${feriadoNombre}">★ ${feriadoNombre}</div>` : ''}
+      ${hasCumple ? cumples.slice(0,2).map(t=>`<div style="margin-top:2px;background:var(--amber);color:#000;border-radius:2px;padding:1px 4px;font-size:7px;font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.4">🎂 ${t.nombres.split(' ')[0]}</div>`).join(''):''}
+      ${hasCumple && cumples.length > 2 ? `<div style="font-size:7px;color:var(--amber);font-family:var(--font-mono);margin-top:1px">+${cumples.length-2}</div>` : ''}
+    </div>`;
+  }
+
+  html += `</div>`;
+
+  // Feriados del mes listados debajo
+  const feriadosMes = [];
+  for(let d=1; d<=daysInMonth; d++){
+    const iso2 = new Date(year,month,d).toISOString().slice(0,10);
+    if(FERIADOS_2026_MAP.hasOwnProperty(iso2)) feriadosMes.push({d, nombre: FERIADOS_2026_MAP[iso2]});
+  }
+  if(feriadosMes.length){
+    html += `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:8px;text-transform:uppercase">// Feriados del mes</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${feriadosMes.map(f=>`<span style="background:rgba(74,158,255,0.12);border:1px solid rgba(74,158,255,0.3);color:var(--blue);font-family:var(--font-mono);font-size:9px;padding:3px 10px;border-radius:2px;letter-spacing:1px">★ ${f.d} — ${f.nombre}</span>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  return html;
+}
+
+function showCumpleDayDetail(day, month, year) {
+  const cumpleMap = {};
+  rrhhState.trabajadores.filter(t=>t.nacimiento).forEach(t=>{
+    const [by,bm,bd] = t.nacimiento.split('-').map(Number);
+    if((bm-1)===month) { if(!cumpleMap[bd]) cumpleMap[bd]=[]; cumpleMap[bd].push(t); }
+  });
+  const list = cumpleMap[day] || [];
+  if(!list.length) return;
+  const fechaStr = day+' de '+MESES[month]+' de '+year;
+  const detalle = list.map(function(t){
+    const edad = year - parseInt(t.nacimiento.split('-')[0]);
+    return String.fromCharCode(8226)+' '+t.nombres+' '+t.apellidos+' - '+edad+' anios ('+t.cargo+')';
+  }).join(String.fromCharCode(10));
+  alert(String.fromCharCode(127874)+' Cumpleanios el '+fechaStr+':'+String.fromCharCode(10)+String.fromCharCode(10)+detalle);
+}
+function getProximosCumple(dias) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const lista = [];
+  rrhhState.trabajadores.filter(t=>t.nacimiento&&t.estado==='activo').forEach(t=>{
+    const [by,bm,bd] = t.nacimiento.split('-').map(Number);
+    // Next birthday this year or next
+    let nextBday = new Date(hoy.getFullYear(), bm-1, bd);
+    if(nextBday < hoy) nextBday = new Date(hoy.getFullYear()+1, bm-1, bd);
+    const diffMs = nextBday - hoy;
+    const diffDays = Math.ceil(diffMs / 86400000);
+    if(diffDays <= dias) lista.push({t, nextBday, diffDays, edad: nextBday.getFullYear()-by});
+  });
+  lista.sort((a,b)=>a.diffDays-b.diffDays);
+  return lista;
+}
+
+function renderCumpleanosLista() {
+  const listaMain = $('rrhh-cumple-lista');
+  const listaSA   = $('rrhh-sa-cumple-lista');
+
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const proximos12m = [];
+
+  rrhhState.trabajadores.filter(t=>t.nacimiento&&t.estado==='activo').forEach(t=>{
+    const [by,bm,bd] = t.nacimiento.split('-').map(Number);
+    let nextBday = new Date(hoy.getFullYear(), bm-1, bd);
+    if(nextBday < hoy) nextBday = new Date(hoy.getFullYear()+1, bm-1, bd);
+    const diffMs = nextBday - hoy;
+    const diffDays = Math.ceil(diffMs/86400000);
+    if(diffDays <= 365) {
+      proximos12m.push({t, nextBday, diffDays, edad: nextBday.getFullYear()-by});
+    }
+  });
+  proximos12m.sort((a,b)=>a.diffDays-b.diffDays);
+
+  if(!proximos12m.length) {
+    const msg = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:12px">Sin trabajadores activos con fecha de nacimiento registrada.</div>';
+    if(listaMain) listaMain.innerHTML = msg;
+    if(listaSA)   listaSA.innerHTML   = msg;
+    return;
+  }
+
+  const html = `<table class="tbl"><thead><tr>
+    <th>Trabajador</th><th>Cargo</th><th>Empresa</th>
+    <th>Fecha cumpleaños</th><th style="text-align:right">Edad</th><th style="text-align:right">Faltan</th>
+  </tr></thead><tbody>
+    ${proximos12m.map(({t,nextBday,diffDays,edad})=>{
+      const esHoy = diffDays === 0;
+      const esSemana = diffDays <= 7;
+      const color = esHoy ? 'var(--amber)' : esSemana ? 'var(--green)' : 'var(--text2)';
+      const faltan = esHoy ? '🎉 ¡HOY!' : diffDays===1 ? '¡Mañana!' : `${diffDays} días`;
+      return `<tr style="${esHoy?'background:rgba(245,166,35,0.08)':''}">
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${esHoy?'<span style="font-size:16px">🎂</span>':''}
+            <span style="color:var(--text);font-weight:${esHoy?'600':'400'}">${t.nombres} ${t.apellidos}</span>
+          </div>
+        </td>
+        <td style="color:var(--text2);font-size:12px">${t.cargo||'—'}</td>
+        <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${t.empresa||'—'}</span></td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">
+          ${nextBday.getDate()} de ${MESES[nextBday.getMonth()]} de ${nextBday.getFullYear()}
+        </td>
+        <td style="text-align:right;font-family:var(--font-mono);color:var(--teal)">${edad} años</td>
+        <td style="text-align:right;font-family:var(--font-mono);font-weight:700;color:${color}">${faltan}</td>
+      </tr>`;
+    }).join('')}
+  </tbody></table>`;
+
+  if(listaMain) listaMain.innerHTML = html;
+  if(listaSA)   listaSA.innerHTML   = html;
+}
+
+// ═══════════════════════════════════════════════════════════
 function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; if(id==='catOverlay'){ editCtx=null; dynamicSelectTarget=null; } }
 function showLoader(v){
   let el=$('_ldr'); if(!el&&v){ el=Object.assign(document.createElement('div'),{id:'_ldr'}); el.style.cssText='position:fixed;inset:0;background:rgba(7,8,15,0.88);display:flex;align-items:center;justify-content:center;z-index:9998;font-family:var(--font-mono);font-size:11px;color:var(--teal);letter-spacing:2px'; el.textContent='CARGANDO...'; document.body.appendChild(el); }
@@ -4866,7 +6214,7 @@ function showToast(msg,err=false){
   const el=document.createElement('div'); el.className='toast-item '+(err?'err':'ok'); el.textContent=(err?'✕ ':'✓ ')+msg; c.appendChild(el);
   setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); },2800);
 }
-document.addEventListener('click',e=>{ ['addOverlay','newMesOv','compraOverlay','catOverlay','ventaOverlay','ventaFOverlay','bannerOverlay'].forEach(id=>{if(e.target.id===id)closeOv(id);}); });
+document.addEventListener('click',e=>{ ['addOverlay','newMesOv','compraOverlay','catOverlay','ventaOverlay','ventaFOverlay','bannerOverlay','vaccOverlay','rrhhOverlay'].forEach(id=>{if(e.target.id===id)closeOv(id);}); });
 </script>
 </body>
 </html>
