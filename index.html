@@ -1090,6 +1090,21 @@ input.fi-money{padding-left:58px!important;width:100%}
       </div>
       <div class="fw" style="grid-column:1/-1"><label class="fl">Descripción (opcional)</label>
         <input type="text" id="c_desc" class="fi" placeholder="Detalle de la compra..."></div>
+      <div class="fw" style="grid-column:1/-1">
+        <label class="fl">Foto / Comprobante (opcional)</label>
+        <div id="c_foto_wrap" style="border:1px dashed rgba(0,212,170,0.3);border-radius:2px;padding:10px;text-align:center;cursor:pointer;transition:background .2s;background:rgba(0,212,170,0.03)" onclick="document.getElementById('c_foto_input').click()" ondragover="event.preventDefault();this.style.background='rgba(0,212,170,0.08)'" ondragleave="this.style.background='rgba(0,212,170,0.03)'" ondrop="handleFotoDrop(event)">
+          <input type="file" id="c_foto_input" accept="image/*" style="display:none" onchange="handleFotoSelect(this)">
+          <div id="c_foto_preview" style="display:none">
+            <img id="c_foto_img" style="max-width:100%;max-height:140px;border-radius:2px;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto">
+            <div id="c_foto_name" style="font-family:var(--font-mono);font-size:9px;color:var(--teal);letter-spacing:1px"></div>
+            <button type="button" onclick="event.stopPropagation();clearFoto()" style="margin-top:6px;background:none;border:1px solid rgba(255,71,87,0.4);color:var(--red);font-family:var(--font-mono);font-size:9px;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:1px">✕ QUITAR</button>
+          </div>
+          <div id="c_foto_placeholder">
+            <div style="font-size:22px;margin-bottom:4px">📎</div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px">CLIC O ARRASTRA UNA IMAGEN</div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeOv('compraOverlay')">Cancelar</button>
@@ -1560,24 +1575,24 @@ function renderResumen(){
   const tP=d.pendientes.reduce((s,r)=>s+(r.monto||0),0);
   const tC=d.comisiones.reduce((s,r)=>s+(r.monto||0),0);
   const tG=tBNeg+tR+tP+tC;
-  const tSBase=d.saldos.reduce((s,r)=>s+(r.liberado||0)+(r.pendiente||0),0);
-  const tL=d.saldos.reduce((s,r)=>s+(r.liberado||0),0);
-  const tPS=d.saldos.reduce((s,r)=>s+(r.pendiente||0),0);
+  // Total Ingresos = liberado + pendiente (todos los saldos) + bancos(+)
+  const tSLiberado=d.saldos.reduce((s,r)=>s+(r.liberado||0),0);
+  const tSPendiente=d.saldos.reduce((s,r)=>s+(r.pendiente||0),0);
+  const tSBase=tSLiberado+tSPendiente;
   const tS=tSBase+tBPos;
-  const tRet=d.retenciones||0;
-  const tIngDisp=tS-tRet;
+  // Total Ingreso Disponible = solo liberado + bancos(+)
+  const tIngDisp=tSLiberado+tBPos;
+  // Pendiente de cobro = solo pendiente de saldos
+  const tPS=tSPendiente;
+  // Disponible = Total Ingreso Disponible - Total Gastos
   const dsp=tIngDisp-tG;
   $('kpiGrid').innerHTML=`
     <div class="kpi-card cteal">
       <div class="kpi-label">Total Ingresos</div>
       <div class="kpi-val" style="color:var(--teal)">${fmt(tS)}</div>
-      <div class="kpi-sub">Saldos: ${fmt(tSBase)} · Bancos(+): ${fmt(tBPos)}</div>
-      <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)">
-        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1px;color:var(--text3);margin-bottom:4px">RETENCIONES</div>
-        <input type="number" id="retInput" value="${tRet}" min="0" style="background:rgba(255,255,255,0.05);border:1px solid rgba(245,166,35,0.3);color:var(--amber);font-family:var(--font-mono);font-size:11px;padding:3px 8px;border-radius:2px;width:100%;outline:none" oninput="saveRetenciones(this.value)" placeholder="0">
-      </div>
+      <div class="kpi-sub">Liberado: ${fmt(tSLiberado)} · Pendiente: ${fmt(tSPendiente)} · Bancos(+): ${fmt(tBPos)}</div>
     </div>
-    <div class="kpi-card" style="border-top:2px solid var(--blue)"><div class="kpi-label" style="color:var(--text3)">Total Ingreso Disponible</div><div class="kpi-val" style="color:var(--blue)">${fmt(tIngDisp)}</div><div class="kpi-sub">Ingresos − Retenciones (${fmt(tRet)})</div></div>
+    <div class="kpi-card" style="border-top:2px solid var(--blue)"><div class="kpi-label" style="color:var(--text3)">Total Ingreso Disponible</div><div class="kpi-val" style="color:var(--blue)">${fmt(tIngDisp)}</div><div class="kpi-sub">Solo saldos liberados + Bancos(+)</div></div>
     <div class="kpi-card cred"><div class="kpi-label">Total Gastos</div><div class="kpi-val" style="color:var(--red)">${fmt(tG)}</div><div class="kpi-sub">Bancos(-) + Remu + Pend + Comisiones</div></div>
     <div class="kpi-card ${dsp>=0?'cgreen':'cred'}"><div class="kpi-label">Disponible</div><div class="kpi-val" style="color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</div><div class="kpi-sub">Ingreso Disponible − Total gastos</div></div>
     <div class="kpi-card camber"><div class="kpi-label">Pendiente de Cobro</div><div class="kpi-val" style="color:var(--amber)">${fmt(tPS)}</div><div class="kpi-sub">Aún no liberado en plataformas</div></div>
@@ -1586,7 +1601,7 @@ function renderResumen(){
   $('desgloce').innerHTML=`<table class="tbl"><thead><tr><th>Categoría</th><th style="text-align:right">Monto</th><th style="text-align:right">% del total</th></tr></thead><tbody>
     ${rows.map(([l,v,c])=>`<tr><td style="color:var(--text)">${l}</td><td style="text-align:right;color:${c};font-family:var(--font-mono)">${fmt(v)}</td><td style="text-align:right;color:var(--text3);font-family:var(--font-mono)">${l.includes('(+)') ? '—' : (tG>0?((v/tG)*100).toFixed(1)+'%':'—')}</td></tr>`).join('')}
     <tr style="border-top:1px solid var(--border)"><td style="font-weight:600">TOTAL GASTOS</td><td style="text-align:right;color:var(--red);font-family:var(--font-display);font-size:16px">${fmt(tG)}</td><td></td></tr>
-    <tr><td style="color:var(--amber)">Retenciones</td><td style="text-align:right;font-family:var(--font-display);font-size:16px;color:var(--amber)">${fmt(tRet)}</td><td></td></tr>
+    <tr><td style="color:var(--blue)">Total Ingreso Disponible</td><td style="text-align:right;font-family:var(--font-display);font-size:16px;color:var(--blue)">${fmt(tIngDisp)}</td><td></td></tr>
     <tr><td style="font-weight:600;color:var(--teal)">DISPONIBLE (Reposiciones del mes)</td><td style="text-align:right;font-family:var(--font-display);font-size:16px;color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</td><td></td></tr>
   </tbody></table>`;
 }
@@ -2337,8 +2352,19 @@ function renderCompras() {
     <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${c.empresa||'—'}</span></td>
     <td style="font-size:12px;color:var(--text2)">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
     <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt(c.monto)}</td>
-    <td><button class="btn-del" onclick="delCompra(${getMesCompras().indexOf(c)})">✕</button></td>
+    <td style="display:flex;gap:4px;align-items:center">
+      ${c.foto ? `<button class="btn-del btn-foto1" title="Ver foto" data-cid="${c.id}" style="color:var(--teal);font-size:13px">🖼</button>` : ''}
+      <button class="btn-del" onclick="delCompra(${getMesCompras().indexOf(c)})">✕</button>
+    </td>
   </tr>`).join('');
+  // attach foto handlers for table 1
+  body.querySelectorAll('.btn-foto1').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cid=btn.dataset.cid;
+      const cx=(getMesCompras()||[]).find(x=>x.id===cid);
+      if(cx&&cx.foto) openFotoViewer(cx.foto, cx.fotoName||'comprobante.jpg');
+    });
+  });
 }
 
 function renderEmpresaFilter() {
@@ -2538,6 +2564,7 @@ function openAddCompra() {
   $('c_monto').value = '';
   populateCompraSelects();
   toggleBanco();
+  clearFoto();
   $('compraOverlay').classList.add('open');
 }
 
@@ -2746,8 +2773,19 @@ function renderCompras2() {
     <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${c.empresa||'—'}</span></td>
     <td style="font-size:12px;color:var(--text2)">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
     <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt(c.monto)}</td>
-    <td><button class="btn-del" onclick="delCompra2('${c.id}')">✕</button></td>
+    <td style="display:flex;gap:4px;align-items:center">
+      ${c.foto ? `<button class="btn-del btn-foto" title="Ver foto" data-cid="${c.id}" style="color:var(--teal);font-size:13px">🖼</button>` : ''}
+      <button class="btn-del" onclick="delCompra2('${c.id}')">✕</button>
+    </td>
   </tr>`).join('');
+  // attach foto viewer handlers
+  body.querySelectorAll('.btn-foto').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cid=btn.dataset.cid;
+      const cx=(getMesCompras()||[]).find(x=>x.id===cid);
+      if(cx&&cx.foto) openFotoViewer(cx.foto, cx.fotoName||'comprobante.jpg');
+    });
+  });
 }
 
 async function delCompra2(id) {
@@ -4169,7 +4207,9 @@ async function saveCompra() {
     fecha:($('c_fecha')||{value:''}).value,
     empresa,proveedor,responsable,monto,tipoPago,
     banco:tipoPago==='Transferencia'?($('c_banco')||{value:''}).value:'',
-    desc:($('c_desc')||{value:''}).value
+    desc:($('c_desc')||{value:''}).value,
+    foto: window._compraFotoB64 || null,
+    fotoName: window._compraFotoName || null
   };
   if(!presState.compras[S.mes]) presState.compras[S.mes]=[];
   presState.compras[S.mes].unshift(compra);
@@ -4177,6 +4217,76 @@ async function saveCompra() {
   closeOv('compraOverlay');
   renderPresupuestoApp();
   showToast('Compra registrada');
+}
+
+// ── FOTO HELPERS ──
+function handleFotoSelect(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 8*1024*1024){ showToast('La imagen no debe superar 8 MB',true); input.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const imgEl = new Image();
+    imgEl.onload = () => {
+      const MAX = 900;
+      let w = imgEl.width, h = imgEl.height;
+      if(w > MAX || h > MAX){
+        if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
+      const compressed = canvas.toDataURL('image/jpeg', 0.72);
+      window._compraFotoB64 = compressed;
+      window._compraFotoName = file.name.replace(/\.[^.]+$/, '.jpg');
+      $('c_foto_img').src = compressed;
+      $('c_foto_name').textContent = window._compraFotoName + ' (' + Math.round(compressed.length/1024) + ' KB)';
+      $('c_foto_preview').style.display = 'block';
+      $('c_foto_placeholder').style.display = 'none';
+    };
+    imgEl.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function handleFotoDrop(e){
+  e.preventDefault();
+  $('c_foto_wrap').style.background='rgba(0,212,170,0.03)';
+  const file = e.dataTransfer.files[0];
+  if(!file || !file.type.startsWith('image/')) return;
+  const dt = new DataTransfer(); dt.items.add(file);
+  const inp = $('c_foto_input'); inp.files = dt.files;
+  handleFotoSelect(inp);
+}
+function clearFoto(){
+  window._compraFotoB64 = null; window._compraFotoName = null;
+  $('c_foto_input').value = '';
+  $('c_foto_img').src = '';
+  $('c_foto_name').textContent = '';
+  $('c_foto_preview').style.display = 'none';
+  $('c_foto_placeholder').style.display = 'block';
+}
+function openFotoViewer(b64, name){
+  const ov = document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
+  ov.onclick = e => { if(e.target===ov) ov.remove(); };
+  const img = document.createElement('img');
+  img.src = b64; img.style.cssText='max-width:90vw;max-height:80vh;border-radius:3px;box-shadow:0 0 40px rgba(0,0,0,0.8)';
+  const bar = document.createElement('div');
+  bar.style.cssText='display:flex;gap:10px;margin-top:14px;align-items:center';
+  const lbl = document.createElement('span');
+  lbl.style.cssText='font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:1px';
+  lbl.textContent = name || 'comprobante';
+  const dl = document.createElement('a');
+  dl.href=b64; dl.download=name||'comprobante.jpg';
+  dl.style.cssText='background:var(--teal);color:#000;font-family:var(--font-display);font-size:14px;letter-spacing:1px;padding:7px 16px;border-radius:2px;text-decoration:none';
+  dl.textContent='⬇ DESCARGAR';
+  const cls = document.createElement('button');
+  cls.textContent='✕ CERRAR'; cls.style.cssText='background:none;border:1px solid var(--border2);color:var(--text2);font-family:var(--font-mono);font-size:10px;padding:7px 14px;border-radius:2px;cursor:pointer;letter-spacing:1px';
+  cls.onclick = ()=>ov.remove();
+  bar.append(lbl,dl,cls);
+  ov.append(img,bar);
+  document.body.appendChild(ov);
 }
 
 function openEdit(type, idx) {
