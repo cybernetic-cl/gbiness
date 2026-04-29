@@ -1377,7 +1377,7 @@ async function boot(){
     showLoader(false);
   }
 }
-function mkEmpty(id){ return {_id:id,saldos:[],bancos:[],remuneraciones:[],pendientes:[],comisiones:[],ventas:[],ventasF:[]}; }
+function mkEmpty(id){ return {_id:id,saldos:[],bancos:[],remuneraciones:[],pendientes:[],comisiones:[],ventas:[],ventasF:[],retenciones:0}; }
 function cur(){ return S.data[S.mes]||mkEmpty(S.mes); }
 async function save(id){ if(window.fbSave) await window.fbSave(id,S.data[id]).catch(e=>console.error(e)); }
 
@@ -1564,19 +1564,37 @@ function renderResumen(){
   const tL=d.saldos.reduce((s,r)=>s+(r.liberado||0),0);
   const tPS=d.saldos.reduce((s,r)=>s+(r.pendiente||0),0);
   const tS=tSBase+tBPos;
-  const dsp=tS-tG;
+  const tRet=d.retenciones||0;
+  const tIngDisp=tS-tRet;
+  const dsp=tIngDisp-tG;
   $('kpiGrid').innerHTML=`
-    <div class="kpi-card cteal"><div class="kpi-label">Total Ingresos</div><div class="kpi-val" style="color:var(--teal)">${fmt(tS)}</div><div class="kpi-sub">Saldos: ${fmt(tSBase)} · Bancos(+): ${fmt(tBPos)}</div></div>
+    <div class="kpi-card cteal">
+      <div class="kpi-label">Total Ingresos</div>
+      <div class="kpi-val" style="color:var(--teal)">${fmt(tS)}</div>
+      <div class="kpi-sub">Saldos: ${fmt(tSBase)} · Bancos(+): ${fmt(tBPos)}</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)">
+        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1px;color:var(--text3);margin-bottom:4px">RETENCIONES</div>
+        <input type="number" id="retInput" value="${tRet}" min="0" style="background:rgba(255,255,255,0.05);border:1px solid rgba(245,166,35,0.3);color:var(--amber);font-family:var(--font-mono);font-size:11px;padding:3px 8px;border-radius:2px;width:100%;outline:none" oninput="saveRetenciones(this.value)" placeholder="0">
+      </div>
+    </div>
+    <div class="kpi-card" style="border-top:2px solid var(--blue)"><div class="kpi-label" style="color:var(--text3)">Total Ingreso Disponible</div><div class="kpi-val" style="color:var(--blue)">${fmt(tIngDisp)}</div><div class="kpi-sub">Ingresos − Retenciones (${fmt(tRet)})</div></div>
     <div class="kpi-card cred"><div class="kpi-label">Total Gastos</div><div class="kpi-val" style="color:var(--red)">${fmt(tG)}</div><div class="kpi-sub">Bancos(-) + Remu + Pend + Comisiones</div></div>
-    <div class="kpi-card ${dsp>=0?'cgreen':'cred'}"><div class="kpi-label">Disponible</div><div class="kpi-val" style="color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</div><div class="kpi-sub">Ingresos − Total gastos</div></div>
+    <div class="kpi-card ${dsp>=0?'cgreen':'cred'}"><div class="kpi-label">Disponible</div><div class="kpi-val" style="color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</div><div class="kpi-sub">Ingreso Disponible − Total gastos</div></div>
     <div class="kpi-card camber"><div class="kpi-label">Pendiente de Cobro</div><div class="kpi-val" style="color:var(--amber)">${fmt(tPS)}</div><div class="kpi-sub">Aún no liberado en plataformas</div></div>
   `;
   const rows=[['Bancos y Servicios (-)',tBNeg,'var(--red)'],['Bancos y Servicios (+)',tBPos,'var(--green)'],['Remuneraciones e Impuestos',tR,'var(--red)'],['Pendientes / Operador Logístico',tP,'var(--amber)'],['Comisiones y Publicidad',tC,'var(--red)']];
   $('desgloce').innerHTML=`<table class="tbl"><thead><tr><th>Categoría</th><th style="text-align:right">Monto</th><th style="text-align:right">% del total</th></tr></thead><tbody>
     ${rows.map(([l,v,c])=>`<tr><td style="color:var(--text)">${l}</td><td style="text-align:right;color:${c};font-family:var(--font-mono)">${fmt(v)}</td><td style="text-align:right;color:var(--text3);font-family:var(--font-mono)">${l.includes('(+)') ? '—' : (tG>0?((v/tG)*100).toFixed(1)+'%':'—')}</td></tr>`).join('')}
     <tr style="border-top:1px solid var(--border)"><td style="font-weight:600">TOTAL GASTOS</td><td style="text-align:right;color:var(--red);font-family:var(--font-display);font-size:16px">${fmt(tG)}</td><td></td></tr>
+    <tr><td style="color:var(--amber)">Retenciones</td><td style="text-align:right;font-family:var(--font-display);font-size:16px;color:var(--amber)">${fmt(tRet)}</td><td></td></tr>
     <tr><td style="font-weight:600;color:var(--teal)">DISPONIBLE (Reposiciones del mes)</td><td style="text-align:right;font-family:var(--font-display);font-size:16px;color:${dsp>=0?'var(--green)':'var(--red)'}">${fmt(dsp)}</td><td></td></tr>
   </tbody></table>`;
+}
+
+async function saveRetenciones(val){
+  const d=cur();
+  d.retenciones=parseFloat(val)||0;
+  try{ await saveDoc(d); } catch(e){ showToast('Error al guardar retenciones',true); }
 }
 
 // ── SALDOS ──
