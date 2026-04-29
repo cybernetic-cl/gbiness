@@ -242,6 +242,7 @@ input.fi-money{padding-left:58px!important;width:100%}
           <button class="ptab active" id="rrhh-tab-trabajadores" onclick="rrhhTab(this,'trabajadores')">👤 Trabajadores</button>
           <button class="ptab" id="rrhh-tab-vacaciones" onclick="rrhhTab(this,'vacaciones')">🏖 Resumen Vacaciones</button>
           <button class="ptab" id="rrhh-tab-cumpleanos" onclick="rrhhTab(this,'cumpleanos')">🎂 Cumpleaños</button>
+          <button class="ptab" id="rrhh-tab-organizacion" onclick="rrhhTab(this,'organizacion')">🏢 Organización</button>
         </div>
         <!-- TAB TRABAJADORES -->
         <div id="rrhh-trabajadores">
@@ -301,6 +302,39 @@ input.fi-money{padding-left:58px!important;width:100%}
           <div class="section-card">
             <div class="card-hdr"><div class="card-title">// Próximos cumpleaños (12 meses)</div></div>
             <div class="card-body" id="rrhh-cumple-lista"></div>
+          </div>
+        </div>
+        <!-- TAB ORGANIZACIÓN -->
+        <div id="rrhh-organizacion" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+            <div></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-secondary" onclick="exportarOrg()">⬇ Exportar</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px">
+            <!-- Panel izquierdo: gestión de áreas y cargos -->
+            <div>
+              <div class="section-card" style="margin-bottom:14px">
+                <div class="card-hdr">
+                  <div class="card-title">// Áreas</div>
+                  <button class="btn-secondary" onclick="agregarOrgItemDirect('areas')">+ Área</button>
+                </div>
+                <div class="card-body" id="org-areas-list"></div>
+              </div>
+              <div class="section-card">
+                <div class="card-hdr">
+                  <div class="card-title">// Cargos</div>
+                  <button class="btn-secondary" onclick="agregarOrgItemDirect('cargos')">+ Cargo</button>
+                </div>
+                <div class="card-body" id="org-cargos-list"></div>
+              </div>
+            </div>
+            <!-- Panel derecho: organigrama -->
+            <div class="section-card">
+              <div class="card-hdr"><div class="card-title">// Organigrama</div></div>
+              <div class="card-body" id="org-chart" style="overflow-x:auto;min-height:200px"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -944,6 +978,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <div class="nav-item active" id="rrhh-nav-trabajadores" onclick="rrhhStandaloneNav(this,'trabajadores')">👤 Trabajadores</div>
       <div class="nav-item" id="rrhh-nav-vacaciones" onclick="rrhhStandaloneNav(this,'vacaciones')">🏖 Resumen Vacaciones</div>
       <div class="nav-item" id="rrhh-nav-cumpleanos" onclick="rrhhStandaloneNav(this,'cumpleanos')">🎂 Cumpleaños</div>
+      <div class="nav-item" id="rrhh-nav-organizacion" onclick="rrhhStandaloneNav(this,'organizacion')">🏢 Organización</div>
     </div>
     <div class="main">
       <div class="page-title">GESTIÓN <span>RRHH</span></div>
@@ -1288,6 +1323,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <button class="ptab active" id="ft-tab-personal" onclick="fichaTab(this,'personal')">Personal</button>
       <button class="ptab" id="ft-tab-contrato" onclick="fichaTab(this,'contrato')">Contrato</button>
       <button class="ptab" id="ft-tab-vacaciones" onclick="fichaTab(this,'vacaciones')">Vacaciones</button>
+      <button class="ptab" id="ft-tab-org" onclick="fichaTab(this,'org')">🏢 Org.</button>
     </div>
 
     <!-- PANEL PERSONAL -->
@@ -1300,7 +1336,21 @@ input.fi-money{padding-left:58px!important;width:100%}
         <div class="fw"><label class="fl">Email</label><input type="email" id="t_email" class="fi" placeholder="correo@empresa.cl"></div>
         <div class="fw"><label class="fl">Teléfono</label><input type="text" id="t_telefono" class="fi" placeholder="+56 9 XXXX XXXX"></div>
         <div class="fw" style="grid-column:1/-1"><label class="fl">Dirección</label><input type="text" id="t_direccion" class="fi" placeholder="Calle, número, ciudad"></div>
-        <div class="fw"><label class="fl">Nacionalidad</label><input type="text" id="t_nacionalidad" class="fi" placeholder="Chilena" value="Chilena"></div>
+        <div class="fw"><label class="fl">Nacionalidad</label>
+          <select id="t_nacionalidad" class="fi">
+            <option value="Chilena">Chilena</option>
+            <option value="Venezolana">Venezolana</option>
+            <option value="Colombiana">Colombiana</option>
+            <option disabled>──────────</option>
+            <option>Argentina</option><option>Boliviana</option><option>Brasileña</option>
+            <option>Cubana</option><option>Ecuatoriana</option><option>Española</option>
+            <option>Estadounidense</option><option>Guatemalteca</option><option>Haitiana</option>
+            <option>Hondureña</option><option>Mexicana</option><option>Nicaragüense</option>
+            <option>Panameña</option><option>Paraguaya</option><option>Peruana</option>
+            <option>Dominicana</option><option>Salvadoreña</option><option>Uruguaya</option>
+            <option>Otra</option>
+          </select>
+        </div>
         <div class="fw"><label class="fl">Estado Civil</label>
           <select id="t_estado_civil" class="fi">
             <option value="">— Seleccionar —</option>
@@ -1313,7 +1363,27 @@ input.fi-money{padding-left:58px!important;width:100%}
             <option>Básica</option><option>Media</option><option>Técnico nivel medio</option><option>Técnico nivel superior</option><option>Universitario</option><option>Posgrado</option>
           </select>
         </div>
-        <div class="fw"><label class="fl">Banco</label><input type="text" id="t_banco" class="fi" placeholder="Ej: BancoEstado"></div>
+        <div class="fw"><label class="fl">Banco</label>
+          <select id="t_banco" class="fi">
+            <option value="">— Seleccionar —</option>
+            <option>BancoEstado</option>
+            <option>Banco Santander</option>
+            <option>Banco de Chile</option>
+            <option>BCI</option>
+            <option>Scotiabank</option>
+            <option>Banco Falabella</option>
+            <option>Banco Ripley</option>
+            <option>BICE</option>
+            <option>Banco Consorcio</option>
+            <option>Banco Internacional</option>
+            <option>Banco Security</option>
+            <option>Banco BTG Pactual</option>
+            <option>Banco Itaú</option>
+            <option>Tenpo / Prepago Los Héroes</option>
+            <option>Mercado Pago</option>
+            <option>Otro</option>
+          </select>
+        </div>
         <div class="fw"><label class="fl">N° Cuenta bancaria</label><input type="text" id="t_cuenta" class="fi" placeholder="Número de cuenta"></div>
         <div class="fw"><label class="fl">AFP</label>
           <select id="t_afp" class="fi">
@@ -1334,8 +1404,21 @@ input.fi-money{padding-left:58px!important;width:100%}
     <div id="ft-contrato" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fw"><label class="fl">Empresa <span style="color:var(--red)">*</span></label><input type="text" id="t_empresa" class="fi" placeholder="Nombre empresa"></div>
-        <div class="fw"><label class="fl">Cargo / Función <span style="color:var(--red)">*</span></label><input type="text" id="t_cargo" class="fi" placeholder="Ej: Jefe de Bodega"></div>
-        <div class="fw"><label class="fl">Área / Departamento</label><input type="text" id="t_area" class="fi" placeholder="Ej: Operaciones"></div>
+        <div class="fw"><label class="fl">Cargo / Función <span style="color:var(--red)">*</span></label>
+          <select id="t_cargo" class="fi" onchange="if(this.value==='__nuevo__')agregarOrgItem('cargos','t_cargo')">
+            <option value="">— Seleccionar cargo —</option>
+          </select>
+        </div>
+        <div class="fw"><label class="fl">Área / Departamento</label>
+          <select id="t_area" class="fi" onchange="if(this.value==='__nuevo__')agregarOrgItem('areas','t_area')">
+            <option value="">— Seleccionar área —</option>
+          </select>
+        </div>
+        <div class="fw"><label class="fl">Reporta a (Jefe directo)</label>
+          <select id="t_jefe_id" class="fi">
+            <option value="">— Sin jefe asignado —</option>
+          </select>
+        </div>
         <div class="fw"><label class="fl">Tipo de Contrato</label>
           <select id="t_tipo_contrato" class="fi">
             <option value="">— Seleccionar —</option>
@@ -1381,6 +1464,14 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- Historial -->
       <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:10px;text-transform:uppercase">// Historial de solicitudes</div>
       <div id="vacc-historial-ficha">Sin vacaciones registradas.</div>
+    </div>
+
+    <!-- PANEL ORG -->
+    <div id="ft-org" style="display:none">
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:12px;text-transform:uppercase">// Posición en el organigrama</div>
+      <div id="ficha-org-box" style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:14px;font-family:var(--font-mono);font-size:11px;color:var(--text2)">
+        Guarda el trabajador primero para ver su posición en el organigrama.
+      </div>
     </div>
 
     <div class="modal-actions">
@@ -1521,6 +1612,14 @@ window.fbLoadRRHH = async () => {
 window.fbDeleteRRHH = async (id) => {
   const {deleteDoc:dd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
   await dd(doc(db,'rrhh_trabajadores',id));
+};
+window.fbSaveOrgConfig = async (data) => {
+  await setDoc(doc(db,'rrhh_org_config','main'), JSON.parse(JSON.stringify(data)));
+};
+window.fbLoadOrgConfig = async () => {
+  const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const snap = await gd(doc(db,'rrhh_org_config','main'));
+  return snap.exists() ? snap.data() : null;
 };
 window.fbLoad = async () => {
   const s = await getDocs(collection(db,'cierres'));
@@ -1700,6 +1799,7 @@ async function boot(){
     if(window.fbLoad){ const ls=await window.fbLoad(); ls.forEach(c=>{S.data[c._id]=c;}); }
     await loadPresupuesto();
     await loadRRHH();
+    await loadOrgConfig();
     if(!Object.keys(S.data).length){ const n=new Date(); const id=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; S.data[id]=mkEmpty(id); await save(id); }
     buildSel(); S.mes=Object.keys(S.data).sort().reverse()[0]; document.getElementById('mesSel').value=S.mes; setLbl();
     draw();
@@ -5240,21 +5340,23 @@ async function deleteRRHH(id) {
 function rrhhTab(el, tab) {
   document.querySelectorAll('#sec-rrhh .ptab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  ['trabajadores','vacaciones','cumpleanos'].forEach(t=>{
+  ['trabajadores','vacaciones','cumpleanos','organizacion'].forEach(t=>{
     const el2=$('rrhh-'+t); if(el2) el2.style.display=t===tab?'block':'none';
   });
   if(tab==='vacaciones') renderRRHHVacaciones();
   else if(tab==='cumpleanos') { cumpleMesOffset=0; renderCumpleanos(); renderCumpleanosLista(); }
+  else if(tab==='organizacion') renderOrganizacion();
   else renderTrabajadores();
 }
 
 function fichaTab(el, tab) {
   document.querySelectorAll('#rrhhOverlay .ptab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  ['personal','contrato','vacaciones'].forEach(t=>{
+  ['personal','contrato','vacaciones','org'].forEach(t=>{
     const el2=$('ft-'+t); if(el2) el2.style.display=t===tab?'block':'none';
   });
   if(tab==='vacaciones') { calcularVaccInfo(); renderHistorialFicha(); }
+  if(tab==='org') renderFichaOrg();
 }
 
 function renderRRHH() {
@@ -5709,6 +5811,7 @@ function openNuevoTrabajador() {
   $('t_nacionalidad').value='Chilena';
   $('t_sueldo').value='';
   $('t_jornada').value='45';
+  populateOrgSelects(null);
   fichaTab($('ft-tab-personal'),'personal');
   $('rrhhOverlay').classList.add('open');
 }
@@ -5730,6 +5833,7 @@ function openFichaTrabajador(id) {
   $('t_estado').value=t.estado||'activo';
   $('t_jornada').value=t.jornada||'45';
   if(t.sueldo){ $('t_sueldo').value=clpFormat(t.sueldo); }else{ $('t_sueldo').value=''; }
+  populateOrgSelects(t);
   fichaTab($('ft-tab-personal'),'personal');
   $('rrhhOverlay').classList.add('open');
 }
@@ -5739,7 +5843,7 @@ async function saveTrabajador() {
   const apellidos=($('t_apellidos')||{value:''}).value.trim();
   const rut=($('t_rut')||{value:''}).value.trim();
   const empresa=($('t_empresa')||{value:''}).value.trim();
-  const cargo=($('t_cargo')||{value:''}).value.trim();
+  // cargo handled via getDynamicFieldVal in the object
   const ingreso=($('t_ingreso')||{value:''}).value;
   const sueldo=clpVal('t_sueldo');
   if(!nombres||!apellidos||!rut){showToast('Nombres, apellidos y RUT son obligatorios',true);fichaTab($('ft-tab-personal'),'personal');return;}
@@ -5761,7 +5865,8 @@ async function saveTrabajador() {
     afp:($('t_afp')||{value:''}).value,
     salud:($('t_salud')||{value:''}).value,
     empresa, cargo,
-    area:($('t_area')||{value:''}).value.trim(),
+    area:getDynamicFieldVal('t_area'),
+    jefe_id:($('t_jefe_id')||{value:''}).value||null,
     tipo_contrato:($('t_tipo_contrato')||{value:''}).value,
     ingreso, termino:($('t_termino')||{value:''}).value,
     sueldo, jornada:($('t_jornada')||{value:'45'}).value,
@@ -5798,6 +5903,13 @@ function formatRut(el) {
   }
 }
 
+function getDynamicFieldVal(id) {
+  const el = $(id); if(!el) return '';
+  const v = el.value || '';
+  if(v==='' || v==='__nuevo__') return '';
+  return v.trim();
+}
+
 function fmtFecha(iso) {
   if(!iso) return '—';
   const [y,m,d]=iso.split('-');
@@ -5811,6 +5923,7 @@ async function bootRRHH() {
   showLoader(true);
   try {
     await loadRRHH();
+    await loadOrgConfig();
     renderRRHHSA();
   } catch(e) {
     console.error(e);
@@ -5826,8 +5939,10 @@ function rrhhStandaloneNav(el, tab) {
   $('rrhh-sa-trabajadores').style.display = tab==='trabajadores' ? 'block' : 'none';
   $('rrhh-sa-vacaciones').style.display   = tab==='vacaciones'   ? 'block' : 'none';
   $('rrhh-sa-cumpleanos').style.display   = tab==='cumpleanos'   ? 'block' : 'none';
+  const saOrg = $('rrhh-sa-organizacion'); if(saOrg) saOrg.style.display = tab==='organizacion' ? 'block' : 'none';
   if(tab==='vacaciones') renderRRHHVacacionesSA();
   else if(tab==='cumpleanos') { cumpleMesOffset=0; renderCumpleanos(); renderCumpleanosLista(); }
+  else if(tab==='organizacion') renderOrganizacion();
   else renderTrabajadoresSA();
 }
 
@@ -5940,6 +6055,272 @@ function renderRRHHVacacionesSA() {
 // Override saveTrabajador to refresh correct view
 const _origSaveTrabajador = saveTrabajador;
 
+
+// ═══════════════════════════════════════════════════════════
+// ══  MÓDULO ORGANIZACIÓN  ══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+
+let orgConfig = { areas: [], cargos: [] };
+
+async function loadOrgConfig() {
+  try {
+    if(window.fbLoadOrgConfig) {
+      const remote = await window.fbLoadOrgConfig();
+      if(remote) { orgConfig = remote; return; }
+    }
+    orgConfig = { areas:[], cargos:[] };
+  } catch(e){ console.error('[OrgConfig load]',e); }
+}
+
+async function saveOrgConfig() {
+  if(window.fbSaveOrgConfig) await window.fbSaveOrgConfig(orgConfig).catch(e=>console.error('[OrgConfig save]',e));
+}
+
+// Populate cargo and area selects in ficha modal
+function populateOrgSelects(t) {
+  const cargoSel = $('t_cargo');
+  const areaSel  = $('t_area');
+  const jefeSel  = $('t_jefe_id');
+  if(cargoSel) {
+    cargoSel.innerHTML = '<option value="">— Seleccionar cargo —</option>'
+      + orgConfig.cargos.map(c=>`<option value="${escHtml(c)}" ${t&&t.cargo===c?'selected':''}>${escHtml(c)}</option>`).join('')
+      + '<option value="__nuevo__">+ Nuevo cargo...</option>';
+    if(t && t.cargo) cargoSel.value = t.cargo;
+  }
+  if(areaSel) {
+    areaSel.innerHTML = '<option value="">— Seleccionar área —</option>'
+      + orgConfig.areas.map(a=>`<option value="${escHtml(a)}" ${t&&t.area===a?'selected':''}>${escHtml(a)}</option>`).join('')
+      + '<option value="__nuevo__">+ Nueva área...</option>';
+    if(t && t.area) areaSel.value = t.area;
+  }
+  if(jefeSel) {
+    const id = $('rrhh-edit-id') ? $('rrhh-edit-id').value : '';
+    jefeSel.innerHTML = '<option value="">— Sin jefe asignado —</option>'
+      + rrhhState.trabajadores
+          .filter(x=>x._id!==id && x.estado==='activo')
+          .sort((a,b)=>(a.apellidos||'').localeCompare(b.apellidos||''))
+          .map(x=>`<option value="${x._id}" ${t&&t.jefe_id===x._id?'selected':''}>${escHtml(x.apellidos+' '+x.nombres)} — ${escHtml(x.cargo||'')}</option>`)
+          .join('');
+    if(t && t.jefe_id) jefeSel.value = t.jefe_id;
+  }
+}
+
+function agregarOrgItem(tipo, selectId) {
+  const nombre = prompt((tipo==='cargos'?'Nombre del cargo:':'Nombre del área:'));
+  if(!nombre || !nombre.trim()) {
+    const sel=$(selectId); if(sel) sel.value='';
+    return;
+  }
+  const n = nombre.trim();
+  if(!orgConfig[tipo].includes(n)) {
+    orgConfig[tipo].push(n);
+    orgConfig[tipo].sort();
+    saveOrgConfig();
+  }
+  const sel=$(selectId);
+  if(sel) {
+    const opt = document.createElement('option');
+    opt.value = n; opt.textContent = n; opt.selected = true;
+    const lastOpt = sel.querySelector('option[value="__nuevo__"]');
+    sel.insertBefore(opt, lastOpt);
+    sel.value = n;
+  }
+}
+
+function agregarOrgItemDirect(tipo) {
+  const nombre = prompt((tipo==='cargos'?'Nombre del cargo:':'Nombre del área:'));
+  if(!nombre || !nombre.trim()) return;
+  const n = nombre.trim();
+  if(orgConfig[tipo].includes(n)){ showToast('Ya existe',true); return; }
+  orgConfig[tipo].push(n);
+  orgConfig[tipo].sort();
+  saveOrgConfig().then(()=>{
+    renderOrganizacion();
+    showToast((tipo==='cargos'?'Cargo':'Área')+' agregado');
+  });
+}
+
+async function eliminarOrgItem(tipo, nombre) {
+  if(!confirm('Eliminar "'+nombre+'"? Los trabajadores con este valor no se verán afectados.')) return;
+  orgConfig[tipo] = orgConfig[tipo].filter(x=>x!==nombre);
+  await saveOrgConfig();
+  renderOrganizacion();
+  showToast('Eliminado');
+}
+
+async function editarOrgItem(tipo, nombre) {
+  const nuevo = prompt((tipo==='cargos'?'Editar cargo:':'Editar área:'), nombre);
+  if(!nuevo || !nuevo.trim() || nuevo.trim()===nombre) return;
+  const n = nuevo.trim();
+  if(orgConfig[tipo].includes(n)){ showToast('Ya existe',true); return; }
+  const idx = orgConfig[tipo].indexOf(nombre);
+  if(idx>=0) orgConfig[tipo][idx] = n;
+  orgConfig[tipo].sort();
+  // Update all workers with this value
+  rrhhState.trabajadores.forEach(t=>{
+    if(tipo==='cargos' && t.cargo===nombre) { t.cargo=n; saveRRHH(t); }
+    if(tipo==='areas'  && t.area===nombre)  { t.area=n;  saveRRHH(t); }
+  });
+  await saveOrgConfig();
+  renderOrganizacion();
+  showToast('Actualizado');
+}
+
+function renderOrganizacion() {
+  renderOrgLists();
+  renderOrgChart();
+}
+
+function renderOrgLists() {
+  const al = $('org-areas-list');
+  const cl = $('org-cargos-list');
+  if(al) {
+    if(!orgConfig.areas.length) {
+      al.innerHTML = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:8px 0">Sin áreas. Agrega la primera.</div>';
+    } else {
+      const counts = {};
+      rrhhState.trabajadores.forEach(t=>{ if(t.area) counts[t.area]=(counts[t.area]||0)+1; });
+      al.innerHTML = orgConfig.areas.map(a=>`
+        <div class="cat-item" style="padding:8px 0">
+          <div>
+            <span style="color:var(--text)">${escHtml(a)}</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:8px">${counts[a]||0} trabajador${(counts[a]||0)!==1?'es':''}</span>
+          </div>
+          <span style="display:flex;gap:4px">
+            <button class="btn-del" onclick="editarOrgItem('areas','${escHtml(a).replace(/'/g,'&apos;')}')" style="color:var(--teal)">✎</button>
+            <button class="btn-del" onclick="eliminarOrgItem('areas','${escHtml(a).replace(/'/g,'&apos;')}')">✕</button>
+          </span>
+        </div>`).join('');
+    }
+  }
+  if(cl) {
+    if(!orgConfig.cargos.length) {
+      cl.innerHTML = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:8px 0">Sin cargos. Agrega el primero.</div>';
+    } else {
+      const counts = {};
+      rrhhState.trabajadores.forEach(t=>{ if(t.cargo) counts[t.cargo]=(counts[t.cargo]||0)+1; });
+      cl.innerHTML = orgConfig.cargos.map(c=>`
+        <div class="cat-item" style="padding:8px 0">
+          <div>
+            <span style="color:var(--text)">${escHtml(c)}</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:8px">${counts[c]||0} trabajador${(counts[c]||0)!==1?'es':''}</span>
+          </div>
+          <span style="display:flex;gap:4px">
+            <button class="btn-del" onclick="editarOrgItem('cargos','${escHtml(c).replace(/'/g,'&apos;')}')" style="color:var(--teal)">✎</button>
+            <button class="btn-del" onclick="eliminarOrgItem('cargos','${escHtml(c).replace(/'/g,'&apos;')}')">✕</button>
+          </span>
+        </div>`).join('');
+    }
+  }
+}
+
+function renderOrgChart() {
+  const wrap = $('org-chart');
+  if(!wrap) return;
+  const activos = rrhhState.trabajadores.filter(t=>t.estado==='activo');
+  if(!activos.length) {
+    wrap.innerHTML = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:24px;text-align:center">Sin trabajadores activos para mostrar.</div>';
+    return;
+  }
+  // Build tree: find roots (no jefe or jefe not in activos)
+  const idSet = new Set(activos.map(t=>t._id));
+  const roots = activos.filter(t=>!t.jefe_id || !idSet.has(t.jefe_id));
+  const children = {};
+  activos.forEach(t=>{ if(t.jefe_id && idSet.has(t.jefe_id)) { if(!children[t.jefe_id]) children[t.jefe_id]=[]; children[t.jefe_id].push(t); } });
+
+  const areaColors = {};
+  const palette = ['#00d4aa','#4a9eff','#f5a623','#00e5a0','#ff4757','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4'];
+  orgConfig.areas.forEach((a,i)=>{ areaColors[a]=palette[i%palette.length]; });
+
+  function nodeHtml(t, depth) {
+    const col = areaColors[t.area] || 'var(--teal)';
+    const kids = children[t._id] || [];
+    const initials = ((t.nombres||'?')[0]+(t.apellidos||'?')[0]).toUpperCase();
+    return `<div style="display:flex;flex-direction:column;align-items:center;min-width:120px">
+      <div onclick="openFichaTrabajador('${t._id}')" style="cursor:pointer;background:var(--card);border:2px solid ${col};border-radius:6px;padding:10px 12px;text-align:center;min-width:110px;max-width:140px;transition:all .15s;position:relative" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background='var(--card)'">
+        <div style="width:36px;height:36px;border-radius:50%;background:${col}22;border:2px solid ${col};display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-family:var(--font-display);font-size:14px;color:${col}">${initials}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">${escHtml(t.nombres.split(' ')[0]+' '+t.apellidos.split(' ')[0])}</div>
+        <div style="font-family:var(--font-mono);font-size:8px;color:${col};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">${escHtml(t.cargo||'—')}</div>
+        ${t.area?`<div style="font-family:var(--font-mono);font-size:7px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">${escHtml(t.area)}</div>`:''}
+      </div>
+      ${kids.length ? `
+        <div style="width:2px;height:16px;background:var(--border2)"></div>
+        <div style="display:flex;gap:0;position:relative">
+          ${kids.length>1?`<div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:${Math.max(0,kids.length-1)*100}%;height:1px;background:var(--border2);margin-top:0"></div>`:''}
+          <div style="display:flex;gap:12px;position:relative">
+            ${kids.length>1?`<div style="position:absolute;top:0;left:calc(50px);right:calc(50px);height:1px;background:var(--border2)"></div>`:''}
+            ${kids.map(k=>`
+              <div style="display:flex;flex-direction:column;align-items:center">
+                <div style="width:2px;height:16px;background:var(--border2)"></div>
+                ${nodeHtml(k, depth+1)}
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
+    </div>`;
+  }
+
+  // Group by area for visual separation
+  const byArea = {};
+  roots.forEach(t=>{ const a=t.area||'Sin área'; if(!byArea[a]) byArea[a]=[]; byArea[a].push(t); });
+
+  let html = '<div style="padding:16px;overflow-x:auto">';
+  Object.entries(byArea).forEach(([area, nodes])=>{
+    const col = areaColors[area] || 'var(--text3)';
+    html += `<div style="margin-bottom:28px">
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:${col};margin-bottom:14px;text-transform:uppercase;border-bottom:1px solid ${col}44;padding-bottom:5px">// ${escHtml(area)}</div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+        ${nodes.map(t=>nodeHtml(t,0)).join('')}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function renderFichaOrg() {
+  const id = $('rrhh-edit-id') ? $('rrhh-edit-id').value : '';
+  const box = $('ficha-org-box'); if(!box) return;
+  if(!id) { box.innerHTML='Guarda el trabajador primero.'; return; }
+  const t = rrhhState.trabajadores.find(x=>x._id===id);
+  if(!t) { box.innerHTML='Trabajador no encontrado.'; return; }
+  const jefe = t.jefe_id ? rrhhState.trabajadores.find(x=>x._id===t.jefe_id) : null;
+  const reportes = rrhhState.trabajadores.filter(x=>x.jefe_id===id && x.estado==='activo');
+  const col = '#00d4aa';
+  box.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px">
+      <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px">ÁREA</div><div style="color:var(--teal)">${escHtml(t.area||'—')}</div></div>
+      <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px">CARGO</div><div style="color:var(--text)">${escHtml(t.cargo||'—')}</div></div>
+      <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px">REPORTA A</div><div style="color:${jefe?'var(--blue)':'var(--text3)'}">${jefe?escHtml(jefe.nombres+' '+jefe.apellidos):'Sin jefe'}</div></div>
+      <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px">REPORTES DIRECTOS</div><div style="color:var(--green)">${reportes.length}</div></div>
+    </div>
+    ${reportes.length?`<div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">// Equipo directo</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${reportes.map(r=>`<span onclick="openFichaTrabajador('${r._id}')" style="cursor:pointer;background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);color:var(--teal);font-family:var(--font-mono);font-size:9px;padding:4px 10px;border-radius:2px;letter-spacing:1px">${escHtml(r.nombres.split(' ')[0]+' '+r.apellidos.split(' ')[0])}</span>`).join('')}
+    </div>`:''}
+  `;
+}
+
+function exportarOrg() {
+  const wrap = $('org-chart');
+  if(!wrap || !wrap.innerHTML.trim()) { showToast('Genera el organigrama primero',true); return; }
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Organigrama RRHH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#07080f;color:#e8eaf6;font-family:'DM Sans',sans-serif;padding:24px}
+  .card-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:#606888;text-transform:uppercase}
+  @media print{body{background:#fff;color:#000}}</style></head>
+  <body><h1 style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:#00d4aa;margin-bottom:4px">ORGANIGRAMA</h1>
+  <p style="font-family:'Space Mono',monospace;font-size:9px;color:#606888;margin-bottom:24px">GBISNESS · GESTIÓN RRHH · Generado ${new Date().toLocaleDateString('es-CL')}</p>
+  ${wrap.innerHTML}<script>window.print();<\/script></body></html>`;
+  const blob = new Blob([html],{type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Organigrama_RRHH_'+new Date().toISOString().slice(0,10)+'.html';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+  showToast('Organigrama exportado');
+}
+
+// ═══════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════
 // ══  MÓDULO CUMPLEAÑOS  ════════════════════════════════════
 // ═══════════════════════════════════════════════════════════
