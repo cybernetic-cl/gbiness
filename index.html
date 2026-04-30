@@ -1481,6 +1481,40 @@ input.fi-money{padding-left:58px!important;width:100%}
   </div>
 </div>
 
+<!-- CUSTOM DIALOGS -->
+<div class="overlay" id="dlgConfirmOverlay">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-title" id="dlgConfirmTitle">Confirmar</div>
+    <div id="dlgConfirmMsg" style="color:var(--text2);font-size:13px;margin-bottom:20px;line-height:1.6"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="dlgConfirmCancel">Cancelar</button>
+      <button class="btn-primary" id="dlgConfirmOk" style="background:var(--red);border-color:var(--red)">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="dlgPromptOverlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title" id="dlgPromptTitle">Ingresar</div>
+    <div id="dlgPromptMsg" style="color:var(--text2);font-size:12px;margin-bottom:10px"></div>
+    <input type="text" id="dlgPromptInput" class="fi" style="margin-bottom:16px" placeholder="">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="dlgPromptCancel">Cancelar</button>
+      <button class="btn-primary" id="dlgPromptOk">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="dlgAlertOverlay">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-title" id="dlgAlertTitle">Información</div>
+    <div id="dlgAlertMsg" style="color:var(--text2);font-size:12px;margin-bottom:20px;line-height:1.7;white-space:pre-wrap;font-family:var(--font-mono)"></div>
+    <div class="modal-actions" style="justify-content:flex-end">
+      <button class="btn-primary" id="dlgAlertOk">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL SOLICITAR VACACIONES -->
 <div class="overlay" id="vaccOverlay">
   <div class="modal" style="max-width:500px">
@@ -2293,7 +2327,7 @@ async function saveVenta(){
 }
 
 async function delVenta(idx){
-  if(!confirm('¿Eliminar esta venta?')) return;
+  if(!await dlgConfirm('¿Eliminar esta venta?','Eliminar','danger')) return;
   const d = cur();
   if(!d.ventas) return;
   d.ventas.splice(idx,1);
@@ -2328,8 +2362,8 @@ async function updateRendUtil(emp, val){
   await saveRendConfig();
 }
 
-function addRendPlataforma(){
-  const nombre = prompt('Nombre de la plataforma:');
+async function addRendPlataforma(){
+  const nombre = await dlgPrompt('Nueva Plataforma','Nombre de la plataforma:','','Ej: MercadoLibre');
   if(!nombre || !nombre.trim()) return;
   const n = nombre.trim().toUpperCase();
   if(rendConfig.plataformas.includes(n)){ showToast('Plataforma ya existe',true); return; }
@@ -2338,7 +2372,7 @@ function addRendPlataforma(){
 }
 
 async function delRendPlataforma(idx){
-  if(!confirm('¿Eliminar esta plataforma?')) return;
+  if(!await dlgConfirm('¿Eliminar esta plataforma?','Eliminar','danger')) return;
   rendConfig.plataformas.splice(idx,1);
   await saveRendConfig();
   renderRendConfig();
@@ -2590,13 +2624,13 @@ function renderRendFConfig(){
   if(plat) plat.innerHTML=(rendFCfg.plataformas||[]).map(function(p,i){ return '<div class="cat-item"><span>'+p+'</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="delRendFPlataforma('+i+')">✕</button></span></div>'; }).join('')||'<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin plataformas</div>';
 }
 async function updateRendFUtil(emp,val){ rendFCfg.utilidades[emp]=parseFloat(val)||0; await saveRendConfig(); }
-function addRendFPlataforma(){
-  const n=prompt('Nombre de la plataforma FULL:'); if(!n||!n.trim()) return;
+async function addRendFPlataforma(){
+  const n=await dlgPrompt('Nueva Plataforma FULL','Nombre de la plataforma:','','Ej: MercadoLibre'); if(!n||!n.trim()) return;
   const nu=n.trim().toUpperCase(); if(rendFCfg.plataformas.includes(nu)){ showToast('Ya existe',true); return; }
   rendFCfg.plataformas.push(nu);
   saveRendConfig().then(function(){ renderRendFConfig(); populateRendFFilters(); showToast('Plataforma agregada'); });
 }
-async function delRendFPlataforma(idx){ if(!confirm('Eliminar?')) return; rendFCfg.plataformas.splice(idx,1); await saveRendConfig(); renderRendFConfig(); populateRendFFilters(); showToast('Eliminada'); }
+async function delRendFPlataforma(idx){ if(!await dlgConfirm('¿Eliminar este elemento?','Eliminar','danger')) return; rendFCfg.plataformas.splice(idx,1); await saveRendConfig(); renderRendFConfig(); populateRendFFilters(); showToast('Eliminada'); }
 function openAddVentaF(){
   $('ventaFModalTitle').textContent='Registrar Venta FULL';
   $('ventaFEditIdx').textContent='';
@@ -2634,7 +2668,7 @@ async function saveVentaF(){
   if(editIdx!=='') d.ventasF[parseInt(editIdx)]=obj; else d.ventasF.push(obj);
   await save(S.mes); closeOv('ventaFOverlay'); renderRendFRegistro(); showToast('Venta FULL guardada');
 }
-async function delVentaF(idx){ if(!confirm('Eliminar esta venta FULL?')) return; const d=cur(); if(!d.ventasF) return; d.ventasF.splice(idx,1); await save(S.mes); renderRendFRegistro(); showToast('Eliminada'); }
+async function delVentaF(idx){ if(!await dlgConfirm('¿Eliminar esta venta?','Eliminar','danger')) return; const d=cur(); if(!d.ventasF) return; d.ventasF.splice(idx,1); await save(S.mes); renderRendFRegistro(); showToast('Eliminada'); }
 
 
 // ── HIST ──
@@ -5278,7 +5312,7 @@ async function saveBannerMsg(){
 }
 
 async function delBannerMsg(idx){
-  if(!confirm('Eliminar este aviso?')) return;
+  if(!await dlgConfirm('¿Eliminar este aviso?','Eliminar','danger')) return;
   bannerCfg.messages.splice(idx,1);
   try {
     await _saveBannerToFirebase();
@@ -5605,7 +5639,7 @@ function renderHistorialFicha() {
 }
 
 async function eliminarVaccFicha(tid, idx) {
-  if(!confirm('¿Eliminar esta solicitud de vacaciones?')) return;
+  if(!await dlgConfirm('¿Eliminar esta solicitud de vacaciones?','Eliminar','danger')) return;
   const t=rrhhState.trabajadores.find(x=>x._id===tid); if(!t||!t.vacaciones) return;
   t.vacaciones.splice(idx,1);
   await saveRRHH(t);
@@ -5864,7 +5898,7 @@ async function saveTrabajador() {
     cuenta:($('t_cuenta')||{value:''}).value.trim(),
     afp:($('t_afp')||{value:''}).value,
     salud:($('t_salud')||{value:''}).value,
-    empresa, cargo,
+    empresa, cargo:getDynamicFieldVal('t_cargo'),
     area:getDynamicFieldVal('t_area'),
     jefe_id:($('t_jefe_id')||{value:''}).value||null,
     tipo_contrato:($('t_tipo_contrato')||{value:''}).value,
@@ -5884,7 +5918,7 @@ async function saveTrabajador() {
 
 async function confirmDelTrabajador(id) {
   const t=rrhhState.trabajadores.find(x=>x._id===id);
-  if(!confirm('¿Eliminar a '+((t&&t.nombres+' '+t.apellidos)||id)+'?')) return;
+  if(!await dlgConfirm('¿Eliminar a '+((t&&t.nombres+' '+t.apellidos)||id)+'? Esta acción no se puede deshacer.','Eliminar','danger')) return;
   await deleteRRHH(id);
   renderRRHH();
   if(document.getElementById('app-rrhh') && document.getElementById('app-rrhh').style.display!=='none') renderRRHHSA();
@@ -6105,8 +6139,8 @@ function populateOrgSelects(t) {
   }
 }
 
-function agregarOrgItem(tipo, selectId) {
-  const nombre = prompt((tipo==='cargos'?'Nombre del cargo:':'Nombre del área:'));
+async function agregarOrgItem(tipo, selectId) {
+  const nombre = await dlgPrompt(tipo==='cargos'?'Nuevo Cargo':'Nueva Área', tipo==='cargos'?'Nombre del cargo:':'Nombre del área:','','');
   if(!nombre || !nombre.trim()) {
     const sel=$(selectId); if(sel) sel.value='';
     return;
@@ -6127,8 +6161,8 @@ function agregarOrgItem(tipo, selectId) {
   }
 }
 
-function agregarOrgItemDirect(tipo) {
-  const nombre = prompt((tipo==='cargos'?'Nombre del cargo:':'Nombre del área:'));
+async function agregarOrgItemDirect(tipo) {
+  const nombre = await dlgPrompt(tipo==='cargos'?'Nuevo Cargo':'Nueva Área', tipo==='cargos'?'Nombre del cargo:':'Nombre del área:','','');
   if(!nombre || !nombre.trim()) return;
   const n = nombre.trim();
   if(orgConfig[tipo].includes(n)){ showToast('Ya existe',true); return; }
@@ -6141,7 +6175,7 @@ function agregarOrgItemDirect(tipo) {
 }
 
 async function eliminarOrgItem(tipo, nombre) {
-  if(!confirm('Eliminar "'+nombre+'"? Los trabajadores con este valor no se verán afectados.')) return;
+  if(!await dlgConfirm('¿Eliminar "'+nombre+'"? Los trabajadores con este valor no se verán afectados.','Eliminar','danger')) return;
   orgConfig[tipo] = orgConfig[tipo].filter(x=>x!==nombre);
   await saveOrgConfig();
   renderOrganizacion();
@@ -6149,7 +6183,7 @@ async function eliminarOrgItem(tipo, nombre) {
 }
 
 async function editarOrgItem(tipo, nombre) {
-  const nuevo = prompt((tipo==='cargos'?'Editar cargo:':'Editar área:'), nombre);
+  const nuevo = await dlgPrompt(tipo==='cargos'?'Editar Cargo':'Editar Área', tipo==='cargos'?'Nuevo nombre del cargo:':'Nuevo nombre del área:', nombre, '');
   if(!nuevo || !nuevo.trim() || nuevo.trim()===nombre) return;
   const n = nuevo.trim();
   if(orgConfig[tipo].includes(n)){ showToast('Ya existe',true); return; }
@@ -6496,7 +6530,7 @@ function buildCalendarioCumple(year, month, cumpleMap, today) {
   return html;
 }
 
-function showCumpleDayDetail(day, month, year) {
+async function showCumpleDayDetail(day, month, year) {
   const cumpleMap = {};
   rrhhState.trabajadores.filter(t=>t.nacimiento).forEach(t=>{
     const [by,bm,bd] = t.nacimiento.split('-').map(Number);
@@ -6509,7 +6543,7 @@ function showCumpleDayDetail(day, month, year) {
     const edad = year - parseInt(t.nacimiento.split('-')[0]);
     return String.fromCharCode(8226)+' '+t.nombres+' '+t.apellidos+' - '+edad+' anios ('+t.cargo+')';
   }).join(String.fromCharCode(10));
-  alert(String.fromCharCode(127874)+' Cumpleanios el '+fechaStr+':'+String.fromCharCode(10)+String.fromCharCode(10)+detalle);
+  dlgAlert('Cumpleanios el '+fechaStr, detalle);
 }
 function getProximosCumple(dias) {
   const hoy = new Date(); hoy.setHours(0,0,0,0);
@@ -6584,6 +6618,79 @@ function renderCumpleanosLista() {
   if(listaSA)   listaSA.innerHTML   = html;
 }
 
+// ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// ══  CUSTOM DIALOGS (replace browser confirm/prompt/alert) ═
+// ═══════════════════════════════════════════════════════════
+
+function dlgConfirm(msg, okLabel, okClass) {
+  return new Promise(resolve => {
+    const ov = $('dlgConfirmOverlay');
+    $('dlgConfirmMsg').textContent = msg;
+    const okBtn = $('dlgConfirmOk');
+    okBtn.textContent = okLabel || 'Confirmar';
+    okBtn.style.background = okClass === 'danger' ? 'var(--red)' : 'var(--teal)';
+    okBtn.style.borderColor = okClass === 'danger' ? 'var(--red)' : 'var(--teal)';
+    okBtn.style.color = okClass === 'danger' ? '#fff' : '#000';
+    ov.classList.add('open');
+    const onOk  = () => { ov.classList.remove('open'); cleanup(); resolve(true);  };
+    const onCan = () => { ov.classList.remove('open'); cleanup(); resolve(false); };
+    function cleanup() {
+      okBtn.removeEventListener('click', onOk);
+      $('dlgConfirmCancel').removeEventListener('click', onCan);
+      ov.removeEventListener('click', onOvClick);
+    }
+    function onOvClick(e) { if(e.target===ov) onCan(); }
+    okBtn.addEventListener('click', onOk);
+    $('dlgConfirmCancel').addEventListener('click', onCan);
+    ov.addEventListener('click', onOvClick);
+  });
+}
+
+function dlgPrompt(title, msg, defaultVal, placeholder) {
+  return new Promise(resolve => {
+    const ov = $('dlgPromptOverlay');
+    $('dlgPromptTitle').textContent = title || 'Ingresar';
+    $('dlgPromptMsg').textContent = msg || '';
+    const inp = $('dlgPromptInput');
+    inp.value = defaultVal || '';
+    inp.placeholder = placeholder || '';
+    ov.classList.add('open');
+    setTimeout(() => inp.focus(), 80);
+    const onOk  = () => { const v = inp.value.trim(); ov.classList.remove('open'); cleanup(); resolve(v || null); };
+    const onCan = () => { ov.classList.remove('open'); cleanup(); resolve(null); };
+    function cleanup() {
+      $('dlgPromptOk').removeEventListener('click', onOk);
+      $('dlgPromptCancel').removeEventListener('click', onCan);
+      ov.removeEventListener('click', onOvClick);
+      inp.removeEventListener('keydown', onKey);
+    }
+    function onOvClick(e) { if(e.target===ov) onCan(); }
+    function onKey(e) { if(e.key==='Enter') onOk(); if(e.key==='Escape') onCan(); }
+    $('dlgPromptOk').addEventListener('click', onOk);
+    $('dlgPromptCancel').addEventListener('click', onCan);
+    ov.addEventListener('click', onOvClick);
+    inp.addEventListener('keydown', onKey);
+  });
+}
+
+function dlgAlert(title, msg) {
+  return new Promise(resolve => {
+    const ov = $('dlgAlertOverlay');
+    $('dlgAlertTitle').textContent = title || 'Información';
+    $('dlgAlertMsg').textContent = msg || '';
+    ov.classList.add('open');
+    const onOk = () => { ov.classList.remove('open'); cleanup(); resolve(); };
+    function onOvClick(e) { if(e.target===ov) onOk(); }
+    function cleanup() {
+      $('dlgAlertOk').removeEventListener('click', onOk);
+      ov.removeEventListener('click', onOvClick);
+    }
+    $('dlgAlertOk').addEventListener('click', onOk);
+    ov.addEventListener('click', onOvClick);
+  });
+}
 // ═══════════════════════════════════════════════════════════
 function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; if(id==='catOverlay'){ editCtx=null; dynamicSelectTarget=null; } }
 function showLoader(v){
