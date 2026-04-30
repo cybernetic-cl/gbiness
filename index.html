@@ -1046,6 +1046,35 @@ input.fi-money{padding-left:58px!important;width:100%}
           <div class="card-body" id="rrhh-sa-cumple-lista"></div>
         </div>
       </div>
+      <!-- ORGANIZACIÓN SA -->
+      <div id="rrhh-sa-organizacion" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+          <div></div>
+          <button class="btn-secondary" onclick="exportarOrg()">⬇ Exportar Organigrama</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px">
+          <div>
+            <div class="section-card" style="margin-bottom:14px">
+              <div class="card-hdr">
+                <div class="card-title">// Áreas</div>
+                <button class="btn-secondary" onclick="agregarOrgItemDirect('areas')">+ Área</button>
+              </div>
+              <div class="card-body" id="org-sa-areas-list"></div>
+            </div>
+            <div class="section-card">
+              <div class="card-hdr">
+                <div class="card-title">// Cargos</div>
+                <button class="btn-secondary" onclick="agregarOrgItemDirect('cargos')">+ Cargo</button>
+              </div>
+              <div class="card-body" id="org-sa-cargos-list"></div>
+            </div>
+          </div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Organigrama</div></div>
+            <div class="card-body" id="org-sa-chart" style="overflow-x:auto;min-height:200px"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -6273,54 +6302,48 @@ function renderOrganizacion() {
 }
 
 function renderOrgLists() {
-  const al = $('org-areas-list');
-  const cl = $('org-cargos-list');
-  if(al) {
-    if(!orgConfig.areas.length) {
-      al.innerHTML = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:8px 0">Sin áreas. Agrega la primera.</div>';
-    } else {
-      const counts = {};
-      rrhhState.trabajadores.forEach(t=>{ if(t.area) counts[t.area]=(counts[t.area]||0)+1; });
-      al.innerHTML = orgConfig.areas.map(a=>`
-        <div class="cat-item" style="padding:8px 0">
-          <div>
-            <span style="color:var(--text)">${escHtml(a)}</span>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:8px">${counts[a]||0} trabajador${(counts[a]||0)!==1?'es':''}</span>
-          </div>
-          <span style="display:flex;gap:4px">
-            <button class="btn-del" onclick="editarOrgItem('areas','${escHtml(a).replace(/'/g,'&apos;')}')" style="color:var(--teal)">✎</button>
-            <button class="btn-del" onclick="eliminarOrgItem('areas','${escHtml(a).replace(/'/g,'&apos;')}')">✕</button>
-          </span>
-        </div>`).join('');
-    }
-  }
-  if(cl) {
-    if(!orgConfig.cargos.length) {
-      cl.innerHTML = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:8px 0">Sin cargos. Agrega el primero.</div>';
-    } else {
-      const counts = {};
-      rrhhState.trabajadores.forEach(t=>{ if(t.cargo) counts[t.cargo]=(counts[t.cargo]||0)+1; });
-      cl.innerHTML = orgConfig.cargos.map(c=>`
-        <div class="cat-item" style="padding:8px 0">
-          <div>
-            <span style="color:var(--text)">${escHtml(c)}</span>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:8px">${counts[c]||0} trabajador${(counts[c]||0)!==1?'es':''}</span>
-          </div>
-          <span style="display:flex;gap:4px">
-            <button class="btn-del" onclick="editarOrgItem('cargos','${escHtml(c).replace(/'/g,'&apos;')}')" style="color:var(--teal)">✎</button>
-            <button class="btn-del" onclick="eliminarOrgItem('cargos','${escHtml(c).replace(/'/g,'&apos;')}')">✕</button>
-          </span>
-        </div>`).join('');
-    }
-  }
+  const areaTargets  = ['org-areas-list','org-sa-areas-list'];
+  const cargoTargets = ['org-cargos-list','org-sa-cargos-list'];
+  const countAreas={}, countCargos={};
+  rrhhState.trabajadores.forEach(t=>{ if(t.area) countAreas[t.area]=(countAreas[t.area]||0)+1; });
+  rrhhState.trabajadores.forEach(t=>{ if(t.cargo) countCargos[t.cargo]=(countCargos[t.cargo]||0)+1; });
+
+  const emptyAreas = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:8px 0">Sin áreas. Agrega la primera.</div>';
+  const emptyCargos = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:8px 0">Sin cargos. Agrega el primero.</div>';
+  const areasHtml = !orgConfig.areas.length ? emptyAreas : orgConfig.areas.map(a=>`
+    <div class="cat-item" style="padding:8px 0">
+      <div>
+        <span style="color:var(--text)">${escHtml(a)}</span>
+        <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:8px">${countAreas[a]||0} trabajador${(countAreas[a]||0)!==1?'es':''}</span>
+      </div>
+      <span style="display:flex;gap:4px">
+        <button class="btn-del" onclick="editarOrgItem('areas','${escHtml(a).replace(/'/g,'&apos;')}')" style="color:var(--teal)">✎</button>
+        <button class="btn-del" onclick="eliminarOrgItem('areas','${escHtml(a).replace(/'/g,'&apos;')}')">✕</button>
+      </span>
+    </div>`).join('');
+  const cargosHtml = !orgConfig.cargos.length ? emptyCargos : orgConfig.cargos.map(c=>`
+    <div class="cat-item" style="padding:8px 0">
+      <div>
+        <span style="color:var(--text)">${escHtml(c)}</span>
+        <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:8px">${countCargos[c]||0} trabajador${(countCargos[c]||0)!==1?'es':''}</span>
+      </div>
+      <span style="display:flex;gap:4px">
+        <button class="btn-del" onclick="editarOrgItem('cargos','${escHtml(c).replace(/'/g,'&apos;')}')" style="color:var(--teal)">✎</button>
+        <button class="btn-del" onclick="eliminarOrgItem('cargos','${escHtml(c).replace(/'/g,'&apos;')}')">✕</button>
+      </span>
+    </div>`).join('');
+
+  areaTargets.forEach(id=>{ const el=$(id); if(el) el.innerHTML=areasHtml; });
+  cargoTargets.forEach(id=>{ const el=$(id); if(el) el.innerHTML=cargosHtml; });
 }
 
 function renderOrgChart() {
-  const wrap = $('org-chart');
-  if(!wrap) return;
+  const targets = ['org-chart','org-sa-chart'].map(id=>$(id)).filter(Boolean);
+  if(!targets.length) return;
   const activos = rrhhState.trabajadores.filter(t=>t.estado==='activo');
   if(!activos.length) {
-    wrap.innerHTML = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:24px;text-align:center">Sin trabajadores activos para mostrar.</div>';
+    const msg = '<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:24px;text-align:center">Sin trabajadores activos para mostrar.</div>';
+    targets.forEach(w=>w.innerHTML=msg);
     return;
   }
   // Build tree: find roots (no jefe or jefe not in activos)
@@ -6375,7 +6398,7 @@ function renderOrgChart() {
     </div>`;
   });
   html += '</div>';
-  wrap.innerHTML = html;
+  targets.forEach(w=>w.innerHTML=html);
 }
 
 function renderFichaOrg() {
@@ -6402,8 +6425,8 @@ function renderFichaOrg() {
 }
 
 function exportarOrg() {
-  const wrap = $('org-chart');
-  if(!wrap || !wrap.innerHTML.trim()) { showToast('Genera el organigrama primero',true); return; }
+  const wrap = $('org-sa-chart') && $('org-sa-chart').innerHTML.trim() ? $('org-sa-chart') : $('org-chart');
+  if(!wrap || !wrap.innerHTML.trim()) { showToast('Sin datos de organigrama',true); return; }
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Organigrama RRHH</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#07080f;color:#e8eaf6;font-family:'DM Sans',sans-serif;padding:24px}
