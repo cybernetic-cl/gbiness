@@ -983,6 +983,7 @@ input.fi-money{padding-left:58px!important;width:100%}
     <div class="main">
       <div class="page-title">GESTIÓN <span>RRHH</span></div>
       <div class="page-sub">// Trabajadores · vacaciones legales · fichas de personal</div>
+      <div id="rrhh-firebase-status" style="display:none;background:rgba(255,71,87,0.12);border:1px solid rgba(255,71,87,0.4);border-radius:2px;padding:12px 16px;margin-bottom:16px;font-family:var(--font-mono);font-size:11px;color:var(--red)"></div>
 
       <!-- TAB TRABAJADORES -->
       <div id="rrhh-sa-trabajadores">
@@ -1597,7 +1598,7 @@ input.fi-money{padding-left:58px!important;width:100%}
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyCR7m2wPjI_5EScEDB4FuGag634PaLjR58",
@@ -1608,6 +1609,17 @@ const app = initializeApp({
   appId: "1:988324916233:web:57eec60ea54992063f9cd8"
 });
 const db = getFirestore(app);
+
+// Test write/read access and expose status
+window.fbTestConnection = async () => {
+  try {
+    await setDoc(doc(db,'_connection_test','ping'), {ts: Date.now()});
+    await deleteDoc(doc(db,'_connection_test','ping'));
+    return { ok: true };
+  } catch(e) {
+    return { ok: false, code: e.code, msg: e.message };
+  }
+};
 
 window.fbSave = async (id, data) => {
   await setDoc(doc(db,'cierres',id), JSON.parse(JSON.stringify(data)));
@@ -1623,16 +1635,14 @@ window.fbSavePresConfig = async (data) => {
   await setDoc(doc(db,'presupuestos_config','main'), JSON.parse(JSON.stringify(data)));
 };
 window.fbLoadPresConfig = async () => {
-  const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const snap = await gd(doc(db,'presupuestos_config','main'));
+  const snap = await getDoc(doc(db,'presupuestos_config','main'));
   return snap.exists() ? snap.data() : null;
 };
 window.fbSaveDropdownConfig = async (data) => {
   await setDoc(doc(db,'dropdown_config','main'), JSON.parse(JSON.stringify(data)));
 };
 window.fbLoadDropdownConfig = async () => {
-  const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const snap = await gd(doc(db,'dropdown_config','main'));
+  const snap = await getDoc(doc(db,'dropdown_config','main'));
   return snap.exists() ? snap.data() : null;
 };
 
@@ -1644,15 +1654,13 @@ window.fbLoadRRHH = async () => {
   return s.docs.map(d=>({_id:d.id,...d.data()}));
 };
 window.fbDeleteRRHH = async (id) => {
-  const {deleteDoc:dd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  await dd(doc(db,'rrhh_trabajadores',id));
+  await deleteDoc(doc(db,'rrhh_trabajadores',id));
 };
 window.fbSaveOrgConfig = async (data) => {
   await setDoc(doc(db,'rrhh_org_config','main'), JSON.parse(JSON.stringify(data)));
 };
 window.fbLoadOrgConfig = async () => {
-  const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const snap = await gd(doc(db,'rrhh_org_config','main'));
+  const snap = await getDoc(doc(db,'rrhh_org_config','main'));
   return snap.exists() ? snap.data() : null;
 };
 window.fbLoad = async () => {
@@ -1670,16 +1678,16 @@ window.fbSaveAnnualConfig = async (data) => {
   await setDoc(doc(db,'annual_config','main'), JSON.parse(JSON.stringify(data)));
 };
 window.fbLoadAnnualConfig = async () => {
-  const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const snap = await gd(doc(db,'annual_config','main'));
+  // getDoc already imported
+  const snap = await getDoc(doc(db,'annual_config','main'));
   return snap.exists() ? snap.data() : null;
 };
 window.fbSaveRendConfig = async (data) => {
   await setDoc(doc(db,'rend_config','main'), JSON.parse(JSON.stringify(data)));
 };
 window.fbLoadRendConfig = async () => {
-  const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const snap = await gd(doc(db,'rend_config','main'));
+  // getDoc already imported
+  const snap = await getDoc(doc(db,'rend_config','main'));
   return snap.exists() ? snap.data() : null;
 };
 window.fbSaveBannerConfig = async (data) => {
@@ -1695,7 +1703,7 @@ window.fbSaveBannerConfig = async (data) => {
       console.warn('[Banner] banner_config falló (posiblemente reglas Firestore):', e1.code, e1.message);
     }
     // Always also save inside dropdown_config.banner as fallback
-    const {getDoc:gd2} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    // getDoc already imported
     const existing = await gd2(doc(db,'dropdown_config','main'));
     const base = existing.exists() ? existing.data() : {};
     await setDoc(doc(db,'dropdown_config','main'), {...base, _banner: clean});
@@ -1709,14 +1717,14 @@ window.fbSaveBannerConfig = async (data) => {
 };
 window.fbLoadBannerConfig = async () => {
   try {
-    const {getDoc:gd} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    // getDoc already imported
     // Try banner_config first
     try {
-      const snap = await gd(doc(db,'banner_config','main'));
+      const snap = await getDoc(doc(db,'banner_config','main'));
       if(snap.exists()){ console.log('[Banner] Cargado desde banner_config'); return snap.data(); }
     } catch(e1){ console.warn('[Banner] No se pudo leer banner_config:', e1.code); }
     // Fallback: read from dropdown_config._banner
-    const snap2 = await gd(doc(db,'dropdown_config','main'));
+    const snap2 = await getDoc(doc(db,'dropdown_config','main'));
     if(snap2.exists() && snap2.data()._banner){
       console.log('[Banner] Cargado desde dropdown_config._banner');
       return snap2.data()._banner;
@@ -5356,14 +5364,27 @@ async function loadRRHH() {
     if (window.fbLoadRRHH) {
       const list = await window.fbLoadRRHH();
       rrhhState.trabajadores = list;
+    } else {
+      showToast('Firebase no disponible — revisa la conexión', true);
     }
-  } catch(e) { console.error('[RRHH load]', e); }
+  } catch(e) {
+    console.error('[RRHH load]', e);
+    showToast('Error cargando RRHH: ' + (e.code||e.message||'sin conexión'), true);
+  }
 }
 
 async function saveRRHH(t) {
   rrhhState.trabajadores = rrhhState.trabajadores.filter(x=>x._id!==t._id);
   rrhhState.trabajadores.push(t);
-  if (window.fbSaveRRHH) await window.fbSaveRRHH(t._id, t).catch(e=>console.error('[RRHH save]',e));
+  if (window.fbSaveRRHH) {
+    try {
+      await window.fbSaveRRHH(t._id, t);
+    } catch(e) {
+      console.error('[RRHH save]', e);
+      showToast('Error al guardar en Firebase: ' + (e.code||e.message||'sin conexión'), true);
+      throw e;
+    }
+  }
 }
 
 async function deleteRRHH(id) {
@@ -5909,11 +5930,15 @@ async function saveTrabajador() {
     vacaciones: existing.vacaciones||[]
   };
   showToast('Guardando...');
-  await saveRRHH(t);
-  closeOv('rrhhOverlay');
-  renderRRHH();
-  if(document.getElementById('app-rrhh') && document.getElementById('app-rrhh').style.display!=='none') renderRRHHSA();
-  showToast('Trabajador guardado ✓');
+  try {
+    await saveRRHH(t);
+    closeOv('rrhhOverlay');
+    renderRRHH();
+    if(document.getElementById('app-rrhh') && document.getElementById('app-rrhh').style.display!=='none') renderRRHHSA();
+    showToast('Trabajador guardado ✓');
+  } catch(e) {
+    // Error already shown by saveRRHH
+  }
 }
 
 async function confirmDelTrabajador(id) {
@@ -5956,12 +5981,30 @@ function fmtFecha(iso) {
 async function bootRRHH() {
   showLoader(true);
   try {
+    // Test Firebase connection first
+    if(window.fbTestConnection) {
+      const test = await window.fbTestConnection();
+      if(!test.ok) {
+        const banner = document.getElementById('rrhh-firebase-status');
+        if(banner) {
+          banner.style.display = 'block';
+          banner.innerHTML = '⚠ Sin acceso a Firebase (' + (test.code||test.msg) + '). Agrega esta regla en Firestore Console:<br><br>'
+            + '<code style="background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:2px;color:#fff;display:block;margin-top:6px;white-space:pre">'
+            + 'match /rrhh_trabajadores/{id} { allow read, write: if true; }\nmatch /rrhh_org_config/{id}  { allow read, write: if true; }\nmatch /_connection_test/{id}  { allow read, write: if true; }'
+            + '</code>';
+        }
+        showToast('Sin acceso Firebase — revisa Firestore Rules', true);
+      } else {
+        const banner = document.getElementById('rrhh-firebase-status');
+        if(banner) banner.style.display = 'none';
+      }
+    }
     await loadRRHH();
     await loadOrgConfig();
     renderRRHHSA();
   } catch(e) {
     console.error(e);
-    showToast('Error cargando datos RRHH', true);
+    showToast('Error cargando datos RRHH: ' + (e.code||e.message), true);
   } finally {
     showLoader(false);
   }
@@ -6555,7 +6598,7 @@ function getProximosCumple(dias) {
     if(nextBday < hoy) nextBday = new Date(hoy.getFullYear()+1, bm-1, bd);
     const diffMs = nextBday - hoy;
     const diffDays = Math.ceil(diffMs / 86400000);
-    if(diffDays <= dias) lista.push({t, nextBday, diffDays, edad: nextBday.getFullYear()-by});
+    const edadActual1=hoy.getFullYear()-by-((hoy.getMonth()<bm-1||(hoy.getMonth()===bm-1&&hoy.getDate()<bd))?1:0); if(diffDays <= dias) lista.push({t, nextBday, diffDays, edad: edadActual1});
   });
   lista.sort((a,b)=>a.diffDays-b.diffDays);
   return lista;
@@ -6575,7 +6618,7 @@ function renderCumpleanosLista() {
     const diffMs = nextBday - hoy;
     const diffDays = Math.ceil(diffMs/86400000);
     if(diffDays <= 365) {
-      proximos12m.push({t, nextBday, diffDays, edad: nextBday.getFullYear()-by});
+      const edadActual2=hoy.getFullYear()-by-((hoy.getMonth()<bm-1||(hoy.getMonth()===bm-1&&hoy.getDate()<bd))?1:0); proximos12m.push({t, nextBday, diffDays, edad: edadActual2});
     }
   });
   proximos12m.sort((a,b)=>a.diffDays-b.diffDays);
