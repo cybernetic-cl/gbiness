@@ -211,11 +211,10 @@ input.fi-money{padding-left:58px!important;width:100%}
       <div class="nav-item" onclick="goSec(this,'remuneraciones')">👥 Remuneraciones</div>
       <div class="nav-item" onclick="goSec(this,'pendientes')">⏳ Pendientes</div>
       <div class="nav-item" onclick="goSec(this,'comisiones')">💰 Comisiones</div>
-      <div class="nav-item" onclick="goSec(this,'rendimiento')">📈 Rendimiento</div>
-      <div class="nav-item" onclick="goSec(this,'rendimiento-full')">🚀 Rendimiento FULL</div>
       <div class="nav-item" onclick="goSec(this,'historial')">📋 Historial de cierres</div>
+      <div class="nav-group" style="margin-top:10px">Canales Digitales</div>
+      <div class="nav-item" onclick="goSec(this,'rendimiento')">📈 Rendimiento</div>
       <div class="nav-group" style="margin-top:10px">Gestión</div>
-      <div class="nav-item" onclick="goSec(this,'rrhh')">👤 Gestión RRHH</div>
       <div class="nav-item" onclick="goSec(this,'configuracion')">⚙ Configuración</div>
     </div>
 
@@ -419,7 +418,13 @@ input.fi-money{padding-left:58px!important;width:100%}
         <div class="page-title">RENDIMIENTO <span>DE VENTAS</span></div>
         <div class="page-sub">// Registro y análisis de ventas por empresa y plataforma</div>
 
-        <!-- TABS -->
+        <!-- CANAL SELECTOR -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center">
+          <button class="btn-secondary" id="rcanal-normal" onclick="rendCanalTab('normal')" style="border-color:var(--teal);color:var(--teal)">📈 Canal Normal</button>
+          <button class="btn-secondary" id="rcanal-full" onclick="rendCanalTab('full')">🚀 Fulfillment</button>
+        </div>
+
+        <!-- TABS CANAL NORMAL -->
         <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px" id="rendTabBar">
           <button class="ptab active" id="rtab-registro" onclick="rendTab(this,'registro')">📝 Registro</button>
           <button class="ptab" id="rtab-reporte" onclick="rendTab(this,'reporte')">📊 Reportería</button>
@@ -489,96 +494,108 @@ input.fi-money{padding-left:58px!important;width:100%}
 
         <!-- TAB CONFIG -->
         <div id="rend-config" style="display:none">
-          <div class="page-sub" style="margin-bottom:16px">// Configura el % de utilidad estimada por empresa. Se aplica sobre las ventas netas.</div>
-          <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+          <div class="page-sub" style="margin-bottom:20px">// Configura empresas, % de utilidad estimada y plataformas de venta.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+            <!-- EMPRESAS + UTILIDAD -->
             <div class="section-card" style="margin:0">
-              <div class="card-hdr"><div class="card-title">// % Utilidad estimada por empresa</div></div>
-              <div class="card-body" id="rend-config-util"></div>
+              <div class="card-hdr" style="justify-content:space-between">
+                <div class="card-title">// Empresas y utilidad estimada</div>
+                <button class="btn-secondary" onclick="addRendEmpresa()" style="font-size:10px">+ Empresa</button>
+              </div>
+              <div class="card-body" id="rend-config-util" style="padding:0"></div>
+              <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+                <button class="btn-primary" onclick="saveRendConfigManual()" style="font-size:13px;padding:8px 20px">💾 Guardar cambios</button>
+              </div>
             </div>
+
+            <!-- PLATAFORMAS -->
             <div class="section-card" style="margin:0">
               <div class="card-hdr">
                 <div class="card-title">// Plataformas de venta</div>
                 <button class="btn-secondary" onclick="addRendPlataforma()">+ Agregar</button>
               </div>
-              <div class="card-body" id="rend-config-plat"></div>
+              <div class="card-body" id="rend-config-plat" style="padding:0"></div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- RENDIMIENTO FULL -->
-      <div id="sec-rendimiento-full" style="display:none">
-        <div class="page-title">RENDIMIENTO <span>FULL</span></div>
-        <div class="page-sub">// Canal Fulfillment · registro y análisis de ventas por empresa y plataforma</div>
-        <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px" id="rendFTabBar">
-          <button class="ptab active" id="rftab-registro" onclick="rendFTab(this,'registro')">📝 Registro</button>
-          <button class="ptab" id="rftab-reporte" onclick="rendFTab(this,'reporte')">📊 Reportería</button>
-          <button class="ptab" id="rftab-config" onclick="rendFTab(this,'config')">⚙ Configuración</button>
-        </div>
-        <!-- TAB REGISTRO -->
-        <div id="rendf-registro">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <select id="rendf-filter-emp" class="fi" style="width:180px" onchange="renderRendFRegistro()"><option value="">Todas las empresas</option></select>
-              <select id="rendf-filter-plat" class="fi" style="width:180px" onchange="renderRendFRegistro()"><option value="">Todas las plataformas</option></select>
-            </div>
-            <button class="btn-primary" onclick="openAddVentaF()">+ Registrar Venta FULL</button>
-          </div>
-          <div class="kpi-grid" id="rendf-kpi" style="margin-bottom:18px"></div>
-          <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Ventas Fulfillment del mes</div></div>
-            <div class="card-body">
-              <table class="tbl">
-                <thead><tr>
-                  <th>Empresa</th><th>Plataforma</th>
-                  <th style="text-align:right">Ventas Brutas</th>
-                  <th style="text-align:right">Ventas Netas</th>
-                  <th style="text-align:right">Utilidad Est.</th>
-                  <th style="text-align:right">vs Mes Ant.</th>
-                  <th></th>
-                </tr></thead>
-                <tbody id="rendfBody"></tbody>
-              </table>
-            </div>
-            <div class="total-bar" style="gap:18px;flex-wrap:wrap">
-              <span class="total-lbl">Total Bruto</span><span class="total-val" id="rendfTotalBruto" style="color:var(--teal)">$0</span>
-              <span class="total-lbl" style="margin-left:14px">Total Neto</span><span class="total-val" id="rendfTotalNeto" style="color:var(--green)">$0</span>
-              <span class="total-lbl" style="margin-left:14px">Utilidad</span><span class="total-val" id="rendfTotalUtil" style="color:var(--amber)">$0</span>
-            </div>
           </div>
         </div>
-        <!-- TAB REPORTE -->
-        <div id="rendf-reporte" style="display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <label class="fl" style="margin:0">Empresa:</label>
-              <select id="rendf-rpt-emp" class="fi" style="width:200px" onchange="renderRendFReporte()"><option value="">Todas las empresas</option></select>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="ptab active" id="rrptf-brutas" onclick="rendFRptTab(this,'brutas')">Ventas Brutas</button>
-              <button class="ptab" id="rrptf-netas" onclick="rendFRptTab(this,'netas')">Ventas Netas</button>
-            </div>
+
+        <!-- ═══ CANAL FULFILLMENT ═══ -->
+        <div id="rend-canal-full" style="display:none">
+          <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px" id="rendFTabBar">
+            <button class="ptab active" id="rftab-registro" onclick="rendFTab(this,'registro')">📝 Registro</button>
+            <button class="ptab" id="rftab-reporte" onclick="rendFTab(this,'reporte')">📊 Reportería</button>
+            <button class="ptab" id="rftab-config" onclick="rendFTab(this,'config')">⚙ Configuración</button>
           </div>
-          <div id="rendf-rpt-chart-wrap" style="margin-bottom:24px"></div>
-          <div class="section-card">
-            <div class="card-hdr"><div class="card-title" id="rendf-rpt-table-title">// Evolución mensual FULL · Ventas Brutas</div></div>
-            <div class="card-body" id="rendf-rpt-table"></div>
-          </div>
-        </div>
-        <!-- TAB CONFIG -->
-        <div id="rendf-config" style="display:none">
-          <div class="page-sub" style="margin-bottom:16px">// Configura el % de utilidad estimada por empresa para canal Fulfillment.</div>
-          <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
-            <div class="section-card" style="margin:0">
-              <div class="card-hdr"><div class="card-title">// % Utilidad estimada por empresa</div></div>
-              <div class="card-body" id="rendf-config-util"></div>
-            </div>
-            <div class="section-card" style="margin:0">
-              <div class="card-hdr">
-                <div class="card-title">// Plataformas Fulfillment</div>
-                <button class="btn-secondary" onclick="addRendFPlataforma()">+ Agregar</button>
+          <!-- TAB REGISTRO -->
+          <div id="rendf-registro">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <select id="rendf-filter-emp" class="fi" style="width:180px" onchange="renderRendFRegistro()"><option value="">Todas las empresas</option></select>
+                <select id="rendf-filter-plat" class="fi" style="width:180px" onchange="renderRendFRegistro()"><option value="">Todas las plataformas</option></select>
               </div>
-              <div class="card-body" id="rendf-config-plat"></div>
+              <button class="btn-primary" onclick="openAddVentaF()">+ Registrar Venta FULL</button>
+            </div>
+            <div class="kpi-grid" id="rendf-kpi" style="margin-bottom:18px"></div>
+            <div class="section-card">
+              <div class="card-hdr"><div class="card-title">// Ventas Fulfillment del mes</div></div>
+              <div class="card-body">
+                <table class="tbl">
+                  <thead><tr>
+                    <th>Empresa</th><th>Plataforma</th>
+                    <th style="text-align:right">Ventas Brutas</th>
+                    <th style="text-align:right">Ventas Netas</th>
+                    <th style="text-align:right">Utilidad Est.</th>
+                    <th style="text-align:right">vs Mes Ant.</th>
+                    <th></th>
+                  </tr></thead>
+                  <tbody id="rendfBody"></tbody>
+                </table>
+              </div>
+              <div class="total-bar" style="gap:18px;flex-wrap:wrap">
+                <span class="total-lbl">Total Bruto</span><span class="total-val" id="rendfTotalBruto" style="color:var(--teal)">$0</span>
+                <span class="total-lbl" style="margin-left:14px">Total Neto</span><span class="total-val" id="rendfTotalNeto" style="color:var(--green)">$0</span>
+                <span class="total-lbl" style="margin-left:14px">Utilidad</span><span class="total-val" id="rendfTotalUtil" style="color:var(--amber)">$0</span>
+              </div>
+            </div>
+          </div>
+          <!-- TAB REPORTE -->
+          <div id="rendf-reporte" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <label class="fl" style="margin:0">Empresa:</label>
+                <select id="rendf-rpt-emp" class="fi" style="width:200px" onchange="renderRendFReporte()"><option value="">Todas las empresas</option></select>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="ptab active" id="rrptf-brutas" onclick="rendFRptTab(this,'brutas')">Ventas Brutas</button>
+                <button class="ptab" id="rrptf-netas" onclick="rendFRptTab(this,'netas')">Ventas Netas</button>
+              </div>
+            </div>
+            <div id="rendf-rpt-chart-wrap" style="margin-bottom:24px"></div>
+            <div class="section-card">
+              <div class="card-hdr"><div class="card-title" id="rendf-rpt-table-title">// Evolución mensual FULL · Ventas Brutas</div></div>
+              <div class="card-body" id="rendf-rpt-table"></div>
+            </div>
+          </div>
+          <!-- TAB CONFIG -->
+          <div id="rendf-config" style="display:none">
+            <div class="page-sub" style="margin-bottom:16px">// Configura el % de utilidad estimada por empresa para canal Fulfillment. Las empresas se gestionan desde Canal Normal → Configuración.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div class="section-card" style="margin:0">
+                <div class="card-hdr"><div class="card-title">// Empresas y utilidad estimada FULL</div></div>
+                <div class="card-body" id="rendf-config-util" style="padding:0"></div>
+                <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+                  <button class="btn-primary" onclick="saveRendFConfigManual()" style="font-size:13px;padding:8px 20px">💾 Guardar cambios</button>
+                </div>
+              </div>
+              <div class="section-card" style="margin:0">
+                <div class="card-hdr">
+                  <div class="card-title">// Plataformas Fulfillment</div>
+                  <button class="btn-secondary" onclick="addRendFPlataforma()">+ Agregar</button>
+                </div>
+                <div class="card-body" id="rendf-config-plat" style="padding:0"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -2194,13 +2211,14 @@ function renderRendimiento(){
 }
 
 function populateRendFilters(){
+  const empresas = rendConfig.empresas || EMPS;
   const fEmp = $('rend-filter-emp');
   const fPlat = $('rend-filter-plat');
   const rEmp = $('rend-rpt-emp');
   if(fEmp){
     const cv = fEmp.value;
     fEmp.innerHTML = '<option value="">Todas las empresas</option>';
-    EMPS.forEach(e=>{ const o=document.createElement('option'); o.value=e; o.textContent=e; fEmp.appendChild(o); });
+    empresas.forEach(e=>{ const o=document.createElement('option'); o.value=e; o.textContent=e; fEmp.appendChild(o); });
     if(cv) fEmp.value=cv;
   }
   if(fPlat){
@@ -2212,7 +2230,7 @@ function populateRendFilters(){
   if(rEmp){
     const cv = rEmp.value;
     rEmp.innerHTML = '<option value="">Todas las empresas</option>';
-    EMPS.forEach(e=>{ const o=document.createElement('option'); o.value=e; o.textContent=e; rEmp.appendChild(o); });
+    empresas.forEach(e=>{ const o=document.createElement('option'); o.value=e; o.textContent=e; rEmp.appendChild(o); });
     if(cv) rEmp.value=cv;
   }
 }
@@ -2303,21 +2321,23 @@ function renderRendRegistro(){
 }
 
 function openAddVenta(){
+  const empresas = rendConfig.empresas || EMPS;
   $('ventaModalTitle').textContent='Registrar Venta';
   $('ventaEditIdx').textContent='';
-  $('v_empresa').innerHTML = EMPS.map(e=>`<option value="${e}">${e}</option>`).join('');
+  $('v_empresa').innerHTML = empresas.map(e=>`<option value="${e}">${e}</option>`).join('');
   $('v_plataforma').innerHTML = (rendConfig.plataformas||[]).map(p=>`<option value="${p}">${p}</option>`).join('');
   $('v_brutas').value=''; $('v_netas').value=''; $('v_utilidad').value=''; $('v_notas').value='';
   $('ventaOverlay').classList.add('open');
 }
 
 function openEditVenta(idx){
+  const empresas = rendConfig.empresas || EMPS;
   const d = cur();
   const v = (d.ventas||[])[idx];
   if(!v) return;
   $('ventaModalTitle').textContent='Editar Venta';
   $('ventaEditIdx').textContent=idx;
-  $('v_empresa').innerHTML = EMPS.map(e=>`<option value="${e}" ${e===v.empresa?'selected':''}>${e}</option>`).join('');
+  $('v_empresa').innerHTML = empresas.map(e=>`<option value="${e}" ${e===v.empresa?'selected':''}>${e}</option>`).join('');
   $('v_plataforma').innerHTML = (rendConfig.plataformas||[]).map(p=>`<option value="${p}" ${p===v.plataforma?'selected':''}>${p}</option>`).join('');
   $('v_brutas').value=v.brutas?clpFormat(v.brutas):'';
   $('v_netas').value=v.netas?clpFormat(v.netas):'';
@@ -2376,22 +2396,75 @@ async function delVenta(idx){
 function renderRendConfig(){
   const cfg = $('rend-config-util');
   if(cfg){
-    cfg.innerHTML = EMPS.map(e=>`
-      <div class="presup-row">
-        <span style="flex:1;font-size:13px;color:var(--text)">${e}</span>
-        <div style="display:flex;align-items:center;gap:6px">
-          <input type="number" value="${rendConfig.utilidades[e]||0}" class="fi" style="width:100px;text-align:right"
-            oninput="updateRendUtil('${e}',this.value)" min="0" max="100" step="0.1">
-          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">%</span>
-        </div>
-      </div>`).join('');
+    const empresas = rendConfig.empresas || EMPS;
+    if(!empresas.length){
+      cfg.innerHTML = '<div style="padding:18px;color:var(--text3);font-family:var(--font-mono);font-size:11px;text-align:center">Sin empresas. Agrega una con el botón +.</div>';
+    } else {
+      cfg.innerHTML = empresas.map((e,i)=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border)">
+          <div style="flex:1">
+            <div style="font-size:13px;color:var(--text);font-weight:500">${e}</div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:2px;letter-spacing:1px">UTILIDAD ESTIMADA</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="position:relative;display:flex;align-items:center">
+              <input type="number" id="util-inp-${i}" value="${rendConfig.utilidades[e]||0}"
+                class="fi" style="width:80px;text-align:right;padding-right:24px"
+                min="0" max="100" step="0.1">
+              <span style="position:absolute;right:8px;font-family:var(--font-mono);font-size:10px;color:var(--teal);pointer-events:none">%</span>
+            </div>
+          </div>
+          <button class="btn-del" title="Eliminar empresa" onclick="delRendEmpresa(${i})" style="margin-left:4px;opacity:0.5;transition:opacity .2s" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.5">✕</button>
+        </div>`).join('');
+    }
   }
   const plat = $('rend-config-plat');
   if(plat){
-    plat.innerHTML = (rendConfig.plataformas||[]).map((p,i)=>`
-      <div class="cat-item"><span>${p}</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="delRendPlataforma(${i})">✕</button></span></div>`).join('')
-      || '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin plataformas</div>';
+    const ps = rendConfig.plataformas||[];
+    plat.innerHTML = ps.length ? ps.map((p,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border)">
+        <div style="flex:1;display:flex;align-items:center;gap:8px">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal)"></span>
+          <span style="font-size:13px;color:var(--text)">${p}</span>
+        </div>
+        <button class="btn-del" onclick="delRendPlataforma(${i})" title="Eliminar plataforma">✕</button>
+      </div>`).join('')
+    : '<div style="padding:18px;color:var(--text3);font-family:var(--font-mono);font-size:11px;text-align:center">Sin plataformas configuradas.</div>';
   }
+}
+
+async function saveRendConfigManual(){
+  // Collect current input values
+  const empresas = rendConfig.empresas || EMPS;
+  empresas.forEach((e,i)=>{
+    const inp = $('util-inp-'+i);
+    if(inp) rendConfig.utilidades[e] = parseFloat(inp.value)||0;
+  });
+  await saveRendConfig();
+  showToast('Configuración guardada ✓');
+}
+
+async function addRendEmpresa(){
+  const nombre = await dlgPrompt('Nueva Empresa','Nombre de la empresa:','','Ej: Mi Empresa');
+  if(!nombre || !nombre.trim()) return;
+  const n = nombre.trim();
+  if(!rendConfig.empresas) rendConfig.empresas = [...EMPS];
+  if(rendConfig.empresas.map(x=>x.toLowerCase()).includes(n.toLowerCase())){ showToast('Empresa ya existe',true); return; }
+  rendConfig.empresas.push(n);
+  await saveRendConfig();
+  renderRendConfig();
+  showToast('Empresa agregada');
+}
+
+async function delRendEmpresa(idx){
+  if(!rendConfig.empresas) rendConfig.empresas = [...EMPS];
+  const nombre = rendConfig.empresas[idx];
+  if(!await dlgConfirm(`¿Eliminar la empresa "${nombre}" de Rendimiento?`,'Eliminar','danger')) return;
+  rendConfig.empresas.splice(idx,1);
+  delete rendConfig.utilidades[nombre];
+  await saveRendConfig();
+  renderRendConfig();
+  showToast('Empresa eliminada');
 }
 
 async function updateRendUtil(emp, val){
@@ -2535,7 +2608,7 @@ function renderRendReporte(){
   if(ttitle) ttitle.textContent = '// Evolucion mensual - Ventas '+modeLabel+(selEmp?' - '+selEmp:'');
   const tbl = $('rend-rpt-table');
   if(!tbl) return;
-  const empresas = selEmp ? [selEmp] : EMPS.filter(function(e){
+  const empresas = selEmp ? [selEmp] : (rendConfig.empresas||EMPS).filter(function(e){
     return meses.some(function(mes){ return (S.data[mes].ventas||[]).some(function(v){ return v.empresa===e; }); });
   });
   tbl.innerHTML = buildReporteTable(meses, function(mes){ return S.data[mes].ventas||[]; }, empresas, isBrutas, isUtil);
@@ -2574,7 +2647,7 @@ function populateRendFFilters(){
       (rendFCfg.plataformas||[]).forEach(function(p){ const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o); });
     } else {
       sel.innerHTML='<option value="">Todas las empresas</option>';
-      EMPS.forEach(function(e){ const o=document.createElement('option');o.value=e;o.textContent=e;sel.appendChild(o); });
+      (rendConfig.empresas||EMPS).forEach(function(e){ const o=document.createElement('option');o.value=e;o.textContent=e;sel.appendChild(o); });
     }
     if(cv) sel.value=cv;
   });
@@ -2651,16 +2724,54 @@ function renderRendFReporte(){
   const ttitle=$('rendf-rpt-table-title');
   if(ttitle) ttitle.textContent='// Evolucion mensual FULL - Ventas '+(isBrutas?'Brutas':'Netas')+(selEmp?' - '+selEmp:'');
   const tbl=$('rendf-rpt-table'); if(!tbl) return;
-  const empresas=selEmp?[selEmp]:EMPS.filter(function(e){ return meses.some(function(mes){ return (S.data[mes].ventasF||[]).some(function(v){ return v.empresa===e; }); }); });
+  const empresas=selEmp?[selEmp]:(rendConfig.empresas||EMPS).filter(function(e){ return meses.some(function(mes){ return (S.data[mes].ventasF||[]).some(function(v){ return v.empresa===e; }); }); });
   tbl.innerHTML=buildReporteTable(meses,function(mes){ return S.data[mes].ventasF||[]; },empresas,isBrutas);
 }
 function renderRendFConfig(){
   const cfg=$('rendf-config-util');
-  if(cfg) cfg.innerHTML=EMPS.map(function(e){ return '<div class="presup-row"><span style="flex:1;font-size:13px;color:var(--text)">'+e+'</span><div style="display:flex;align-items:center;gap:6px"><input type="number" value="'+(rendFCfg.utilidades[e]||0)+'" class="fi" style="width:100px;text-align:right" oninput="updateRendFUtil(\''+e+'\',this.value)" min="0" max="100" step="0.1"><span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">%</span></div></div>'; }).join('');
+  const empresas = rendConfig.empresas || EMPS;
+  if(cfg){
+    if(!empresas.length){
+      cfg.innerHTML='<div style="padding:18px;color:var(--text3);font-family:var(--font-mono);font-size:11px;text-align:center">Sin empresas. Configúralas en Canal Normal → Configuración.</div>';
+    } else {
+      cfg.innerHTML=empresas.map(function(e,i){ return `
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border)">
+          <div style="flex:1">
+            <div style="font-size:13px;color:var(--text);font-weight:500">${e}</div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:2px;letter-spacing:1px">UTILIDAD ESTIMADA FULL</div>
+          </div>
+          <div style="position:relative;display:flex;align-items:center">
+            <input type="number" id="futil-inp-${i}" value="${rendFCfg.utilidades[e]||0}"
+              class="fi" style="width:80px;text-align:right;padding-right:24px" min="0" max="100" step="0.1">
+            <span style="position:absolute;right:8px;font-family:var(--font-mono);font-size:10px;color:var(--teal);pointer-events:none">%</span>
+          </div>
+        </div>`; }).join('');
+    }
+  }
   const plat=$('rendf-config-plat');
-  if(plat) plat.innerHTML=(rendFCfg.plataformas||[]).map(function(p,i){ return '<div class="cat-item"><span>'+p+'</span><span style="display:flex;gap:4px"><button class="btn-del" onclick="delRendFPlataforma('+i+')">✕</button></span></div>'; }).join('')||'<div style="color:var(--text3);font-size:12px;padding:8px 0">Sin plataformas</div>';
+  if(plat){
+    const ps=rendFCfg.plataformas||[];
+    plat.innerHTML=ps.length ? ps.map(function(p,i){ return `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border)">
+        <div style="flex:1;display:flex;align-items:center;gap:8px">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>
+          <span style="font-size:13px;color:var(--text)">${p}</span>
+        </div>
+        <button class="btn-del" onclick="delRendFPlataforma(${i})" title="Eliminar plataforma">✕</button>
+      </div>`; }).join('')
+    : '<div style="padding:18px;color:var(--text3);font-family:var(--font-mono);font-size:11px;text-align:center">Sin plataformas configuradas.</div>';
+  }
 }
 async function updateRendFUtil(emp,val){ rendFCfg.utilidades[emp]=parseFloat(val)||0; await saveRendConfig(); }
+async function saveRendFConfigManual(){
+  const empresas = rendConfig.empresas || EMPS;
+  empresas.forEach(function(e,i){
+    const inp = document.getElementById('futil-inp-'+i);
+    if(inp) rendFCfg.utilidades[e] = parseFloat(inp.value)||0;
+  });
+  await saveRendConfig();
+  showToast('Configuración FULL guardada ✓');
+}
 async function addRendFPlataforma(){
   const n=await dlgPrompt('Nueva Plataforma FULL','Nombre de la plataforma:','','Ej: MercadoLibre'); if(!n||!n.trim()) return;
   const nu=n.trim().toUpperCase(); if(rendFCfg.plataformas.includes(nu)){ showToast('Ya existe',true); return; }
@@ -2669,18 +2780,20 @@ async function addRendFPlataforma(){
 }
 async function delRendFPlataforma(idx){ if(!await dlgConfirm('¿Eliminar este elemento?','Eliminar','danger')) return; rendFCfg.plataformas.splice(idx,1); await saveRendConfig(); renderRendFConfig(); populateRendFFilters(); showToast('Eliminada'); }
 function openAddVentaF(){
+  const empresas = rendConfig.empresas || EMPS;
   $('ventaFModalTitle').textContent='Registrar Venta FULL';
   $('ventaFEditIdx').textContent='';
-  $('vf_empresa').innerHTML=EMPS.map(function(e){ return '<option value="'+e+'">'+e+'</option>'; }).join('');
+  $('vf_empresa').innerHTML=empresas.map(function(e){ return '<option value="'+e+'">'+e+'</option>'; }).join('');
   $('vf_plataforma').innerHTML=(rendFCfg.plataformas||[]).map(function(p){ return '<option value="'+p+'">'+p+'</option>'; }).join('');
   $('vf_brutas').value=''; $('vf_netas').value=''; $('vf_utilidad').value=''; $('vf_notas').value='';
   $('ventaFOverlay').classList.add('open');
 }
 function openEditVentaF(idx){
+  const empresas = rendConfig.empresas || EMPS;
   const d=cur(); const v=(d.ventasF||[])[idx]; if(!v) return;
   $('ventaFModalTitle').textContent='Editar Venta FULL';
   $('ventaFEditIdx').textContent=idx;
-  $('vf_empresa').innerHTML=EMPS.map(function(e){ return '<option value="'+e+'"'+(e===v.empresa?' selected':'')+'>'+e+'</option>'; }).join('');
+  $('vf_empresa').innerHTML=empresas.map(function(e){ return '<option value="'+e+'"'+(e===v.empresa?' selected':'')+'>'+e+'</option>'; }).join('');
   $('vf_plataforma').innerHTML=(rendFCfg.plataformas||[]).map(function(p){ return '<option value="'+p+'"'+(p===v.plataforma?' selected':'')+'>'+p+'</option>'; }).join('');
   $('vf_brutas').value=v.brutas?clpFormat(v.brutas):'';
   $('vf_netas').value=v.netas?clpFormat(v.netas):'';
@@ -6780,6 +6893,29 @@ function dlgAlert(title, msg) {
     $('dlgAlertOk').addEventListener('click', onOk);
     ov.addEventListener('click', onOvClick);
   });
+}
+// ═══════════════════════════════════════════════════════════
+function rendCanalTab(canal) {
+  const isNormal = canal === 'normal';
+  // Toggle canal normal tabs
+  document.getElementById('rendTabBar').style.display = isNormal ? '' : 'none';
+  document.getElementById('rend-registro').style.display = isNormal ? '' : 'none';
+  document.getElementById('rend-reporte').style.display = 'none';
+  document.getElementById('rend-config').style.display = 'none';
+  // Toggle fulfillment block
+  document.getElementById('rend-canal-full').style.display = isNormal ? 'none' : '';
+  // Update button styles
+  const btnN = document.getElementById('rcanal-normal');
+  const btnF = document.getElementById('rcanal-full');
+  if (isNormal) {
+    btnN.style.borderColor = 'var(--teal)'; btnN.style.color = 'var(--teal)';
+    btnF.style.borderColor = ''; btnF.style.color = '';
+    if (isNormal) rendTab(document.getElementById('rtab-registro'), 'registro');
+  } else {
+    btnF.style.borderColor = 'var(--teal)'; btnF.style.color = 'var(--teal)';
+    btnN.style.borderColor = ''; btnN.style.color = '';
+    rendFTab(document.getElementById('rftab-registro'), 'registro');
+  }
 }
 // ═══════════════════════════════════════════════════════════
 function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; if(id==='catOverlay'){ editCtx=null; dynamicSelectTarget=null; } }
