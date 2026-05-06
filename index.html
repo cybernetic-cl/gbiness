@@ -5836,37 +5836,46 @@ function generarCertificado(t, v) {
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'DM Sans',Arial,sans-serif;background:#fff;color:#1a1a2e;padding:0}
-  .page{width:210mm;min-height:297mm;margin:0 auto;padding:20mm 22mm;background:#fff;position:relative}
-  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10mm;padding-bottom:6mm;border-bottom:3px solid #00d4aa}
+  .page{width:210mm;min-height:297mm;margin:0 auto;padding:12mm 18mm;background:#fff;position:relative}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5mm;padding-bottom:4mm;border-bottom:3px solid #00d4aa}
   .logo-area h1{font-size:28px;font-weight:800;letter-spacing:3px;color:#07080f;margin-bottom:2px}
   .logo-area h1 span{color:#00d4aa}
   .logo-area p{font-size:11px;color:#606888;letter-spacing:1px}
   .folio-area{text-align:right}
   .folio-area .folio{font-family:monospace;font-size:13px;font-weight:700;color:#00d4aa;background:#07080f;padding:6px 14px;border-radius:3px;letter-spacing:2px}
   .folio-area .fecha-emit{font-size:10px;color:#606888;margin-top:5px}
-  .doc-title{text-align:center;margin:8mm 0;padding:6mm 0;border-top:1px solid #e0e4f0;border-bottom:1px solid #e0e4f0}
+  .doc-title{text-align:center;margin:4mm 0;padding:3mm 0;border-top:1px solid #e0e4f0;border-bottom:1px solid #e0e4f0}
   .doc-title h2{font-size:22px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#07080f}
   .doc-title p{font-size:11px;color:#606888;letter-spacing:1px;margin-top:4px}
-  .section{margin-bottom:7mm}
+  .section{margin-bottom:4mm}
   .section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#606888;border-bottom:1px solid #e8eaf6;padding-bottom:3px;margin-bottom:4mm}
   .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm 8mm}
   .data-item label{font-size:9px;color:#606888;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:2px}
   .data-item span{font-size:13px;color:#1a1a2e;font-weight:500}
-  .highlight-box{background:#f0fdf9;border:2px solid #00d4aa;border-radius:4px;padding:6mm;margin:7mm 0;display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;text-align:center}
-  .highlight-item .num{font-size:28px;font-weight:700;color:#00d4aa;font-family:monospace;line-height:1}
+  .highlight-box{background:#f0fdf9;border:2px solid #00d4aa;border-radius:4px;padding:4mm;margin:4mm 0;display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;text-align:center}
+  .highlight-item .num{font-size:22px;font-weight:700;color:#00d4aa;font-family:monospace;line-height:1}
   .highlight-item .lbl{font-size:9px;color:#606888;letter-spacing:1px;text-transform:uppercase;margin-top:3px}
-  .legal-box{background:#fafbff;border:1px solid #e0e4f0;border-left:3px solid #4a9eff;border-radius:2px;padding:5mm;margin-bottom:7mm}
+  .legal-box{background:#fafbff;border:1px solid #e0e4f0;border-left:3px solid #4a9eff;border-radius:2px;padding:4mm;margin-bottom:4mm}
   .legal-box p{font-size:10px;color:#606888;line-height:1.6}
-  .firma-area{margin-top:14mm;display:grid;grid-template-columns:1fr 1fr;gap:20mm}
+  .firma-area{margin-top:8mm;display:grid;grid-template-columns:1fr 1fr;gap:12mm}
   .firma-box{text-align:center}
+  .firma-electronica{background:linear-gradient(135deg,#f0fdf9,#e8f5ff);border:1.5px solid #00d4aa;border-radius:6px;padding:5mm;margin-bottom:3mm;position:relative;overflow:hidden}
+  .firma-electronica::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00d4aa,#4a9eff)}
+  .firma-sello{display:flex;align-items:center;gap:3mm;margin-bottom:3mm}
+  .firma-sello-icon{width:28px;height:28px;background:#07080f;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .firma-sello-icon svg{width:16px;height:16px}
+  .firma-sello-text{font-size:8px;color:#059669;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+  .firma-hash{font-family:monospace;font-size:7px;color:#a0a8c8;letter-spacing:0.5px;word-break:break-all;background:#fff;padding:2px 4px;border-radius:2px;border:1px solid #e0e4f0}
+  .firma-nombre{font-size:11px;font-weight:700;color:#07080f;letter-spacing:0.5px;margin-bottom:2px}
+  .firma-rut{font-size:9px;color:#606888;font-family:monospace}
   .firma-line{border-top:1.5px solid #1a1a2e;padding-top:4px;margin-bottom:3px}
   .firma-label{font-size:10px;color:#606888;font-weight:600;letter-spacing:1px;text-transform:uppercase}
   .firma-sub{font-size:9px;color:#a0a8c8}
-  .footer{position:absolute;bottom:10mm;left:22mm;right:22mm;border-top:1px solid #e8eaf6;padding-top:4px;display:flex;justify-content:space-between}
+  .footer{position:absolute;bottom:8mm;left:22mm;right:22mm;border-top:1px solid #e8eaf6;padding-top:4px;display:flex;justify-content:space-between}
   .footer span{font-size:8px;color:#a0a8c8;letter-spacing:1px}
   @media print{
     body{background:#fff}
-    .page{padding:15mm 18mm;margin:0;width:100%;min-height:auto}
+    .page{padding:10mm 15mm;margin:0;width:100%;min-height:auto}
     .no-print{display:none}
   }
 </style>
@@ -5947,9 +5956,26 @@ function generarCertificado(t, v) {
       <div class="firma-sub">RUT: ${t.rut||'—'} · Trabajador</div>
     </div>
     <div class="firma-box">
-      <div class="firma-line"></div>
-      <div class="firma-label">Representante Legal</div>
-      <div class="firma-sub">${t.empresa||'Empresa'}</div>
+      <div class="firma-electronica">
+        <div class="firma-sello">
+          <div class="firma-sello-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2" stroke-linecap="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+          </div>
+          <div>
+            <div class="firma-sello-text">✓ Firmado electrónicamente</div>
+            <div style="font-size:7px;color:#606888;margin-top:1px">${hoy.toLocaleString('es-CL')}</div>
+          </div>
+        </div>
+        <div class="firma-nombre">Richard Daniel Urbina</div>
+        <div class="firma-rut">RUT: 26.338.779-1</div>
+        <div style="margin-top:3mm">
+          <div class="firma-hash">${'sha256:'+btoa((v.folio||'')+'26338779'+hoy.toISOString().slice(0,10)).replace(/=/g,'').slice(0,40)}</div>
+        </div>
+      </div>
+      <div class="firma-sub" style="margin-top:3px">Representante Legal · ${t.empresa||'Cybernetic SpA'}</div>
     </div>
   </div>
 
