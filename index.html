@@ -130,7 +130,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .ptab.active{color:var(--teal);border-bottom-color:var(--teal)}
 .presup-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
 .presup-row:last-child{border-bottom:none}
-.cat-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;color:var(--text2)}
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);font-family:var(--font-mono);letter-spacing:0.5px}
+.cat-item:last-child{border-bottom:none}
+.cat-item:hover{background:rgba(255,255,255,0.018)}
 .cat-item:last-child{border-bottom:none}
 .over-budget{color:var(--red)!important;animation:pulse-red 1.5s ease infinite}
 @keyframes pulse-red{0%,100%{opacity:1}50%{opacity:0.7}}
@@ -707,55 +709,137 @@ input.fi-money{padding-left:58px!important;width:100%}
 
       <!-- CONFIGURACION -->
       <div id="sec-configuracion" style="display:none">
-        <div class="page-title">CONFIGURACIÓN <span>LISTAS</span></div>
-        <div class="page-sub">// Administra las listas desplegables del sistema</div>
-        <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
-          <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Saldos · plataformas</div><button class="btn-secondary" onclick="openDropdownManager('saldos')">+ Agregar</button></div>
-            <div class="card-body" id="cfg_saldos"></div>
+        <div class="page-title">CONFIGURACIÓN <span>DEL SISTEMA</span></div>
+        <div class="page-sub">// Personaliza listas desplegables, avisos y parámetros globales</div>
+
+        <!-- CFG NAV TABS -->
+        <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:22px;flex-wrap:wrap">
+          <button class="ptab active" id="cfg-tab-listas" onclick="cfgTab(this,'listas')">📋 Listas desplegables</button>
+          <button class="ptab" id="cfg-tab-banner" onclick="cfgTab(this,'banner')">📢 Banner de avisos</button>
+        </div>
+
+        <!-- PANEL: LISTAS -->
+        <div id="cfg-panel-listas">
+          <!-- Fila 1: módulos principales -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px">
+
+            <div class="section-card" style="margin:0">
+              <div class="card-hdr" style="background:rgba(0,212,170,0.06);border-bottom-color:rgba(0,212,170,0.18)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:16px">💳</span>
+                  <div>
+                    <div class="card-title" style="color:var(--teal)">Saldos · Plataformas</div>
+                    <div style="font-family:var(--font-mono);font-size:8px;color:var(--text3);margin-top:1px">Cuentas y plataformas de cobro</div>
+                  </div>
+                </div>
+                <button class="btn-secondary" onclick="openDropdownManager('saldos')" style="white-space:nowrap">+ Agregar</button>
+              </div>
+              <div class="card-body" id="cfg_saldos" style="padding:0;max-height:220px;overflow-y:auto"></div>
+            </div>
+
+            <div class="section-card" style="margin:0">
+              <div class="card-hdr" style="background:rgba(74,158,255,0.06);border-bottom-color:rgba(74,158,255,0.18)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:16px">🏦</span>
+                  <div>
+                    <div class="card-title" style="color:var(--blue)">Bancos y Servicios</div>
+                    <div style="font-family:var(--font-mono);font-size:8px;color:var(--text3);margin-top:1px">Categorías de pagos bancarios</div>
+                  </div>
+                </div>
+                <button class="btn-secondary" onclick="openDropdownManager('bancos')" style="white-space:nowrap">+ Agregar</button>
+              </div>
+              <div class="card-body" id="cfg_bancos" style="padding:0;max-height:220px;overflow-y:auto"></div>
+            </div>
+
+            <div class="section-card" style="margin:0">
+              <div class="card-hdr" style="background:rgba(245,166,35,0.06);border-bottom-color:rgba(245,166,35,0.18)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:16px">👥</span>
+                  <div>
+                    <div class="card-title" style="color:var(--amber)">Remuneraciones</div>
+                    <div style="font-family:var(--font-mono);font-size:8px;color:var(--text3);margin-top:1px">Categorías de sueldos e impuestos</div>
+                  </div>
+                </div>
+                <button class="btn-secondary" onclick="openDropdownManager('remuneraciones')" style="white-space:nowrap">+ Agregar</button>
+              </div>
+              <div class="card-body" id="cfg_remuneraciones" style="padding:0;max-height:220px;overflow-y:auto"></div>
+            </div>
+
           </div>
-          <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Bancos y servicios</div><button class="btn-secondary" onclick="openDropdownManager('bancos')">+ Agregar</button></div>
-            <div class="card-body" id="cfg_bancos"></div>
-          </div>
-          <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Remuneraciones</div><button class="btn-secondary" onclick="openDropdownManager('remuneraciones')">+ Agregar</button></div>
-            <div class="card-body" id="cfg_remuneraciones"></div>
-          </div>
-          <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Pendientes</div><button class="btn-secondary" onclick="openDropdownManager('pendientes')">+ Agregar</button></div>
-            <div class="card-body" id="cfg_pendientes"></div>
-          </div>
-          <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Comisiones</div><button class="btn-secondary" onclick="openDropdownManager('comisiones')">+ Agregar</button></div>
-            <div class="card-body" id="cfg_comisiones"></div>
-          </div>
-          <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Presupuesto</div><button class="btn-secondary" onclick="openDropdownManager('proveedores')">+ Agregar</button></div>
-            <div class="card-body" id="cfg_presupuesto_extra"></div>
+
+          <!-- Fila 2: más categorías -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+
+            <div class="section-card" style="margin:0">
+              <div class="card-hdr" style="background:rgba(255,71,87,0.06);border-bottom-color:rgba(255,71,87,0.18)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:16px">⏳</span>
+                  <div>
+                    <div class="card-title" style="color:var(--red)">Pendientes</div>
+                    <div style="font-family:var(--font-mono);font-size:8px;color:var(--text3);margin-top:1px">Categorías de pagos pendientes</div>
+                  </div>
+                </div>
+                <button class="btn-secondary" onclick="openDropdownManager('pendientes')" style="white-space:nowrap">+ Agregar</button>
+              </div>
+              <div class="card-body" id="cfg_pendientes" style="padding:0;max-height:220px;overflow-y:auto"></div>
+            </div>
+
+            <div class="section-card" style="margin:0">
+              <div class="card-hdr" style="background:rgba(108,52,131,0.1);border-bottom-color:rgba(180,100,220,0.2)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:16px">💰</span>
+                  <div>
+                    <div class="card-title" style="color:#c084fc">Comisiones</div>
+                    <div style="font-family:var(--font-mono);font-size:8px;color:var(--text3);margin-top:1px">Plataformas de publicidad</div>
+                  </div>
+                </div>
+                <button class="btn-secondary" onclick="openDropdownManager('comisiones')" style="white-space:nowrap">+ Agregar</button>
+              </div>
+              <div class="card-body" id="cfg_comisiones" style="padding:0;max-height:220px;overflow-y:auto"></div>
+            </div>
+
+            <div class="section-card" style="margin:0">
+              <div class="card-hdr" style="background:rgba(0,229,160,0.04);border-bottom-color:rgba(0,229,160,0.12)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:16px">🛒</span>
+                  <div>
+                    <div class="card-title" style="color:var(--green)">Presupuesto · Proveedores</div>
+                    <div style="font-family:var(--font-mono);font-size:8px;color:var(--text3);margin-top:1px">Lista de proveedores del sistema</div>
+                  </div>
+                </div>
+                <button class="btn-secondary" onclick="openDropdownManager('proveedores')" style="white-space:nowrap">+ Agregar</button>
+              </div>
+              <div class="card-body" id="cfg_presupuesto_extra" style="padding:0;max-height:220px;overflow-y:auto"></div>
+            </div>
+
           </div>
         </div>
 
-        <!-- BANNER CONFIG -->
-        <div style="margin-top:20px">
-          <div class="page-title" style="font-size:18px;margin-bottom:4px">BANNER <span>DE AVISOS</span></div>
-          <div class="page-sub" style="margin-bottom:14px">// Mensajes que se muestran en el ticker superior al ingresar al sistema</div>
-          <div class="kpi-grid" style="grid-template-columns:1fr;gap:16px">
-            <div class="section-card" style="margin:0">
-              <div class="card-hdr">
-                <div class="card-title">// Mensajes del banner</div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <label class="fl" style="margin:0;white-space:nowrap">Activo</label>
-                  <input type="checkbox" id="bannerEnabled" onchange="saveBannerConfig()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal)">
-                  <button class="btn-secondary" onclick="openAddBanner()">+ Agregar aviso</button>
+        <!-- PANEL: BANNER -->
+        <div id="cfg-panel-banner" style="display:none">
+          <div class="section-card" style="margin:0;max-width:720px">
+            <div class="card-hdr">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:18px">📢</span>
+                <div>
+                  <div class="card-title">// Mensajes del ticker superior</div>
+                  <div style="font-family:var(--font-mono);font-size:8px;color:var(--text3);margin-top:2px">Se muestran al ingresar al sistema</div>
                 </div>
               </div>
-              <div class="card-body" id="bannerMsgList">
-                <div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:8px 0">Sin avisos configurados</div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <label class="fl" style="margin:0;white-space:nowrap;font-size:9px">Activo</label>
+                  <input type="checkbox" id="bannerEnabled" onchange="saveBannerConfig()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal)">
+                </div>
+                <button class="btn-secondary" onclick="openAddBanner()">+ Agregar aviso</button>
               </div>
+            </div>
+            <div class="card-body" id="bannerMsgList">
+              <div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:8px 0">Sin avisos configurados</div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -2217,6 +2301,14 @@ function rendTab(el, name){
   if(name==='reporte') renderRendReporte();
   if(name==='config') renderRendConfig();
   if(name==='registro') renderRendRegistro();
+}
+
+function cfgTab(el, name){
+  document.querySelectorAll('#cfg-tab-listas,#cfg-tab-banner').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ['listas','banner'].forEach(t=>{ const p=document.getElementById('cfg-panel-'+t); if(p) p.style.display='none'; });
+  const panel = document.getElementById('cfg-panel-'+name);
+  if(panel) panel.style.display='block';
 }
 
 function rendRptTab(el, mode){
