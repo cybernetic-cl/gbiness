@@ -154,13 +154,13 @@ input.fi-money{padding-left:58px!important;width:100%}
 /* TICKER BANNER */
 #tickerBanner,#tickerBanner2,#tickerBanner3{width:100%;background:rgba(0,212,170,0.1);border-bottom:1px solid rgba(0,212,170,0.3);overflow:hidden;display:none;height:30px;align-items:center}
 #tickerBanner.visible,#tickerBanner2.visible,#tickerBanner3.visible{display:flex}
-.ticker-prefix{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:#07080f;background:#00d4aa;padding:0 14px;height:30px;display:flex;align-items:center;flex-shrink:0;white-space:nowrap;font-weight:700}
+.ticker-prefix{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:#fff;background:var(--teal);padding:0 14px;height:30px;display:flex;align-items:center;flex-shrink:0;white-space:nowrap;font-weight:700}
 .ticker-track{overflow:hidden;flex:1;height:30px;position:relative}
 .ticker-slide{display:flex;align-items:center;height:30px;position:absolute;left:0;top:0;white-space:nowrap}
-.ticker-item{font-family:'Space Mono',monospace;font-size:10px;color:#e8eaf6;padding:0 48px;flex-shrink:0}
-.ticker-item::before{content:'● ';color:#00d4aa;font-size:7px;vertical-align:middle}
-.ticker-close{flex-shrink:0;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:0 14px;font-size:14px;height:30px;transition:color .15s}
-.ticker-close:hover{color:#00d4aa}
+.ticker-item{font-family:'Space Mono',monospace;font-size:10px;color:var(--text);padding:0 48px;flex-shrink:0}
+.ticker-item::before{content:'● ';color:var(--teal);font-size:7px;vertical-align:middle}
+.ticker-close{flex-shrink:0;background:none;border:none;color:var(--text3);cursor:pointer;padding:0 14px;font-size:14px;height:30px;transition:color .15s}
+.ticker-close:hover{color:var(--teal)}
 </style>
 </head>
 <body>
@@ -226,11 +226,7 @@ input.fi-money{padding-left:58px!important;width:100%}
     <div class="sidebar">
       <div class="nav-group">Módulos</div>
       <div class="nav-item active" onclick="goSec(this,'resumen')">◈ Resumen</div>
-      <div class="nav-item" onclick="goSec(this,'saldos')">🏦 Saldos</div>
-      <div class="nav-item" onclick="goSec(this,'bancos')">💳 Bancos y Servicios</div>
-      <div class="nav-item" onclick="goSec(this,'remuneraciones')">👥 Remuneraciones</div>
-      <div class="nav-item" onclick="goSec(this,'pendientes')">⏳ Pendientes</div>
-      <div class="nav-item" onclick="goSec(this,'comisiones')">💰 Comisiones</div>
+      <div class="nav-item" id="nav-cierre" onclick="goSec(this,'cierre')">📂 Cierre Mensual</div>
       <div class="nav-item" onclick="goSec(this,'historial')">📋 Historial de cierres</div>
       <div class="nav-group" style="margin-top:10px">Canales Digitales</div>
       <div class="nav-item" onclick="goSec(this,'rendimiento')">📈 Rendimiento</div>
@@ -358,80 +354,97 @@ input.fi-money{padding-left:58px!important;width:100%}
         </div>
       </div>
 
-      <!-- SALDOS -->
-      <div id="sec-saldos" style="display:none">
-        <div class="page-title">SALDOS <span>POR CUENTA</span></div>
-        <div class="page-sub">// Plataformas y cuentas bancarias por empresa</div>
-        <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Cuentas y plataformas</div><button class="btn-secondary" onclick="openAdd('saldos')">+ Agregar</button></div>
-          <div class="card-body">
-            <table class="tbl"><thead><tr><th>Cuenta</th><th>Empresa</th><th style="text-align:right">Liberado</th><th style="text-align:right">Pendiente</th><th style="text-align:right">Total</th><th></th></tr></thead>
-            <tbody id="saldosBody"></tbody></table>
-            <button class="btn-add" onclick="openAdd('saldos')">+ Agregar cuenta / plataforma</button>
+      <!-- CIERRE MENSUAL (tabs: Saldos, Bancos, Remuneraciones, Pendientes, Comisiones) -->
+      <div id="sec-cierre" style="display:none">
+        <div class="page-title">CIERRE <span>MENSUAL</span></div>
+        <div class="page-sub">// Registro de saldos, pagos, remuneraciones y comisiones del mes</div>
+
+        <!-- TABS -->
+        <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap" id="cierreTabBar">
+          <button class="ptab active" id="ctab-saldos"        onclick="cierreTab(this,'saldos')">🏦 Saldos</button>
+          <button class="ptab"        id="ctab-bancos"        onclick="cierreTab(this,'bancos')">💳 Bancos</button>
+          <button class="ptab"        id="ctab-remuneraciones" onclick="cierreTab(this,'remuneraciones')">👥 Remuneraciones</button>
+          <button class="ptab"        id="ctab-pendientes"    onclick="cierreTab(this,'pendientes')">⏳ Pendientes</button>
+          <button class="ptab"        id="ctab-comisiones"    onclick="cierreTab(this,'comisiones')">💰 Comisiones</button>
+        </div>
+
+        <!-- TAB: SALDOS -->
+        <div id="cierre-saldos">
+          <div class="page-sub" style="margin-bottom:14px">// Plataformas y cuentas bancarias por empresa</div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Cuentas y plataformas</div><button class="btn-secondary" onclick="openAdd('saldos')">+ Agregar</button></div>
+            <div class="card-body">
+              <table class="tbl"><thead><tr><th>Cuenta</th><th>Empresa</th><th style="text-align:right">Liberado</th><th style="text-align:right">Pendiente</th><th style="text-align:right">Total</th><th></th></tr></thead>
+              <tbody id="saldosBody"></tbody></table>
+              <button class="btn-add" onclick="openAdd('saldos')">+ Agregar cuenta / plataforma</button>
+            </div>
+          </div>
+          <div class="kpi-grid" id="saldosKpi"></div>
+        </div>
+
+        <!-- TAB: BANCOS -->
+        <div id="cierre-bancos" style="display:none">
+          <div class="page-sub" style="margin-bottom:14px">// Pagos bancarios, tarjetas y gastos fijos</div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Pagos del mes</div><button class="btn-secondary" onclick="openAdd('bancos')">+ Agregar</button></div>
+            <div class="card-body">
+              <table class="tbl"><thead><tr><th>Categoría</th><th>Descripción</th><th style="text-align:right">Negativo</th><th style="text-align:right">Positivo</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="bancosBody"></tbody></table>
+              <button class="btn-add" onclick="openAdd('bancos')">+ Agregar pago bancario</button>
+            </div>
+            <div class="total-bar"><span class="total-lbl">Total salida bancaria</span><span class="total-val" id="bancosTotal" style="color:var(--red)">$0</span></div>
           </div>
         </div>
-        <div class="kpi-grid" id="saldosKpi"></div>
+
+        <!-- TAB: REMUNERACIONES -->
+        <div id="cierre-remuneraciones" style="display:none">
+          <div class="page-sub" style="margin-bottom:14px">// Sueldos, bonos, Previred e impuestos</div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Detalle</div><button class="btn-secondary" onclick="openAdd('remuneraciones')">+ Agregar</button></div>
+            <div class="card-body">
+              <table class="tbl"><thead><tr><th>Categoría</th><th>Nombre / Descripción</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="remuBody"></tbody></table>
+              <button class="btn-add" onclick="openAdd('remuneraciones')">+ Agregar remuneración / impuesto</button>
+            </div>
+            <div class="total-bar"><span class="total-lbl">Total remuneraciones</span><span class="total-val" id="remuTotal" style="color:var(--red)">$0</span></div>
+          </div>
+        </div>
+
+        <!-- TAB: PENDIENTES -->
+        <div id="cierre-pendientes" style="display:none">
+          <div class="page-sub" style="margin-bottom:14px">// Operadores logísticos y cuentas por pagar</div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Pendientes del mes</div><button class="btn-secondary" onclick="openAdd('pendientes')">+ Agregar</button></div>
+            <div class="card-body">
+              <table class="tbl"><thead><tr><th>Categoría</th><th>Descripción</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="pendBody"></tbody></table>
+              <button class="btn-add" onclick="openAdd('pendientes')">+ Agregar pendiente</button>
+            </div>
+            <div class="total-bar"><span class="total-lbl">Total pendientes</span><span class="total-val" id="pendTotal" style="color:var(--amber)">$0</span></div>
+          </div>
+        </div>
+
+        <!-- TAB: COMISIONES -->
+        <div id="cierre-comisiones" style="display:none">
+          <div class="page-sub" style="margin-bottom:14px">// Comisiones externas y gastos publicitarios</div>
+          <div class="section-card">
+            <div class="card-hdr"><div class="card-title">// Detalle de comisiones</div><button class="btn-secondary" onclick="openAdd('comisiones')">+ Agregar</button></div>
+            <div class="card-body">
+              <table class="tbl"><thead><tr><th>Plataforma</th><th>Responsable</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="comBody"></tbody></table>
+              <button class="btn-add" onclick="openAdd('comisiones')">+ Agregar comisión / publicidad</button>
+            </div>
+            <div class="total-bar"><span class="total-lbl">Total comisiones</span><span class="total-val" id="comTotal" style="color:var(--red)">$0</span></div>
+          </div>
+        </div>
       </div>
 
-      <!-- BANCOS -->
-      <div id="sec-bancos" style="display:none">
-        <div class="page-title">BANCOS Y <span>SERVICIOS</span></div>
-        <div class="page-sub">// Pagos bancarios, tarjetas y gastos fijos</div>
-        <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Pagos del mes</div><button class="btn-secondary" onclick="openAdd('bancos')">+ Agregar</button></div>
-          <div class="card-body">
-            <table class="tbl"><thead><tr><th>Categoría</th><th>Descripción</th><th style="text-align:right">Negativo</th><th style="text-align:right">Positivo</th><th>Estado</th><th></th></tr></thead>
-            <tbody id="bancosBody"></tbody></table>
-            <button class="btn-add" onclick="openAdd('bancos')">+ Agregar pago bancario</button>
-          </div>
-          <div class="total-bar"><span class="total-lbl">Total salida bancaria</span><span class="total-val" id="bancosTotal" style="color:var(--red)">$0</span></div>
-        </div>
-      </div>
-
-      <!-- REMUNERACIONES -->
-      <div id="sec-remuneraciones" style="display:none">
-        <div class="page-title">REMUNERACIONES <span>E IMPUESTOS</span></div>
-        <div class="page-sub">// Sueldos, bonos, Previred e impuestos</div>
-        <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Detalle</div><button class="btn-secondary" onclick="openAdd('remuneraciones')">+ Agregar</button></div>
-          <div class="card-body">
-            <table class="tbl"><thead><tr><th>Categoría</th><th>Nombre / Descripción</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
-            <tbody id="remuBody"></tbody></table>
-            <button class="btn-add" onclick="openAdd('remuneraciones')">+ Agregar remuneración / impuesto</button>
-          </div>
-          <div class="total-bar"><span class="total-lbl">Total remuneraciones</span><span class="total-val" id="remuTotal" style="color:var(--red)">$0</span></div>
-        </div>
-      </div>
-
-      <!-- PENDIENTES -->
-      <div id="sec-pendientes" style="display:none">
-        <div class="page-title">PAGOS <span>PENDIENTES</span></div>
-        <div class="page-sub">// Operadores logísticos y cuentas por pagar</div>
-        <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Pendientes del mes</div><button class="btn-secondary" onclick="openAdd('pendientes')">+ Agregar</button></div>
-          <div class="card-body">
-            <table class="tbl"><thead><tr><th>Categoría</th><th>Descripción</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
-            <tbody id="pendBody"></tbody></table>
-            <button class="btn-add" onclick="openAdd('pendientes')">+ Agregar pendiente</button>
-          </div>
-          <div class="total-bar"><span class="total-lbl">Total pendientes</span><span class="total-val" id="pendTotal" style="color:var(--amber)">$0</span></div>
-        </div>
-      </div>
-
-      <!-- COMISIONES -->
-      <div id="sec-comisiones" style="display:none">
-        <div class="page-title">COMISIONES <span>Y PUBLICIDAD</span></div>
-        <div class="page-sub">// Comisiones externas y gastos publicitarios</div>
-        <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Detalle de comisiones</div><button class="btn-secondary" onclick="openAdd('comisiones')">+ Agregar</button></div>
-          <div class="card-body">
-            <table class="tbl"><thead><tr><th>Plataforma</th><th>Responsable</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
-            <tbody id="comBody"></tbody></table>
-            <button class="btn-add" onclick="openAdd('comisiones')">+ Agregar comisión / publicidad</button>
-          </div>
-          <div class="total-bar"><span class="total-lbl">Total comisiones</span><span class="total-val" id="comTotal" style="color:var(--red)">$0</span></div>
-        </div>
-      </div>
+      <!-- secciones legacy mantenidas ocultas para compatibilidad con renderSec -->
+      <div id="sec-saldos" style="display:none"></div>
+      <div id="sec-bancos" style="display:none"></div>
+      <div id="sec-remuneraciones" style="display:none"></div>
+      <div id="sec-pendientes" style="display:none"></div>
+      <div id="sec-comisiones" style="display:none"></div>
 
       <!-- RENDIMIENTO -->
       <div id="sec-rendimiento" style="display:none">
@@ -2054,6 +2067,15 @@ async function doNewMes(){
 
 // ── NAV ──
 function goSec(el,name){
+  // Si piden saldos/bancos/remuneraciones/pendientes/comisiones, redirigir a cierre con tab correspondiente
+  const cierreMap = {saldos:'saldos',bancos:'bancos',remuneraciones:'remuneraciones',pendientes:'pendientes',comisiones:'comisiones'};
+  if(cierreMap[name]){
+    goSec(document.getElementById('nav-cierre'), 'cierre');
+    const tabId = 'ctab-'+name;
+    const tabEl = document.getElementById(tabId);
+    if(tabEl) cierreTab(tabEl, name);
+    return;
+  }
   document.querySelectorAll('[id^="sec-"]').forEach(s=>s.style.display='none');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('sec-'+name).style.display='block'; el.classList.add('active');
@@ -2063,6 +2085,7 @@ function draw(){ renderSec(S.cur); }
 function renderSec(n){
   if(n==='resumen') renderResumen();
   else if(n==='presupuesto'){ renderEmpresaFilter(); renderPresupuesto(); }
+  else if(n==='cierre') { renderSaldos(); renderBancos(); renderRemu(); renderPend(); renderCom(); }
   else if(n==='saldos') renderSaldos();
   else if(n==='bancos') renderBancos();
   else if(n==='remuneraciones') renderRemu();
@@ -2073,6 +2096,15 @@ function renderSec(n){
   else if(n==='historial') renderHist();
   else if(n==='configuracion'){ renderDropdownConfigSec(); renderBannerConfig(); }
   else if(n==='rrhh') renderRRHH();
+}
+
+function cierreTab(el, name){
+  document.querySelectorAll('#cierreTabBar .ptab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ['saldos','bancos','remuneraciones','pendientes','comisiones'].forEach(t=>{
+    const p = document.getElementById('cierre-'+t);
+    if(p) p.style.display = (t===name) ? 'block' : 'none';
+  });
 }
 
 // ── HELPERS ──
@@ -2245,7 +2277,8 @@ function renderBancos(){
   const totalNeg=d.bancos.reduce((s,r)=>s+(r.negativo||0),0);
   const totalPos=d.bancos.reduce((s,r)=>s+(r.positivo||0),0);
   const neto=totalPos-totalNeg;
-  document.querySelector('#sec-bancos .total-lbl').textContent='Neto bancario';
+  const totalLbl = document.querySelector('#cierre-bancos .total-lbl') || document.querySelector('#sec-bancos .total-lbl');
+  if(totalLbl) totalLbl.textContent='Neto bancario';
   $('bancosTotal').textContent=fmt(neto);
   $('bancosTotal').style.color=neto>=0?'var(--green)':'var(--red)';
 }
