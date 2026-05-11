@@ -16,10 +16,27 @@
   --font-display:'Bebas Neue',sans-serif;
   --font-mono:'Space Mono',monospace;
   --font-body:'DM Sans',sans-serif;
+  --topbar-bg:rgba(7,8,15,0.95);
+  --sidebar-bg:var(--bg2);
+  --loader-bg:rgba(7,8,15,0.88);
 }
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh}
+/* LIGHT MODE */
+body.light-mode{
+  --bg:#f0f2f8;--bg2:#e4e7f0;--bg3:#dce0ec;--card:#ffffff;
+  --green:#00a372;--green-dim:rgba(0,163,114,0.08);
+  --blue:#2563eb;--amber:#d97706;--red:#dc2626;--teal:#0891b2;
+  --text:#1a1d2e;--text2:#4a5068;--text3:#8890aa;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --topbar-bg:rgba(240,242,248,0.97);
+  --sidebar-bg:#e4e7f0;
+  --loader-bg:rgba(240,242,248,0.88);
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;transition:background .25s,color .25s}
+/* THEME TOGGLE BTN */
+.btn-theme{font-family:var(--font-mono);font-size:13px;padding:6px 10px;background:none;border:1px solid var(--border2);color:var(--text2);cursor:pointer;border-radius:2px;transition:all .15s;line-height:1}
+.btn-theme:hover{border-color:var(--teal);color:var(--teal)}
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:100;background:rgba(7,8,15,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);padding:0 24px;display:flex;align-items:center;gap:12px;height:54px}
+.topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);padding:0 24px;display:flex;align-items:center;gap:12px;height:54px}
 .topbar-logo{font-family:var(--font-display);font-size:20px;letter-spacing:3px;color:var(--teal);flex-shrink:0}
 .month-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:7px 12px;font-family:var(--font-mono);font-size:12px;border-radius:2px;cursor:pointer;outline:none}
 .btn-primary{background:var(--teal);color:#000;border:none;padding:8px 16px;font-family:var(--font-display);font-size:15px;letter-spacing:1px;border-radius:2px;cursor:pointer}
@@ -29,7 +46,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .btn-logout:hover{border-color:var(--red);color:var(--red)}
 /* LAYOUT */
 .app-layout{display:flex;min-height:calc(100vh - 54px)}
-.sidebar{width:190px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);padding:10px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
+.sidebar{width:190px;flex-shrink:0;background:var(--sidebar-bg);border-right:1px solid var(--border);padding:10px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
 .nav-group{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);padding:14px 16px 5px;text-transform:uppercase}
 .nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border-left:2px solid transparent}
 .nav-item:hover{background:rgba(255,255,255,0.02);color:var(--text)}
@@ -194,6 +211,7 @@ input.fi-money{padding-left:58px!important;width:100%}
     <div class="topbar-logo">📊 GBISNESS</div>
     <select id="mesSel" class="month-select" onchange="onMesChange()"></select>
     <button class="btn-primary" onclick="openNewMes()">+ Nuevo Mes</button>
+    <button class="btn-theme" id="btnTheme" onclick="toggleTheme()" title="Cambiar tema">&#9789;</button>
     <button class="btn-logout" onclick="doLogout()">SALIR</button>
   </div>
   <div id="tickerBanner">
@@ -438,9 +456,12 @@ input.fi-money{padding-left:58px!important;width:100%}
               <select id="rend-filter-emp" class="fi" style="width:180px" onchange="renderRendRegistro()">
                 <option value="">Todas las empresas</option>
               </select>
-              <select id="rend-filter-plat" class="fi" style="width:180px" onchange="renderRendRegistro()">
-                <option value="">Todas las plataformas</option>
-              </select>
+              <div style="display:flex;align-items:center;gap:0">
+                <select id="rend-filter-plat" class="fi" style="width:180px;border-radius:2px 0 0 2px;border-right:none" onchange="renderRendRegistro()">
+                  <option value="">Todas las plataformas</option>
+                </select>
+                <button onclick="addRendPlataformaInline()" title="Agregar nueva plataforma" style="background:var(--teal);border:none;color:#000;font-size:16px;font-weight:700;padding:0 10px;height:34px;cursor:pointer;border-radius:0 2px 2px 0;line-height:1;font-family:var(--font-mono)">+</button>
+              </div>
             </div>
             <button class="btn-primary" onclick="openAddVenta()">+ Registrar Venta</button>
           </div>
@@ -533,7 +554,10 @@ input.fi-money{padding-left:58px!important;width:100%}
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <select id="rendf-filter-emp" class="fi" style="width:180px" onchange="renderRendFRegistro()"><option value="">Todas las empresas</option></select>
-                <select id="rendf-filter-plat" class="fi" style="width:180px" onchange="renderRendFRegistro()"><option value="">Todas las plataformas</option></select>
+                <div style="display:flex;align-items:center;gap:0">
+                  <select id="rendf-filter-plat" class="fi" style="width:180px;border-radius:2px 0 0 2px;border-right:none" onchange="renderRendFRegistro()"><option value="">Todas las plataformas</option></select>
+                  <button onclick="addRendFPlataformaInline()" title="Agregar nueva plataforma FULL" style="background:var(--teal);border:none;color:#000;font-size:16px;font-weight:700;padding:0 10px;height:34px;cursor:pointer;border-radius:0 2px 2px 0;line-height:1;font-family:var(--font-mono)">+</button>
+                </div>
               </div>
               <button class="btn-primary" onclick="openAddVentaF()">+ Registrar Venta FULL</button>
             </div>
@@ -2481,6 +2505,22 @@ async function addRendPlataforma(){
   saveRendConfig().then(()=>{ renderRendConfig(); populateRendFilters(); showToast('Plataforma agregada'); });
 }
 
+async function addRendPlataformaInline(){
+  const nombre = await dlgPrompt('Nueva Plataforma','Nombre de la nueva plataforma:','','Ej: TikTok Shop');
+  if(!nombre || !nombre.trim()) return;
+  const n = nombre.trim().toUpperCase();
+  if(rendConfig.plataformas.includes(n)){ showToast('Plataforma ya existe',true); return; }
+  rendConfig.plataformas.push(n);
+  saveRendConfig().then(()=>{
+    renderRendConfig();
+    populateRendFilters();
+    // Seleccionar la nueva plataforma en el filtro
+    const sel = document.getElementById('rend-filter-plat');
+    if(sel) sel.value = n;
+    showToast('Plataforma "'+n+'" agregada');
+  });
+}
+
 async function delRendPlataforma(idx){
   if(!await dlgConfirm('¿Eliminar esta plataforma?','Eliminar','danger')) return;
   rendConfig.plataformas.splice(idx,1);
@@ -2777,6 +2817,17 @@ async function addRendFPlataforma(){
   const nu=n.trim().toUpperCase(); if(rendFCfg.plataformas.includes(nu)){ showToast('Ya existe',true); return; }
   rendFCfg.plataformas.push(nu);
   saveRendConfig().then(function(){ renderRendFConfig(); populateRendFFilters(); showToast('Plataforma agregada'); });
+}
+async function addRendFPlataformaInline(){
+  const n=await dlgPrompt('Nueva Plataforma FULL','Nombre de la nueva plataforma:','','Ej: TikTok Shop'); if(!n||!n.trim()) return;
+  const nu=n.trim().toUpperCase(); if(rendFCfg.plataformas.includes(nu)){ showToast('Ya existe',true); return; }
+  rendFCfg.plataformas.push(nu);
+  saveRendConfig().then(function(){
+    renderRendFConfig(); populateRendFFilters();
+    const sel=document.getElementById('rendf-filter-plat');
+    if(sel) sel.value=nu;
+    showToast('Plataforma "'+nu+'" agregada');
+  });
 }
 async function delRendFPlataforma(idx){ if(!await dlgConfirm('¿Eliminar este elemento?','Eliminar','danger')) return; rendFCfg.plataformas.splice(idx,1); await saveRendConfig(); renderRendFConfig(); populateRendFFilters(); showToast('Eliminada'); }
 function openAddVentaF(){
@@ -6948,9 +6999,30 @@ function rendCanalTab(canal) {
   }
 }
 // ═══════════════════════════════════════════════════════════
+// ══  THEME TOGGLE  ══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+function toggleTheme(){
+  const isLight = document.body.classList.toggle('light-mode');
+  const btn = document.getElementById('btnTheme');
+  if(btn) btn.textContent = isLight ? '\u2600' : '\u263D';
+  try{ localStorage.setItem('gbisness_theme', isLight ? 'light' : 'dark'); }catch(e){}
+}
+function applyTheme(){
+  try{
+    const saved = localStorage.getItem('gbisness_theme');
+    if(saved === 'light'){
+      document.body.classList.add('light-mode');
+      const btn = document.getElementById('btnTheme');
+      if(btn) btn.textContent = '\u2600';
+    }
+  }catch(e){}
+}
+// Apply theme on load
+applyTheme();
+// ═══════════════════════════════════════════════════════════
 function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; if(id==='catOverlay'){ editCtx=null; dynamicSelectTarget=null; } }
 function showLoader(v){
-  let el=$('_ldr'); if(!el&&v){ el=Object.assign(document.createElement('div'),{id:'_ldr'}); el.style.cssText='position:fixed;inset:0;background:rgba(7,8,15,0.88);display:flex;align-items:center;justify-content:center;z-index:9998;font-family:var(--font-mono);font-size:11px;color:var(--teal);letter-spacing:2px'; el.textContent='CARGANDO...'; document.body.appendChild(el); }
+  let el=$('_ldr'); if(!el&&v){ el=Object.assign(document.createElement('div'),{id:'_ldr'}); el.style.cssText='position:fixed;inset:0;background:var(--loader-bg);display:flex;align-items:center;justify-content:center;z-index:9998;font-family:var(--font-mono);font-size:11px;color:var(--teal);letter-spacing:2px'; el.textContent='CARGANDO...'; document.body.appendChild(el); }
   if(el) el.style.display=v?'flex':'none';
 }
 function showToast(msg,err=false){
