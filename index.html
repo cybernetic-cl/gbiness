@@ -6183,15 +6183,6 @@ function generarCertificado(t, v) {
   </div>
 </div>
 <script>window.print();<\/script>
-
-<!-- COMPRA DETAIL OVERLAY -->
-<div class="overlay" id="compraDetailOverlay">
-  <div class="modal" style="max-width:440px">
-    <button class="close-btn" onclick="closeOv('compraDetailOverlay')">✕</button>
-    <div class="modal-title">Detalle de Compra</div>
-    <div id="compraDetailBody" style="margin-top:16px"></div>
-  </div>
-</div>
 </body></html>`;
 
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
@@ -7210,5 +7201,14 @@ function openCompraDetail(cx) {
 }
 
 </script>
+
+<!-- COMPRA DETAIL OVERLAY -->
+<div class="overlay" id="compraDetailOverlay">
+  <div class="modal" style="max-width:440px">
+    <button class="close-btn" onclick="closeOv('compraDetailOverlay')">&#x2715;</button>
+    <div class="modal-title">Detalle de Compra</div>
+    <div id="compraDetailBody" style="margin-top:16px"></div>
+  </div>
+</div>
 </body>
 </html>
