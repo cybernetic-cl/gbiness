@@ -3575,6 +3575,7 @@ function renderCompras2() {
     <td style="font-size:12px;color:var(--text2)">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
     <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt(c.monto)}</td>
     <td style="display:flex;gap:4px;align-items:center">
+      <button class="btn-del btn-detail2" title="Ver detalle" data-cid="${c.id}" style="color:var(--blue);font-size:13px">👁</button>
       ${c.foto ? `<button class="btn-del btn-foto" title="Ver foto" data-cid="${c.id}" style="color:var(--teal);font-size:13px">🖼</button>` : ''}
       <button class="btn-del" onclick="delCompra2('${c.id}')">✕</button>
     </td>
@@ -3585,6 +3586,14 @@ function renderCompras2() {
       const cid=btn.dataset.cid;
       const cx=(getMesCompras()||[]).find(x=>x.id===cid);
       if(cx&&cx.foto) openFotoViewer(cx.foto, cx.fotoName||'comprobante.jpg');
+    });
+  });
+  // attach detail handlers
+  body.querySelectorAll('.btn-detail2').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cid=btn.dataset.cid;
+      const cx=(getMesCompras()||[]).find(x=>x.id===cid);
+      if(cx) openCompraDetail(cx);
     });
   });
 }
