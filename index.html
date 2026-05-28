@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GBisness — Cybernetic SpA</title>
-<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -1937,7 +1936,7 @@ function normalizeDropdownObject(src={}){
   const out = {};
   Object.keys(DEFAULT_CATS).forEach(k=>{
     const arr = Array.isArray(src[k]) ? src[k] : DEFAULT_CATS[k];
-    out[k] = [...new Set(arr.map(v=>String(v||'').trim().toUpperCase()).filter(Boolean))];
+    out[k] = [...new Set(arr.map(v=>String(v||'').trim()).filter(Boolean))];
   });
   return out;
 }
@@ -3146,6 +3145,7 @@ function renderCompras() {
     <td style="font-size:12px;color:var(--text2)">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
     <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt(c.monto)}</td>
     <td style="display:flex;gap:4px;align-items:center">
+      <button class="btn-del btn-detail1" title="Ver detalle" data-cid="${c.id}" style="color:var(--blue);font-size:13px">👁</button>
       ${c.foto ? `<button class="btn-del btn-foto1" title="Ver foto" data-cid="${c.id}" style="color:var(--teal);font-size:13px">🖼</button>` : ''}
       <button class="btn-del" onclick="delCompra(${getMesCompras().indexOf(c)})">✕</button>
     </td>
@@ -3156,6 +3156,14 @@ function renderCompras() {
       const cid=btn.dataset.cid;
       const cx=(getMesCompras()||[]).find(x=>x.id===cid);
       if(cx&&cx.foto) openFotoViewer(cx.foto, cx.fotoName||'comprobante.jpg');
+    });
+  });
+  // attach detail handlers for table 1
+  body.querySelectorAll('.btn-detail1').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cid=btn.dataset.cid;
+      const cx=(getMesCompras()||[]).find(x=>x.id===cid);
+      if(cx) openCompraDetail(cx);
     });
   });
 }
@@ -3301,15 +3309,15 @@ async function persistDropdownType(type){
   renderDropdownConfigSec();
 }
 async function saveCatItem() {
-  const val = $('catInput').value.trim().toUpperCase();
+  const val = $('catInput').value.trim();
   if (!val) return;
   const arr = getConfigArrayRef(catCtx);
   if (editCtx && editCtx.type==='cat' && editCtx.listType===catCtx) {
-    const duplicate = arr.findIndex((x,i)=>x===val && i!==editCtx.idx);
+    const duplicate = arr.findIndex((x,i)=>x.toLowerCase()===val.toLowerCase() && i!==editCtx.idx);
     if (duplicate !== -1) { showToast('Ese valor ya existe', true); return; }
     arr[editCtx.idx] = val;
   } else {
-    if (arr.includes(val)) { showToast('Ese valor ya existe', true); return; }
+    if (arr.some(x=>x.toLowerCase()===val.toLowerCase())) { showToast('Ese valor ya existe', true); return; }
     arr.push(val);
   }
   await persistDropdownType(catCtx);
@@ -6166,6 +6174,15 @@ function generarCertificado(t, v) {
   </div>
 </div>
 <script>window.print();<\/script>
+
+<!-- COMPRA DETAIL OVERLAY -->
+<div class="overlay" id="compraDetailOverlay">
+  <div class="modal" style="max-width:440px">
+    <button class="close-btn" onclick="closeOv('compraDetailOverlay')">✕</button>
+    <div class="modal-title">Detalle de Compra</div>
+    <div id="compraDetailBody" style="margin-top:16px"></div>
+  </div>
+</div>
 </body></html>`;
 
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
@@ -7157,6 +7174,32 @@ function showToast(msg,err=false){
   setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); },2800);
 }
 document.addEventListener('click',e=>{ ['addOverlay','newMesOv','compraOverlay','catOverlay','ventaOverlay','ventaFOverlay','bannerOverlay','vaccOverlay','rrhhOverlay'].forEach(id=>{if(e.target.id===id)closeOv(id);}); });
+
+function openCompraDetail(cx) {
+  const fmt2 = v => v ? '$ ' + Number(v).toLocaleString('es-CL') : '—';
+  const row = (label, val) => val ? `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase">${label}</span><span style="font-size:13px;color:var(--text);text-align:right;max-width:60%">${val}</span></div>` : '';
+  let html = '';
+  html += row('Fecha', cx.fecha || '—');
+  html += row('Empresa', cx.empresa || '—');
+  html += row('Proveedor', cx.proveedor || '—');
+  html += row('Responsable', cx.responsable || '—');
+  html += row('Monto', fmt2(cx.monto));
+  html += row('Tipo de pago', cx.tipoPago || '—');
+  if (cx.banco) html += row('Banco', cx.banco);
+  if (cx.desc) html += row('Descripción', cx.desc);
+  if (cx.foto) {
+    const fotoName = cx.fotoName || 'comprobante.jpg';
+    html += '<div style="margin-top:14px"><div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Comprobante</div><img src="' + cx.foto + '" style="max-width:100%;border-radius:6px;cursor:pointer" id="detailFotoImg"></div>';
+  }
+  $('compraDetailBody').innerHTML = html;
+  if (cx.foto) {
+    const fotoName = cx.fotoName || 'comprobante.jpg';
+    const img = document.getElementById('detailFotoImg');
+    if (img) img.addEventListener('click', () => openFotoViewer(cx.foto, fotoName));
+  }
+  $('compraDetailOverlay').classList.add('open');
+}
+
 </script>
 </body>
 </html>
