@@ -2059,13 +2059,14 @@ input.fi-money{padding-left:58px!important;width:100%}
       <div class="fw" style="grid-column:1/-1">
         <label class="fl">Estado de Pago</label>
         <div style="display:flex;gap:10px;margin-top:4px">
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--green);padding:7px 14px;border:1px solid rgba(0,229,160,0.3);border-radius:2px;flex:1;justify-content:center;transition:background .15s" id="label-pagado">
-            <input type="radio" name="c_estado" id="c_estado_pagado" value="pagado" style="accent-color:var(--green)" onchange="updateEstadoLabels()"> ✓ PAGADO
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--font-mono);font-size:11px;padding:8px 14px;border:1px solid rgba(0,229,160,0.3);border-radius:2px;flex:1;justify-content:center;transition:all .15s;user-select:none" id="label-pagado" onclick="setEstadoModal('pagado')">
+            <span id="icon-pagado" style="font-size:13px">✓</span> PAGADO
           </label>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--amber);padding:7px 14px;border:1px solid rgba(245,166,35,0.3);border-radius:2px;flex:1;justify-content:center;transition:background .15s" id="label-pendiente">
-            <input type="radio" name="c_estado" id="c_estado_pendiente" value="pendiente" style="accent-color:var(--amber)" onchange="updateEstadoLabels()"> ⏳ PENDIENTE
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--font-mono);font-size:11px;padding:8px 14px;border:1px solid rgba(245,166,35,0.3);border-radius:2px;flex:1;justify-content:center;transition:all .15s;user-select:none" id="label-pendiente" onclick="setEstadoModal('pendiente')">
+            <span style="font-size:13px">⏳</span> PENDIENTE
           </label>
         </div>
+        <input type="hidden" id="c_estado_val" value="pagado">
       </div>
       <div class="fw" style="grid-column:1/-1">
         <label class="fl">Foto / Comprobante (opcional)</label>
@@ -4013,20 +4014,31 @@ function openAddCompra() {
   $('c_fecha').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
   $('c_desc').value = '';
   $('c_monto').value = '';
-  // Default estado = pagado
-  const rPag = $('c_estado_pagado'); if(rPag){ rPag.checked=true; updateEstadoLabels(); }
+  setEstadoModal('pagado');
   populateCompraSelects();
   toggleBanco();
   clearFoto();
   $('compraOverlay').classList.add('open');
 }
 
-function updateEstadoLabels() {
+function setEstadoModal(val) {
+  const hidden = $('c_estado_val'); if(hidden) hidden.value = val;
   const lp=$('label-pagado'); const lpe=$('label-pendiente');
-  const isPag=($('c_estado_pagado')||{}).checked;
-  if(lp) lp.style.background=isPag?'rgba(0,229,160,0.12)':'transparent';
-  if(lpe) lpe.style.background=!isPag?'rgba(245,166,35,0.12)':'transparent';
+  if(lp){
+    lp.style.background = val==='pagado' ? 'rgba(0,229,160,0.15)' : 'transparent';
+    lp.style.color = val==='pagado' ? 'var(--green)' : 'var(--text3)';
+    lp.style.borderColor = val==='pagado' ? 'rgba(0,229,160,0.6)' : 'rgba(0,229,160,0.2)';
+    lp.style.fontWeight = val==='pagado' ? '700' : '400';
+  }
+  if(lpe){
+    lpe.style.background = val==='pendiente' ? 'rgba(245,166,35,0.15)' : 'transparent';
+    lpe.style.color = val==='pendiente' ? 'var(--amber)' : 'var(--text3)';
+    lpe.style.borderColor = val==='pendiente' ? 'rgba(245,166,35,0.6)' : 'rgba(245,166,35,0.2)';
+    lpe.style.fontWeight = val==='pendiente' ? '700' : '400';
+  }
 }
+
+function updateEstadoLabels() { /* legacy no-op */ }
 
 async function saveCompra() {
   const empresa  = ($('c_empresa')||{value:''}).value;
@@ -4035,8 +4047,7 @@ async function saveCompra() {
   const tipoPago = ($('c_tipopago')||{value:''}).value;
   if (!empresa||!proveedor||!monto||!tipoPago) { showToast('Completa todos los campos requeridos',true); return; }
   const fecha = ($('c_fecha')||{value:''}).value;
-  const estadoEl = document.querySelector('input[name="c_estado"]:checked');
-  const estado = estadoEl ? estadoEl.value : 'pagado';
+  const estado = ($('c_estado_val')||{value:'pagado'}).value || 'pagado';
   const compra = {
     id: 'c_'+Date.now(),
     fecha, empresa, proveedor, monto, tipoPago, estado,
@@ -4282,9 +4293,12 @@ function renderCompras2() {
   if(!list.length){body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin compras registradas</td></tr>';return;}
   body.innerHTML=list.map(c=>{
     const isPag = (c.estado||'pagado')==='pagado';
-    const estadoBadge = isPag
-      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:9px;padding:2px 8px;border-radius:2px;background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.3);cursor:pointer" onclick="toggleEstadoCompra('${c.id}')" title="Clic para cambiar">✓ PAGADO</span>`
-      : `<span style="display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:9px;padding:2px 8px;border-radius:2px;background:rgba(245,166,35,0.12);color:var(--amber);border:1px solid rgba(245,166,35,0.3);cursor:pointer" onclick="toggleEstadoCompra('${c.id}')" title="Clic para cambiar">⏳ PENDIENTE</span>`;
+    const estadoBadge = `<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none" title="${isPag?'Marcar como pendiente':'Marcar como pagado'}">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;border:2px solid ${isPag?'var(--green)':'rgba(245,166,35,0.6)'};background:${isPag?'var(--green)':'transparent'};flex-shrink:0;transition:all .15s" onclick="toggleEstadoCompra('${c.id}')">
+        ${isPag?'<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+      </span>
+      <span onclick="toggleEstadoCompra('${c.id}')" style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.5px;color:${isPag?'var(--green)':'var(--amber)'};">${isPag?'PAGADO':'PENDIENTE'}</span>
+    </label>`;
     return `<tr>
     <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'—'}</td>
     <td style="color:var(--text)">${c.proveedor||'—'}${excedeSet.has(c.id)?'<span class="etiqueta-excede">EXCEDE</span>':''}</td>
@@ -4409,7 +4423,9 @@ function renderReporte2() {
           <table class="tbl"><thead><tr><th>Fecha</th><th>Proveedor</th><th>Responsable</th><th>Tipo Pago</th><th>Estado</th><th style="text-align:right">Monto</th><th></th></tr></thead>
           <tbody>${d.items.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).map(c=>{
             const isPag=(c.estado||'pagado')==='pagado';
-            const eb=isPag?`<span style="font-family:var(--font-mono);font-size:9px;padding:2px 7px;border-radius:2px;background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.3)">✓ PAGADO</span>`:`<span style="font-family:var(--font-mono);font-size:9px;padding:2px 7px;border-radius:2px;background:rgba(245,166,35,0.12);color:var(--amber);border:1px solid rgba(245,166,35,0.3)">⏳ PENDIENTE</span>`;
+            const eb=isPag
+              ?`<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9px;color:var(--green)"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;border:2px solid var(--green);background:var(--green)"><svg width="8" height="7" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>PAGADO</span>`
+              :`<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9px;color:var(--amber)"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;border:2px solid rgba(245,166,35,0.6);background:transparent"></span>PENDIENTE</span>`;
             return `<tr>
             <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'—'}</td>
             <td>${c.proveedor||'—'}</td>
