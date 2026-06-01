@@ -1619,6 +1619,7 @@ input.fi-money{padding-left:58px!important;width:100%}
   <div class="topbar">
     <div class="topbar-logo">🎯 GBISNESS · PRESUPUESTO</div>
     <select id="mesSel2" class="month-select" onchange="onMesPres()"></select>
+    <button class="btn-secondary" onclick="openNuevoMes()" style="font-size:11px;padding:6px 12px;border-color:rgba(0,212,170,0.4);color:var(--teal)">+ Nuevo Mes</button>
     <button class="btn-logout" onclick="doLogout()">SALIR</button>
   </div>
   <div id="tickerBanner2">
@@ -1656,7 +1657,7 @@ input.fi-money{padding-left:58px!important;width:100%}
           <div class="card-hdr"><div class="card-title">// Registro de compras</div></div>
           <div class="card-body">
             <table class="tbl">
-              <thead><tr><th>Fecha</th><th>Proveedor</th><th>Responsable</th><th>Empresa</th><th>Tipo Pago</th><th style="text-align:right">Monto</th><th></th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Proveedor</th><th>Responsable</th><th>Empresa</th><th>Tipo Pago</th><th>Estado</th><th style="text-align:right">Monto</th><th></th></tr></thead>
               <tbody id="comprasBody2"></tbody>
             </table>
           </div>
@@ -2056,6 +2057,17 @@ input.fi-money{padding-left:58px!important;width:100%}
       <div class="fw" style="grid-column:1/-1"><label class="fl">Descripción (opcional)</label>
         <input type="text" id="c_desc" class="fi" placeholder="Detalle de la compra..."></div>
       <div class="fw" style="grid-column:1/-1">
+        <label class="fl">Estado de Pago</label>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--green);padding:7px 14px;border:1px solid rgba(0,229,160,0.3);border-radius:2px;flex:1;justify-content:center;transition:background .15s" id="label-pagado">
+            <input type="radio" name="c_estado" id="c_estado_pagado" value="pagado" style="accent-color:var(--green)" onchange="updateEstadoLabels()"> ✓ PAGADO
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--amber);padding:7px 14px;border:1px solid rgba(245,166,35,0.3);border-radius:2px;flex:1;justify-content:center;transition:background .15s" id="label-pendiente">
+            <input type="radio" name="c_estado" id="c_estado_pendiente" value="pendiente" style="accent-color:var(--amber)" onchange="updateEstadoLabels()"> ⏳ PENDIENTE
+          </label>
+        </div>
+      </div>
+      <div class="fw" style="grid-column:1/-1">
         <label class="fl">Foto / Comprobante (opcional)</label>
         <div id="c_foto_wrap" style="border:1px dashed rgba(0,212,170,0.3);border-radius:2px;padding:10px;text-align:center;cursor:pointer;transition:background .2s;background:rgba(0,212,170,0.03)" onclick="document.getElementById('c_foto_input').click()" ondragover="event.preventDefault();this.style.background='rgba(0,212,170,0.08)'" ondragleave="this.style.background='rgba(0,212,170,0.03)'" ondrop="handleFotoDrop(event)">
           <input type="file" id="c_foto_input" accept="image/*" style="display:none" onchange="handleFotoSelect(this)">
@@ -2074,6 +2086,28 @@ input.fi-money{padding-left:58px!important;width:100%}
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeOv('compraOverlay')">Cancelar</button>
       <button class="btn-primary" onclick="saveCompra()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO MES -->
+<div class="overlay" id="nuevoMesOverlay">
+  <div class="modal" style="max-width:340px">
+    <button class="close-btn" onclick="closeOv('nuevoMesOverlay')">✕</button>
+    <div class="modal-title">Nuevo Mes</div>
+    <div class="modal-sub">Abre un nuevo período de presupuesto</div>
+    <div class="fw">
+      <label class="fl">Año</label>
+      <select id="nm_year" class="fi"></select>
+    </div>
+    <div class="fw">
+      <label class="fl">Mes</label>
+      <select id="nm_month" class="fi"></select>
+    </div>
+    <div id="nm_warning" style="display:none;background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);border-radius:2px;padding:9px 12px;font-family:var(--font-mono);font-size:10px;color:var(--amber);margin-bottom:10px"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeOv('nuevoMesOverlay')">Cancelar</button>
+      <button class="btn-primary" onclick="saveNuevoMes()">Abrir Mes</button>
     </div>
   </div>
 </div>
@@ -3979,10 +4013,19 @@ function openAddCompra() {
   $('c_fecha').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
   $('c_desc').value = '';
   $('c_monto').value = '';
+  // Default estado = pagado
+  const rPag = $('c_estado_pagado'); if(rPag){ rPag.checked=true; updateEstadoLabels(); }
   populateCompraSelects();
   toggleBanco();
   clearFoto();
   $('compraOverlay').classList.add('open');
+}
+
+function updateEstadoLabels() {
+  const lp=$('label-pagado'); const lpe=$('label-pendiente');
+  const isPag=($('c_estado_pagado')||{}).checked;
+  if(lp) lp.style.background=isPag?'rgba(0,229,160,0.12)':'transparent';
+  if(lpe) lpe.style.background=!isPag?'rgba(245,166,35,0.12)':'transparent';
 }
 
 async function saveCompra() {
@@ -3991,18 +4034,29 @@ async function saveCompra() {
   const monto    = clpVal('c_monto');
   const tipoPago = ($('c_tipopago')||{value:''}).value;
   if (!empresa||!proveedor||!monto||!tipoPago) { showToast('Completa todos los campos requeridos',true); return; }
+  const fecha = ($('c_fecha')||{value:''}).value;
+  const estadoEl = document.querySelector('input[name="c_estado"]:checked');
+  const estado = estadoEl ? estadoEl.value : 'pagado';
   const compra = {
     id: 'c_'+Date.now(),
-    fecha:    ($('c_fecha')||{value:''}).value,
-    empresa, proveedor, monto, tipoPago,
+    fecha, empresa, proveedor, monto, tipoPago, estado,
     banco:    tipoPago==='Transferencia' ? ($('c_banco')||{value:''}).value : '',
     desc:     ($('c_desc')||{value:''}).value
   };
-  if (!presState.compras[S.mes]) presState.compras[S.mes] = [];
-  presState.compras[S.mes].unshift(compra);
-  await savePresCompras();
+  // Detect if the purchase belongs to a different month than currently selected
+  const compMes = fecha ? fecha.substring(0,7) : S.mes;
+  if (!presState.compras[compMes]) presState.compras[compMes] = [];
+  presState.compras[compMes].unshift(compra);
+  // Auto-switch to the purchase's month and rebuild selector
+  if (compMes !== S.mes) {
+    S.mes = compMes;
+    buildMesSel2();
+    const sel2=$('mesSel2'); if(sel2) sel2.value=compMes;
+    setPresLabel();
+  }
+  if (window.fbSavePres) await window.fbSavePres(compMes, { _id:compMes, compras: presState.compras[compMes] }).catch(e=>console.error(e));
   closeOv('compraOverlay');
-  renderPresupuesto();
+  renderPresupuestoApp();
   showToast('Compra registrada');
 }
 
@@ -4073,6 +4127,49 @@ function onMesPres() {
   S.mes = $('mesSel2').value;
   setPresLabel();
   renderPresupuestoApp();
+}
+
+function openNuevoMes() {
+  const yearSel = $('nm_year'); const monSel = $('nm_month');
+  if(!yearSel||!monSel) return;
+  const now = new Date();
+  yearSel.innerHTML='';
+  for(let y=now.getFullYear()+1; y>=2020; y--){const o=document.createElement('option');o.value=y;o.textContent=y;yearSel.appendChild(o);}
+  yearSel.value = now.getFullYear();
+  monSel.innerHTML='';
+  const mNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  mNames.forEach((m,i)=>{const o=document.createElement('option');o.value=String(i+1).padStart(2,'0');o.textContent=m;monSel.appendChild(o);});
+  monSel.value=String(now.getMonth()+1).padStart(2,'0');
+  checkNuevoMesWarning();
+  yearSel.addEventListener('change', checkNuevoMesWarning);
+  monSel.addEventListener('change', checkNuevoMesWarning);
+  $('nuevoMesOverlay').classList.add('open');
+}
+
+function checkNuevoMesWarning() {
+  const y=$('nm_year').value; const m=$('nm_month').value;
+  const id=`${y}-${m}`;
+  const w=$('nm_warning');
+  if(!w) return;
+  if(presState.compras[id]){
+    w.style.display='block';
+    w.textContent=`⚠ Este mes ya existe con ${presState.compras[id].length} compra(s). Se abrirá igualmente.`;
+  } else { w.style.display='none'; }
+}
+
+async function saveNuevoMes() {
+  const y=$('nm_year').value; const m=$('nm_month').value;
+  const id=`${y}-${m}`;
+  if(!presState.compras[id]) presState.compras[id]=[];
+  S.mes=id;
+  buildMesSel2();
+  const sel2=$('mesSel2'); if(sel2) sel2.value=id;
+  setPresLabel();
+  if(window.fbSavePres) await window.fbSavePres(id,{_id:id,compras:presState.compras[id]}).catch(e=>console.error(e));
+  closeOv('nuevoMesOverlay');
+  renderPresupuestoApp();
+  const mNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  showToast(`Mes ${mNames[+m-1]} ${y} abierto`);
 }
 
 function setPresLabel() {
@@ -4182,20 +4279,26 @@ function renderCompras2() {
     }
   });
 
-  if(!list.length){body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin compras registradas</td></tr>';return;}
-  body.innerHTML=list.map(c=>`<tr>
+  if(!list.length){body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin compras registradas</td></tr>';return;}
+  body.innerHTML=list.map(c=>{
+    const isPag = (c.estado||'pagado')==='pagado';
+    const estadoBadge = isPag
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:9px;padding:2px 8px;border-radius:2px;background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.3);cursor:pointer" onclick="toggleEstadoCompra('${c.id}')" title="Clic para cambiar">✓ PAGADO</span>`
+      : `<span style="display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:9px;padding:2px 8px;border-radius:2px;background:rgba(245,166,35,0.12);color:var(--amber);border:1px solid rgba(245,166,35,0.3);cursor:pointer" onclick="toggleEstadoCompra('${c.id}')" title="Clic para cambiar">⏳ PENDIENTE</span>`;
+    return `<tr>
     <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'—'}</td>
     <td style="color:var(--text)">${c.proveedor||'—'}${excedeSet.has(c.id)?'<span class="etiqueta-excede">EXCEDE</span>':''}</td>
     <td style="color:var(--text2);font-size:12px">${c.responsable||'—'}</td>
     <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${c.empresa||'—'}</span></td>
     <td style="font-size:12px;color:var(--text2)">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
+    <td>${estadoBadge}</td>
     <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt(c.monto)}</td>
     <td style="display:flex;gap:4px;align-items:center">
       <button class="btn-del btn-detail2" title="Ver detalle" data-cid="${c.id}" style="color:var(--blue);font-size:13px">👁</button>
       ${c.foto ? `<button class="btn-del btn-foto" title="Ver foto" data-cid="${c.id}" style="color:var(--teal);font-size:13px">🖼</button>` : ''}
       <button class="btn-del" onclick="delCompra2('${c.id}')">✕</button>
     </td>
-  </tr>`).join('');
+  </tr>`;}).join('');
   // attach foto viewer handlers
   body.querySelectorAll('.btn-foto').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -4220,6 +4323,16 @@ async function delCompra2(id) {
   await savePresCompras();
   renderPresupuestoApp();
   showToast('Eliminado');
+}
+
+async function toggleEstadoCompra(id) {
+  const compras = presState.compras[S.mes]; if(!compras) return;
+  const c = compras.find(x=>x.id===id); if(!c) return;
+  c.estado = (c.estado||'pagado')==='pagado' ? 'pendiente' : 'pagado';
+  await savePresCompras();
+  renderCompras2();
+  renderReporte2();
+  showToast(c.estado==='pagado'?'Marcado como pagado':'Marcado como pendiente');
 }
 
 function renderPresConfig2() {
@@ -4266,6 +4379,8 @@ function renderReporte2() {
   });
   const tG=Object.values(byEmp).reduce((s,v)=>s+v.gastado,0);
   const tP=Object.values(byEmp).reduce((s,v)=>s+v.pres,0);
+  const tPendiente=compras.filter(c=>(c.estado||'pagado')==='pendiente').reduce((s,c)=>s+(c.monto||0),0);
+  const tPagado=compras.filter(c=>(c.estado||'pagado')==='pagado').reduce((s,c)=>s+(c.monto||0),0);
   const gPres=cfg.presupuesto_global||0;
   const gExtra=gPres>0?`<div class="kpi-card ${tG>gPres?'cred':'cteal'}" style="grid-column:1/-1">
     <div class="kpi-label">⬡ Presupuesto Global</div>
@@ -4278,6 +4393,8 @@ function renderReporte2() {
       <div class="kpi-card cteal"><div class="kpi-label">Presupuesto Total (suma empresas)</div><div class="kpi-val" style="color:var(--teal)">${fmt(tP)}</div></div>
       <div class="kpi-card cred"><div class="kpi-label">Total Gastado</div><div class="kpi-val" style="color:var(--red)">${fmt(tG)}</div></div>
       <div class="kpi-card ${tG>tP?'cred':'cgreen'}"><div class="kpi-label">Disponible (por empresa)</div><div class="kpi-val" style="color:${tG>tP?'var(--red)':'var(--green)'}">${fmt(tP-tG)}</div></div>
+      <div class="kpi-card cgreen"><div class="kpi-label">✓ Pagado</div><div class="kpi-val" style="color:var(--green)">${fmt(tPagado)}</div></div>
+      <div class="kpi-card camber"><div class="kpi-label">⏳ Pendiente</div><div class="kpi-val" style="color:var(--amber)">${fmt(tPendiente)}</div></div>
     </div>
     ${EMPS_PRES.map(emp=>{
       const d=byEmp[emp];
@@ -4289,15 +4406,19 @@ function renderReporte2() {
           </div>
         </div>
         <div class="card-body">
-          <table class="tbl"><thead><tr><th>Fecha</th><th>Proveedor</th><th>Responsable</th><th>Tipo Pago</th><th style="text-align:right">Monto</th><th></th></tr></thead>
-          <tbody>${d.items.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).map(c=>`<tr>
+          <table class="tbl"><thead><tr><th>Fecha</th><th>Proveedor</th><th>Responsable</th><th>Tipo Pago</th><th>Estado</th><th style="text-align:right">Monto</th><th></th></tr></thead>
+          <tbody>${d.items.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).map(c=>{
+            const isPag=(c.estado||'pagado')==='pagado';
+            const eb=isPag?`<span style="font-family:var(--font-mono);font-size:9px;padding:2px 7px;border-radius:2px;background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.3)">✓ PAGADO</span>`:`<span style="font-family:var(--font-mono);font-size:9px;padding:2px 7px;border-radius:2px;background:rgba(245,166,35,0.12);color:var(--amber);border:1px solid rgba(245,166,35,0.3)">⏳ PENDIENTE</span>`;
+            return `<tr>
             <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${c.fecha||'—'}</td>
             <td>${c.proveedor||'—'}</td>
             <td style="color:var(--text2);font-size:12px">${c.responsable||'—'}</td>
             <td style="color:var(--text2);font-size:12px">${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
+            <td>${eb}</td>
             <td style="text-align:right;color:var(--red);font-family:var(--font-mono)">${fmt(c.monto)}</td>
             <td><button class="btn-del" onclick="delCompra2('${c.id}')">✕</button></td>
-          </tr>`).join('')}</tbody></table>
+          </tr>`;}).join('')}</tbody></table>
           <div style="text-align:right;padding:10px 0 0;border-top:1px solid var(--border);font-family:var(--font-display);font-size:15px;color:var(--red)">Total: ${fmt(d.gastado)}</div>
         </div>
       </div>`;
