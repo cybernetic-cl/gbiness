@@ -793,6 +793,11 @@ input.fi-money{padding-left:58px!important;width:100%}
         <div class="module-name">Calculadora</div>
         <div class="module-sub" style="color:#0a6640;font-weight:600;margin-top:2px">Ganancias</div>
       </div>
+      <div id="mod-proveedores" class="module-card" onclick="selectModule('proveedores')" style="border-color:rgba(0,229,160,0.3)">
+        <div class="module-icon">🧪</div>
+        <div class="module-name">Proveedores</div>
+        <div class="module-sub" style="color:var(--teal);font-weight:600;margin-top:2px">Catálogo &amp; OC</div>
+      </div>
     </div>
 
     <div class="login-card">
@@ -2560,7 +2565,7 @@ function selectModule(mod) {
   activeModule = mod;
   document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
   document.getElementById('mod-'+mod).classList.add('active');
-  const labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual', rrhh:'// Gestión RRHH', analyzer:'// MercadoLibre Analyzer', calc:'// Calculadora de Ganancias' };
+  const labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual', rrhh:'// Gestión RRHH', analyzer:'// MercadoLibre Analyzer', calc:'// Calculadora de Ganancias', proveedores:'// Catálogo & Órdenes de Compra' };
   document.getElementById('login-module-label').textContent = labels[mod];
   document.getElementById('loginError').style.display = 'none';
   document.getElementById('loginPass').value = '';
@@ -2606,7 +2611,7 @@ const S = { mes:null, data:{}, cur:'resumen', ctx:null };
 async function sha(s){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
 function doLogin(){
   sha(document.getElementById('loginPass').value).then(h=>{
-    const expectedHash = activeModule==='cierre' ? HASH_CIERRE : activeModule==='presupuesto' ? HASH_PRES : activeModule==='rrhh' ? HASH_CIERRE : activeModule==='analyzer' ? HASH_ANALYZER : activeModule==='calc' ? HASH_CALC : HASH_ANUAL;
+    const expectedHash = activeModule==='cierre' ? HASH_CIERRE : activeModule==='presupuesto' ? HASH_PRES : activeModule==='rrhh' ? HASH_CIERRE : activeModule==='analyzer' ? HASH_ANALYZER : activeModule==='calc' ? HASH_CALC : activeModule==='proveedores' ? HASH_CALC : HASH_ANUAL;
     if(h===expectedHash){
       document.getElementById('loginScreen').style.display='none';
       document.getElementById('app').style.display='none';
@@ -2627,6 +2632,9 @@ function doLogin(){
       } else if(activeModule==='analyzer') {
         document.getElementById('app-analyzer').style.display='block';
         bootAnalyzer();
+      } else if(activeModule==='proveedores') {
+        document.getElementById('app-proveedores').style.display='block';
+        bootProveedores();
       } else {
         document.getElementById('app-anual').style.display='block';
         bootAnnual();
@@ -2644,6 +2652,7 @@ function doLogout(){
   if(document.getElementById('app-rrhh')) document.getElementById('app-rrhh').style.display='none';
   if(document.getElementById('app-calc')) document.getElementById('app-calc').style.display='none';
   if(document.getElementById('app-analyzer')) document.getElementById('app-analyzer').style.display='none';
+  if(document.getElementById('app-proveedores')) document.getElementById('app-proveedores').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('loginPass').value='';
 }
@@ -9404,5 +9413,1321 @@ function cgAddProduct() {
     </div>
   </div>
 </div>
+<!-- ══════════════════════════════════════════════════════════════
+     APP — PROVEEDORES · CATÁLOGO · ÓRDENES DE COMPRA v2
+     Integrado en GBisness — Cybernetic SpA
+     454 productos · Holchem · Navarro & Cia · Pochteca
+══════════════════════════════════════════════════════════════ -->
+<style>
+#app-proveedores{min-height:100vh;background:var(--bg);display:none}
+#app-proveedores .pv-topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);padding:0 22px;display:flex;align-items:center;gap:10px;height:54px}
+#app-proveedores .pv-logo{font-family:var(--font-display);font-size:20px;letter-spacing:3px;color:var(--teal)}
+#app-proveedores .pv-layout{display:flex;min-height:calc(100vh - 54px)}
+#app-proveedores .pv-sidebar{width:190px;flex-shrink:0;background:var(--sidebar-bg);border-right:1px solid var(--border);padding:10px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
+#app-proveedores .pv-main{flex:1;padding:22px 26px;overflow-x:auto;min-width:0}
+#app-proveedores .pv-nav-group{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);padding:14px 16px 5px;text-transform:uppercase}
+#app-proveedores .pv-nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border-left:2px solid transparent}
+#app-proveedores .pv-nav-item:hover{background:rgba(255,255,255,0.02);color:var(--text)}
+#app-proveedores .pv-nav-item.active{background:var(--green-dim);color:var(--teal);border-left-color:var(--teal)}
+#app-proveedores .pv-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+#app-proveedores .pv-kpi{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:14px 16px;position:relative;overflow:hidden}
+#app-proveedores .pv-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+#app-proveedores .pv-kpi.ct::before{background:var(--teal)}
+#app-proveedores .pv-kpi.cg::before{background:var(--green)}
+#app-proveedores .pv-kpi.ca::before{background:var(--amber)}
+#app-proveedores .pv-kpi.cr::before{background:var(--blue)}
+#app-proveedores .pv-kpi.cp::before{background:#a064ff}
+#app-proveedores .pv-kpi-lbl{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px}
+#app-proveedores .pv-kpi-val{font-family:var(--font-display);font-size:24px;letter-spacing:1px;line-height:1}
+#app-proveedores .pv-kpi-sub{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:4px}
+#app-proveedores .pv-section{background:var(--card);border:1px solid var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden}
+#app-proveedores .pv-sec-hdr{padding:11px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+#app-proveedores .pv-sec-title{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase}
+#app-proveedores .pv-tbl{width:100%;border-collapse:collapse}
+#app-proveedores .pv-tbl th{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+#app-proveedores .pv-tbl td{padding:7px 10px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
+#app-proveedores .pv-tbl tr:last-child td{border-bottom:none}
+#app-proveedores .pv-tbl tr:hover td{background:rgba(255,255,255,0.015);cursor:pointer}
+#app-proveedores .pv-badge{display:inline-block;font-family:var(--font-mono);font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px;letter-spacing:1px;white-space:nowrap}
+#app-proveedores .badge-hol{background:rgba(91,79,207,0.2);color:#a090ff;border:1px solid rgba(91,79,207,0.3)}
+#app-proveedores .badge-nav{background:rgba(0,114,188,0.2);color:#60b0ff;border:1px solid rgba(0,114,188,0.3)}
+#app-proveedores .badge-poc{background:rgba(196,89,17,0.2);color:#f09060;border:1px solid rgba(196,89,17,0.3)}
+#app-proveedores .uso-com{background:rgba(0,180,100,0.18);color:#00c87a;border:1px solid rgba(0,180,100,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
+#app-proveedores .uso-fab{background:rgba(74,158,255,0.18);color:var(--blue);border:1px solid rgba(74,158,255,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
+#app-proveedores .uso-inf{background:rgba(255,71,87,0.18);color:var(--red);border:1px solid rgba(255,71,87,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
+#app-proveedores .uso-rev{background:rgba(245,166,35,0.18);color:var(--amber);border:1px solid rgba(245,166,35,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
+#app-proveedores .pv-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 18px;border-bottom:1px solid var(--border)}
+#app-proveedores .pv-fi{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:7px 11px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;transition:border-color .2s}
+#app-proveedores .pv-fi:focus{border-color:var(--teal)}
+#app-proveedores .pv-search-wrap{position:relative;flex:1;min-width:200px}
+#app-proveedores .pv-search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none}
+#app-proveedores .pv-search{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:7px 11px 7px 32px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none}
+#app-proveedores .pv-search:focus{border-color:var(--teal)}
+#app-proveedores .pv-btn{padding:7px 14px;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;border-radius:2px;cursor:pointer;transition:all .15s}
+#app-proveedores .pv-btn-teal{background:var(--teal);color:#000;border:none}
+#app-proveedores .pv-btn-teal:hover{opacity:.85}
+#app-proveedores .pv-btn-sec{background:none;border:1px solid var(--border2);color:var(--text2)}
+#app-proveedores .pv-btn-sec:hover{border-color:var(--teal);color:var(--teal)}
+#app-proveedores .pv-btn-amber{background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);color:var(--amber)}
+#app-proveedores .pv-btn-amber:hover{background:rgba(245,166,35,0.18)}
+#app-proveedores .oc-draft{background:rgba(160,168,200,0.15);color:var(--text3);border:1px solid rgba(160,168,200,0.25)}
+#app-proveedores .oc-sent{background:rgba(74,158,255,0.15);color:var(--blue);border:1px solid rgba(74,158,255,0.25)}
+#app-proveedores .oc-confirmed{background:rgba(0,229,160,0.15);color:var(--green);border:1px solid rgba(0,229,160,0.25)}
+#app-proveedores .oc-received{background:rgba(0,212,170,0.15);color:var(--teal);border:1px solid rgba(0,212,170,0.25)}
+#app-proveedores .oc-cancelled{background:rgba(255,71,87,0.15);color:var(--red);border:1px solid rgba(255,71,87,0.25)}
+#pv-oc-modal{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
+#pv-oc-modal.open{display:flex}
+#pv-oc-modal .pv-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;width:100%;max-width:820px;overflow:hidden}
+#pv-oc-modal .pv-modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+#pv-oc-modal .pv-modal-title{font-family:var(--font-display);font-size:18px;letter-spacing:2px}
+#pv-oc-modal .pv-modal-body{padding:20px;max-height:70vh;overflow-y:auto}
+#pv-edit-modal{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px}
+#pv-edit-modal.open{display:flex}
+#pv-edit-modal .pv-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;width:100%;max-width:560px;overflow:hidden;max-height:90vh;overflow-y:auto}
+@media print{body>*:not(#pv-print-area){display:none!important}#pv-print-area{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999;padding:24px}}
+#pv-print-area{display:none}
+#app-proveedores .pv-prov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;padding:16px 18px}
+#app-proveedores .pv-prov-card{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:14px 16px;position:relative;transition:all .15s}
+#app-proveedores .pv-prov-card:hover{border-color:var(--teal)}
+#app-proveedores .pv-prov-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .15s}
+#app-proveedores .pv-prov-card:hover::before{opacity:1}
+#app-proveedores .pv-prov-card.hol::before{background:#a090ff}
+#app-proveedores .pv-prov-card.nav::before{background:#60b0ff}
+#app-proveedores .pv-prov-card.poc::before{background:#f09060}
+#app-proveedores .pv-prov-name{font-family:var(--font-display);font-size:15px;letter-spacing:1px;margin-bottom:3px}
+#app-proveedores .pv-prov-contact{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:8px}
+#app-proveedores .pv-prov-stats{display:flex;gap:14px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+#app-proveedores .pv-prov-stat{font-family:var(--font-mono);font-size:9px;color:var(--text3)}
+#app-proveedores .pv-prov-stat b{color:var(--text);display:block;font-size:14px;font-family:var(--font-display);letter-spacing:1px}
+#app-proveedores .oc-item-row{display:grid;grid-template-columns:1fr 80px 110px 28px;gap:8px;align-items:center;margin-bottom:6px}
+#app-proveedores .oc-item-row input,#app-proveedores .oc-item-row select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 9px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;width:100%}
+#app-proveedores .oc-item-row input:focus,#app-proveedores .oc-item-row select:focus{border-color:var(--teal)}
+#app-proveedores .pv-page-title{font-family:var(--font-display);font-size:26px;letter-spacing:2px;margin-bottom:2px}
+#app-proveedores .pv-page-title span{color:var(--teal)}
+#app-proveedores .pv-page-sub{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:18px}
+#app-proveedores .oc-num{font-family:var(--font-mono);font-size:11px;color:var(--teal)}
+#app-proveedores .precio-val{font-family:var(--font-mono);font-size:11px;color:var(--green)}
+#app-proveedores .precio-vacio{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+/* Pills filtro uso */
+#app-proveedores .uso-pill{padding:4px 10px;border-radius:2px;border:1px solid var(--border2);background:none;font-family:var(--font-mono);font-size:9px;cursor:pointer;color:var(--text3);letter-spacing:.5px;transition:all .1s}
+#app-proveedores .uso-pill.on{color:#000!important;border-color:transparent}
+#app-proveedores .uso-pill.on-com{background:#00c87a}
+#app-proveedores .uso-pill.on-fab{background:var(--blue)}
+#app-proveedores .uso-pill.on-inf{background:var(--red)}
+#app-proveedores .uso-pill.on-rev{background:var(--amber)}
+#app-proveedores .uso-pill.on-all{background:var(--teal)}
+/* Price input inline */
+#app-proveedores .pv-price-inp{background:var(--bg3);border:1px solid var(--border2);color:var(--green);padding:3px 7px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;width:90px;text-align:right}
+#app-proveedores .pv-price-inp:focus{border-color:var(--teal)}
+</style>
+
+<!-- ══ APP PROVEEDORES ══ -->
+<div id="app-proveedores" style="display:none">
+  <div class="pv-topbar">
+    <div class="pv-logo">GBISNESS</div>
+    <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3)">// PROVEEDORES &amp; CATÁLOGO QUÍMICOS</span>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <button class="btn-theme" onclick="toggleTheme()">☽</button>
+      <button class="btn-logout" onclick="pvLogout()">← SALIR</button>
+    </div>
+  </div>
+
+  <div class="pv-layout">
+    <div class="pv-sidebar">
+      <div class="pv-nav-group">// CATÁLOGO</div>
+      <div class="pv-nav-item active" id="pvnav-catalogo"   onclick="pvNav(this,'catalogo')">🧪 Catálogo</div>
+      <div class="pv-nav-group">// GESTIÓN</div>
+      <div class="pv-nav-item"        id="pvnav-proveedores" onclick="pvNav(this,'proveedores')">🏢 Proveedores</div>
+      <div class="pv-nav-item"        id="pvnav-ordenes"    onclick="pvNav(this,'ordenes')">📋 Órdenes de Compra</div>
+      <div class="pv-nav-item"        id="pvnav-nueva-oc"   onclick="pvNav(this,'nueva-oc')">＋ Nueva OC</div>
+    </div>
+
+    <div class="pv-main">
+
+      <!-- ── CATÁLOGO ── -->
+      <div id="pvsec-catalogo">
+        <div class="pv-page-title">Catálogo <span>Químicos</span></div>
+        <div class="pv-page-sub" id="pv-cat-sub">CARGANDO...</div>
+        <div class="pv-kpi-grid" id="pv-kpis"></div>
+        <div class="pv-section">
+          <div class="pv-filters">
+            <div class="pv-search-wrap">
+              <span class="pv-search-ico">⌕</span>
+              <input type="text" class="pv-search" id="pv-cat-q" placeholder="Buscar producto, código, categoría…" oninput="pvRenderCatalogo()">
+            </div>
+            <select class="pv-fi" id="pv-cat-prov" onchange="pvRenderCatalogo()">
+              <option value="">Todos los proveedores</option>
+              <option value="holchem">Holchem</option>
+              <option value="navarro">Navarro & Cia</option>
+              <option value="pochteca">Pochteca</option>
+              <option value="ambos">Holchem + Navarro</option>
+            </select>
+            <select class="pv-fi" id="pv-cat-cat" onchange="pvRenderCatalogo()"><option value="">Todas las categorías</option></select>
+            <div style="display:flex;gap:5px;flex-wrap:wrap" id="pv-uso-pills">
+              <button class="uso-pill on on-all" data-u="all" onclick="pvUsoPill(this,'all')">Todos</button>
+              <button class="uso-pill" data-u="Comercialización" onclick="pvUsoPill(this,'Comercialización')">Comerc.</button>
+              <button class="uso-pill" data-u="Fabricación" onclick="pvUsoPill(this,'Fabricación')">Fabric.</button>
+              <button class="uso-pill" data-u="Por Revisar" onclick="pvUsoPill(this,'Por Revisar')">Por Revisar</button>
+              <button class="uso-pill" data-u="Infactible" onclick="pvUsoPill(this,'Infactible')">Infactible</button>
+            </div>
+            <button class="pv-btn pv-btn-teal" onclick="pvExportCatalogo()">↓ XLS</button>
+            <button class="pv-btn pv-btn-sec" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">＋ Nueva OC</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="pv-tbl">
+              <thead><tr>
+                <th>Código</th><th>Nombre</th><th>Categoría</th>
+                <th>UM</th><th>Presentación</th><th>Proveedores</th>
+                <th>P. S/IVA</th><th>P. C/IVA</th><th></th>
+              </tr></thead>
+              <tbody id="pv-cat-body"></tbody>
+            </table>
+          </div>
+          <div style="padding:8px 18px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)" id="pv-cat-info">—</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">Clic en precio para editar · Clic en fila para agregar a OC</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROVEEDORES ── -->
+      <div id="pvsec-proveedores" style="display:none">
+        <div class="pv-page-title">Gestión <span>Proveedores</span></div>
+        <div class="pv-page-sub">DIRECTORIO · 3 PROVEEDORES ACTIVOS</div>
+        <div class="pv-prov-grid" id="pv-prov-grid"></div>
+      </div>
+
+      <!-- ── ÓRDENES ── -->
+      <div id="pvsec-ordenes" style="display:none">
+        <div class="pv-page-title">Órdenes <span>De Compra</span></div>
+        <div class="pv-page-sub">HISTORIAL COMPLETO</div>
+        <div class="pv-kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+          <div class="pv-kpi ct"><div class="pv-kpi-lbl">Total OC</div><div class="pv-kpi-val" id="kpi-oc-total">0</div></div>
+          <div class="pv-kpi cg"><div class="pv-kpi-lbl">Recibidas</div><div class="pv-kpi-val" id="kpi-oc-rec">0</div></div>
+          <div class="pv-kpi ca"><div class="pv-kpi-lbl">Enviadas</div><div class="pv-kpi-val" id="kpi-oc-sent">0</div></div>
+          <div class="pv-kpi cr"><div class="pv-kpi-lbl">En Proceso</div><div class="pv-kpi-val" id="kpi-oc-pend">0</div></div>
+        </div>
+        <div class="pv-section">
+          <div class="pv-filters">
+            <div class="pv-search-wrap"><span class="pv-search-ico">⌕</span><input type="text" class="pv-search" id="pv-oc-q" placeholder="Buscar OC…" oninput="pvRenderOrdenes()"></div>
+            <select class="pv-fi" id="pv-oc-status" onchange="pvRenderOrdenes()">
+              <option value="">Todos los estados</option>
+              <option value="borrador">Borrador</option><option value="enviada">Enviada</option>
+              <option value="confirmada">Confirmada</option><option value="recibida">Recibida</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+            <select class="pv-fi" id="pv-oc-prov-f" onchange="pvRenderOrdenes()"><option value="">Todos los proveedores</option></select>
+            <button class="pv-btn pv-btn-teal" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">＋ Nueva OC</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="pv-tbl">
+              <thead><tr><th>N° OC</th><th>Proveedor</th><th>Fecha</th><th>Items</th><th>Total S/IVA</th><th>Total C/IVA</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="pv-oc-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NUEVA OC ── -->
+      <div id="pvsec-nueva-oc" style="display:none">
+        <div class="pv-page-title">Nueva <span>Orden De Compra</span></div>
+        <div class="pv-page-sub">CREAR OC · PRODUCTOS DEL CATÁLOGO</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div class="pv-section">
+            <div class="pv-sec-hdr"><span class="pv-sec-title">Datos OC</span></div>
+            <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+              <div><label style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);display:block;margin-bottom:4px">PROVEEDOR *</label>
+                <select class="pv-fi" id="oc-prov-sel" style="width:100%" onchange="pvOCProvChange()"><option value="">Seleccionar…</option></select></div>
+              <div><label style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);display:block;margin-bottom:4px">FECHA *</label>
+                <input type="date" class="pv-fi" id="oc-fecha" style="width:100%"></div>
+              <div><label style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);display:block;margin-bottom:4px">NOTAS</label>
+                <textarea class="pv-fi" id="oc-notas" rows="3" style="width:100%;resize:vertical" placeholder="Condiciones especiales, urgencia…"></textarea></div>
+            </div>
+          </div>
+          <div class="pv-section">
+            <div class="pv-sec-hdr"><span class="pv-sec-title">Buscar Producto</span></div>
+            <div style="padding:12px">
+              <div class="pv-search-wrap" style="margin-bottom:10px">
+                <span class="pv-search-ico">⌕</span>
+                <input type="text" class="pv-search" id="oc-prod-q" placeholder="Buscar en catálogo…" oninput="pvOCSearchProds()" style="width:100%">
+              </div>
+              <div id="oc-prod-results" style="max-height:210px;overflow-y:auto;border:1px solid var(--border);border-radius:2px"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pv-section">
+          <div class="pv-sec-hdr">
+            <span class="pv-sec-title">Items De La Orden</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)" id="oc-items-count">0 items</span>
+          </div>
+          <div style="padding:14px">
+            <div style="display:grid;grid-template-columns:1fr 80px 110px 28px;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:8px">
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">PRODUCTO</span>
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">CANTIDAD</span>
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">PRECIO S/IVA</span>
+              <span></span>
+            </div>
+            <div id="oc-items-list"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border);margin-top:8px;flex-wrap:wrap;gap:10px">
+              <div>
+                <div style="display:flex;gap:24px">
+                  <div><span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">NETO</span>
+                    <span style="font-family:var(--font-display);font-size:20px;letter-spacing:1px;margin-left:8px;color:var(--teal)" id="oc-total-neto">$ 0</span></div>
+                  <div><span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">C/IVA</span>
+                    <span style="font-family:var(--font-display);font-size:20px;letter-spacing:1px;margin-left:8px;color:var(--green)" id="oc-total-civa">$ 0</span></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="pv-btn pv-btn-sec" onclick="pvSaveOC('borrador')">💾 Borrador</button>
+                <button class="pv-btn pv-btn-amber" onclick="pvSaveOC('enviada')">📧 Enviar</button>
+                <button class="pv-btn pv-btn-teal" onclick="pvPreviewOC()">🖨 PDF Preview</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /pv-main -->
+  </div><!-- /pv-layout -->
+</div><!-- /app-proveedores -->
+
+<!-- OC DETAIL MODAL -->
+<div id="pv-oc-modal">
+  <div class="pv-modal-box">
+    <div class="pv-modal-hdr">
+      <div class="pv-modal-title" id="pv-oc-modal-title">Orden De Compra</div>
+      <div style="display:flex;gap:8px">
+        <button class="pv-btn pv-btn-teal" onclick="pvPrintOC()">🖨 PDF</button>
+        <button style="background:none;border:none;color:var(--text3);font-size:17px;cursor:pointer;padding:4px 8px" onclick="document.getElementById('pv-oc-modal').classList.remove('open')">✕</button>
+      </div>
+    </div>
+    <div class="pv-modal-body" id="pv-oc-modal-body"></div>
+  </div>
+</div>
+
+<!-- EDIT PRODUCT MODAL -->
+<div id="pv-edit-modal">
+  <div class="pv-modal-box">
+    <div class="pv-modal-hdr" style="background:var(--bg2)">
+      <div class="pv-modal-title">Editar Producto</div>
+      <button style="background:none;border:none;color:var(--text3);font-size:17px;cursor:pointer;line-height:1;padding:4px 8px" onclick="document.getElementById('pv-edit-modal').classList.remove('open')">✕</button>
+    </div>
+    <div style="padding:20px;background:var(--bg2)">
+      <input type="hidden" id="edit-cod">
+      <div style="margin-bottom:14px">
+        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Nombre</div>
+        <input class="pv-fi" id="edit-nombre" style="width:100%">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Precio S/IVA (CLP)</div>
+          <input class="pv-fi" id="edit-precio" type="number" style="width:100%;color:var(--green)" placeholder="0">
+        </div>
+        <div>
+          <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Uso</div>
+          <select class="pv-fi" id="edit-uso" style="width:100%">
+            <option value="Comercialización">Comercialización</option>
+            <option value="Fabricación">Fabricación</option>
+            <option value="Por Revisar">Por Revisar</option>
+            <option value="Infactible">Infactible</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:18px">
+        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Presentación</div>
+        <input class="pv-fi" id="edit-pres" style="width:100%">
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="pv-btn pv-btn-sec" onclick="document.getElementById('pv-edit-modal').classList.remove('open')">Cancelar</button>
+        <button class="pv-btn pv-btn-teal" onclick="pvSaveEdit()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT AREA -->
+<div id="pv-print-area"></div>
+
+<script>
+const PV_DATA = (function(){
+const PROVEEDORES = [
+  { id:'holchem', nombre:'Holchem S.A.', contacto:'Carmen Jiménez', tel:'+56 9 9825 5389', email:'holchem@holchem.cl', direccion:'—', condPago:'A convenir', cls:'hol' },
+  { id:'navarro', nombre:'Navarro \u0026 Cia', contacto:'Nicolás S', tel:'+56 9 7450 2022', email:'navarroycia.cl', direccion:'Av. Salvador Allende 73, San Joaquín', condPago:'A convenir', cls:'nav' },
+  { id:'pochteca', nombre:'Pochteca Chile', contacto:'—', tel:'+56 2 XXXX XXXX', email:'pochtecachile.cl', direccion:'—', condPago:'A convenir', cls:'poc' },
+];
+
+// cod, nombre, cat, um, pres, provs, uso, precio, fuente
+const RAW = [
+['QM-001','Acetato De Sodio F.G.','Conservantes','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-002','Ácido Ascórbico F.G.','Ácidos Orgánicos','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-003','Ácido Cítrico Anhidro / Mono F.G.','Ácidos Orgánicos','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',1053,'Fact. 19-00083787'],
+['QM-004','Ácido Acético 90% / 99%','Ácidos Orgánicos','L','Bidón 30 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-005','Ácido Bórico','Ácidos Inorgánicos','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',1215,'Fact. 19-00083787'],
+['QM-006','Ácido Clorhídrico 32%','Ácidos Inorgánicos','L','Tambor 200 L',['holchem'],'Por Revisar',null,''],
+['QM-007','Ácido Láctico','Ácidos Orgánicos','kg','Bidón 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-008','Ácido Fórmico 85%','Ácidos Orgánicos','L','Bidón 25 L',['holchem'],'Por Revisar',null,''],
+['QM-009','Ácido Fosfórico 85% F.G.','Ácidos Inorgánicos','kg','Bidón 35 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-010','Ácido Fosforoso','Ácidos Inorgánicos','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-011','Ácido Nítrico 42°','Ácidos Inorgánicos','L','Tambor 200 L',['holchem'],'Por Revisar',null,''],
+['QM-012','Ácido Oleico','Ácidos Orgánicos','kg','Tambor 200 kg',['holchem'],'Por Revisar',null,''],
+['QM-013','Ácido Oxálico','Ácidos Orgánicos','kg','Saco 25 kg',['holchem'],'Comercialización',null,''],
+['QM-014','Ácido Sulfámico','Ácidos Inorgánicos','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-015','Ácido Sulfónico','Ácidos Orgánicos','kg','Tambor 200 kg',['holchem'],'Comercialización',3753,'Fact. 19-00083788'],
+['QM-016','Ácido Sulfúrico 98%','Ácidos Inorgánicos','L','Tambor 220 L',['holchem'],'Por Revisar',null,''],
+['QM-017','Ácido Dodecilbenceno Sulfónico (LABSA)','Ácidos Orgánicos','kg','Tambor 215 kg / Tineta 20 kg',['navarro'],'Por Revisar',null,''],
+['QM-018','Ácido Málico','Ácidos Orgánicos','kg','Saco 25 kg',['navarro'],'Comercialización',null,''],
+['QM-019','Ácido Peracético 15% / Maxisan','Desinfectantes','—','Varios formatos',['navarro'],'Por Revisar',null,''],
+['QM-020','Ácido Tartárico','Ácidos Orgánicos','kg','Saco 25 kg',['navarro'],'Por Revisar',null,''],
+['QM-021','Agua Oxigenada 50%','Oxidantes','kg','Tambor 300 kg / IBC',['holchem','navarro'],'Por Revisar',null,''],
+['QM-022','Percarbonato De Sodio','Oxidantes','kg','Saco 25 kg',['holchem'],'Comercialización',null,''],
+['QM-023','Permanganato De Potasio','Oxidantes','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-024','Alcohol Desnaturalizado 96%','Solventes','L','Tambor 200 L',['holchem'],'Comercialización',null,''],
+['QM-025','Isopropanol','Solventes','L','Tambor 200 L',['holchem'],'Comercialización',1854,'Fact. 19-00083787'],
+['QM-026','Butilglicol','Solventes','L','Tambor 185 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-027','Glicerina Vegetal 99%','Solventes','kg','Tambor 250 kg / Tineta 20 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-028','Propilenglicol','Solventes','kg','Tambor 215 kg',['holchem','navarro'],'Comercialización',1755,'Fact. 19-00083787'],
+['QM-029','Polietilenglicol','Solventes','kg','Tambor 200 kg',['holchem'],'Por Revisar',null,''],
+['QM-030','Sorbitol 70%','Solventes','kg','Tambor 275 kg / 280 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-031','Monoetilenglicol','Solventes','L','Tambor 220 L',['holchem'],'Por Revisar',null,''],
+['QM-032','Amoniaco','Bases / Álcalis','L','Tambor 200 L',['holchem'],'Por Revisar',null,''],
+['QM-033','Ceniza Soda Liviana','Bases / Álcalis','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',499,'Cot. Navarro 120.130'],
+['QM-034','Ceniza Soda Pesada','Bases / Álcalis','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-035','Potasa Cáustica','Bases / Álcalis','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-036','Soda Cáustica Escamas','Bases / Álcalis','kg','Saco 25 kg / Caja 25 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-037','Soda Cáustica Perlas','Bases / Álcalis','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-038','Soda Cáustica Líquida (Alkalin Plus)','Bases / Álcalis','kg','Tambor 300 kg / Varios',['holchem','navarro'],'Por Revisar',null,''],
+['QM-039','Bicarbonato De Sodio F.G.','Bases / Álcalis','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',378,'Fact. 19-00083787'],
+['QM-040','Bicarbonato De Amonio F.G.','Bases / Álcalis','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-041','Carbonato De Calcio','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Comercialización',null,''],
+['QM-042','Carbonato De Potasio','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-043','Dietanolamida De Coco','Surfactantes','kg','Tambor 200 kg',['holchem','navarro'],'Comercialización',2871,'Fact. 19-00083788'],
+['QM-044','Betaína','Surfactantes','kg','Tambor 200 kg / Tineta 20 kg',['holchem','navarro'],'Comercialización',1485,'Fact. 19-00083788 / Cot.'],
+['QM-045','Lauril Éter Sulfato De Sodio 28/70%','Surfactantes','kg','Tambor 170 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-046','AOS 35 Olefín Sulfonato De Sodio','Surfactantes','kg','Tambor 200 kg',['navarro'],'Por Revisar',null,''],
+['QM-047','Nonil Fenol Etoxilado 6/10 Mol','Surfactantes','kg','Tambor 215 kg / Tineta 20 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-048','Óxido De Amina','Surfactantes','kg','Tambor 200 kg / Tineta 20 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-049','Sulfonato De Sodio 30% (Rheniox 30S)','Surfactantes','kg','Tambor 200 kg',['holchem'],'Por Revisar',null,''],
+['QM-050','Sulfonato De Sodio 80%','Surfactantes','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-051','Xilensulfonato','Surfactantes','L','Tambor 200 L',['holchem'],'Por Revisar',null,''],
+['QM-052','Perlante Euperlan PK 45','Surfactantes / Aditivos','kg','Tambor 200 kg',['holchem'],'Por Revisar',null,''],
+['QM-053','Perlante Nácar','Surfactantes / Aditivos','kg','Tambor 200 kg',['holchem'],'Comercialización',2322,'Fact. 19-00083788'],
+['QM-054','Amonio Cuaternario 1a Gen. (Cloruro Benzalconio 50%)','Desinfectantes','kg','Tambor 200 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-055','Cloro Líquido (Hipoclorito De Sodio 10%)','Desinfectantes','L','Tambor 200-250 L',['holchem','navarro'],'Por Revisar',null,''],
+['QM-056','Hipoclorito De Calcio 70%','Desinfectantes','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-057','Clorito De Sodio 80%','Desinfectantes','kg','Tineta 50 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-058','Dicloroisocianurato De Sodio 56/60%','Desinfectantes','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-059','Formalina 37%','Desinfectantes / Biocidas','L','Bidón 25 kg',['holchem','navarro'],'Por Revisar',1512,'Fact. 19-00083789 / Cot.'],
+['QM-060','Hidrazina 35%','Desinfectantes / Biocidas','L','Bidón 30 L',['holchem'],'Por Revisar',null,''],
+['QM-061','Bórax','Sales Inorgánicas','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',810,'Fact. 19-00083787'],
+['QM-062','Cloruro De Amonio','Sales Inorgánicas','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',450,'Fact. 19-00083789'],
+['QM-063','Cloruro De Calcio 77% / 94%','Sales Inorgánicas','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-064','Cloruro De Potasio','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-065','Cloruro De Zinc','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-066','Cloruro De Magnesio','Sales Inorgánicas','kg','Saco 25 kg',['navarro'],'Comercialización',844,'Cot. Navarro 120.130'],
+['QM-067','Hidrosulfito De Sodio','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-068','Hiposulfito De Sodio','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-069','Metasilicato De Sodio Anhidro / Penta','Sales Inorgánicas','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',531,'Fact. 19-00083789'],
+['QM-070','Nitrato De Potasio Cristal','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-071','Nitrato De Sodio','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-072','Nitrito De Sodio','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-073','Óxido De Zinc','Sales Inorgánicas','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-074','Óxido De Magnesio 90%','Sales Inorgánicas','kg','Saco 25 kg',['navarro'],'Por Revisar',null,''],
+['QM-075','Sulfito De Sodio','Sales Inorgánicas','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-076','Sulfuro De Sodio 60%','Sales Inorgánicas','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-077','Sulfato De Aluminio','Sulfatos','kg','Saco 50 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-078','Sulfato De Amonio','Sulfatos','kg','Saco 50 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-079','Sulfato De Cobre Nieve','Sulfatos','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',3993,'Cot. Navarro 120.130'],
+['QM-080','Sulfato De Magnesio Hepta','Sulfatos','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',387,'Fact. 19-00083789'],
+['QM-081','Sulfato De Sodio Anhidro','Sulfatos','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-082','Sulfato De Zinc Hepta','Sulfatos','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-083','Sulfato Ferroso Hepta','Sulfatos','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',771,'Cot. Navarro 120.130'],
+['QM-084','Sulfato Manganoso Soluble','Sulfatos','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-085','Fosfato Diamónico F.G.','Fosfatos','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-086','Fosfato Disódico F.G.','Fosfatos','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-087','Fosfato Monosódico F.G.','Fosfatos','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-088','Fosfato Trisódico Cristal / Anh F.G.','Fosfatos','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-089','Hexametafosfato De Sodio F.G. / T.G.','Fosfatos','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-090','Pirofosfato Ácido De Sodio F.G.','Fosfatos','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-091','Tetrapirofosfato De Sodio F.G.','Fosfatos','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-092','Tripolifosfato De Sodio F.G. / T.G.','Fosfatos','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-093','Fosfato Dicálcico','Fosfatos','kg','Saco 25 kg',['navarro'],'Por Revisar',null,''],
+['QM-094','Benzoato De Sodio F.G.','Conservantes','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',1395,'Fact. 19-00083787'],
+['QM-095','Ciclamato De Sodio F.G.','Conservantes','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-096','Eritorbato De Sodio F.G.','Conservantes','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-097','Gluconato De Sodio F.G. / T.G.','Conservantes','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-098','Glutamato Monosódico F.G.','Conservantes','kg','Saco 25 kg',['holchem'],'Comercialización',null,''],
+['QM-099','Metabisulfito De Sodio F.G. / T.G.','Conservantes','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-100','Metabisulfito De Potasio','Conservantes','kg','Saco 25 kg',['navarro'],'Por Revisar',null,''],
+['QM-101','Sacarina Sódica F.G.','Conservantes','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-102','Sorbato De Potasio F.G.','Conservantes','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',2502,'Fact. 19-00083789'],
+['QM-103','Citrato De Sodio F.G.','Conservantes','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-104','Citrato De Potasio','Conservantes','kg','Saco 25 kg',['navarro'],'Comercialización',1543,'Cot. Navarro 120.130'],
+['QM-105','Cremor Tártaro Proeno','Conservantes','kg','Saco 25 kg',['navarro'],'Comercialización',4764,'Cot. Navarro 120.130'],
+['QM-106','Carboximetilcelulosa (CMC) F.G.','Espesantes','kg','Saco 25 kg',['holchem','navarro'],'Comercialización',null,''],
+['QM-107','Espesante Carbomer 980','Espesantes','kg','Caja 20 kg',['holchem'],'Por Revisar',null,''],
+['QM-108','Espesante Hidroxietilmetilcelulosa','Espesantes','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-109','Goma Guar F.G.','Espesantes','kg','Saco 25 kg',['holchem'],'Comercialización',2223,'Fact. 19-00083788'],
+['QM-110','Goma Xanthan F.G.','Espesantes','kg','Saco 25 kg',['holchem','navarro'],'Por Revisar',null,''],
+['QM-111','Viscosante','Espesantes','kg','Saco 25 kg',['holchem'],'Por Revisar',null,''],
+['QM-112','Maltodextrina 10-13%','Espesantes','kg','Saco 25 kg',['navarro'],'Comercialización',null,''],
+['QM-113','Monoetanolamina','Aminas','L','Tambor 200 L',['holchem'],'Por Revisar',null,''],
+['QM-114','Trietanolamina','Aminas','L','Tambor 200 L',['holchem','navarro'],'Por Revisar',null,''],
+['QM-115','Antiespumante 10%','Aditivos','L','Bidón 20-25 L',['holchem','navarro'],'Comercialización',null,''],
+['QM-116','Blanqueador Óptico','Aditivos','kg','Saco 25 kg',['holchem'],'Comercialización',7326,'Fact. 19-00083788'],
+['QM-117','Betún De Judea','Aditivos','kg','Cuñete 20 kg',['holchem'],'Por Revisar',null,''],
+['QM-118','Secuestrante Tetrasódico EDTA','Aditivos','kg','Saco 25 kg',['holchem'],'Comercialización',null,''],
+['QM-119','Silicona 60/350','Aditivos','L','Bidón 20 L',['holchem'],'Comercialización',3249,'Fact. 19-00083789'],
+['QM-120','Suavizante','Aditivos','kg','Tambor 200 kg',['holchem'],'Por Revisar',null,''],
+['QM-121','Urea','Aditivos','kg','Saco 50 kg',['holchem'],'Comercialización',1125,'Fact. 19-00083788'],
+['QM-122','Carbón Activado','Filtración','kg','Saco 20 kg',['navarro'],'Comercialización',2995,'Cot. Navarro 120.130'],
+['QM-123','Placas Filtrantes','Filtración','—','Varios',['navarro'],'Por Revisar',null,''],
+['QM-124','Gluten Vital De Trigo 80%','Ingredientes Alimentarios','kg','Saco 25 kg',['navarro'],'Comercialización',2042,'Cot. Navarro 120.130'],
+['QM-125','Divergan F PVPP','Clarificantes','kg','Caja 20 kg',['navarro'],'Por Revisar',null,''],
+['QM-126','Sulfato Ferroso 30% Monohidratado','Sulfatos','kg','Saco 25 kg',['navarro'],'Comercialización',771,'Cot. Navarro 120.130'],
+['QM-127','Alcohol Cetílico (Cera Lanette 16)','Solventes','kg','Saco 25 kg',['holchem'],'Comercialización',null,''],
+['QM-128','Cloruro De Magnesio Hexahidratado','Sales Inorgánicas','kg','Saco 25 kg',['navarro'],'Comercialización',862,'Cot. Navarro 120.130'],
+['POCH-001','Aceite Mineral','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-002','Acesulfame K','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-003','Ácido Acético','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-004','Ácido Alquilbenceno Sulfónico 96%','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-005','Ácido Ascórbico','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-006','Ácido Caprílico','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-007','Ácido Cítrico Anhidro Y Monohidratado','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-008','Ácido Esteárico Triple Prensado','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-009','Ácido Fosfórico Al 85%','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-010','Ácido Graso De Coco C1214','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-011','Ácido Láctico','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-012','Ácido Málico','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-013','Ácido Oleico','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-014','Ácido Salicílico','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-015','Ácido Sulfámico','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-016','Ácido Tartárico','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-017','Acnilys®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-018','Acquabio','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-019','Action® 2801M','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-020','Action® 639','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-021','Action® 700','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-022','Action® 707','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-023','Action® 777','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-024','Action® 800','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-025','Action® 800 Eco Plus','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-026','Action® 880','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-027','Action® 925','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-028','Action® Agua Verde','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-029','Action® Coolant 102°/-1°C','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-030','Action® Coolant 110°/-3°C','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-031','Action® Coolant Concentrado','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-032','Action® Coolant ELC 50/50','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-033','Action® Coolant ELC Concentrado','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-034','Action® Coolant HTF','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-035','Action® Coolant Inorgánico 33%','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-036','Action® Coolant RTU 50/50','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-037','Action® Coolant RTU 70/30','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-038','Action® Coolant Ultra ELC M\u0026N','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-039','Action® Coolant Ultra ELC-N 50%','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-040','Action® D-200','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-041','Action® D-435-A','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-042','Action® DAF','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-043','Action® F-113','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-044','Action® Glass Cleaner','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-045','Action® Green D-435-A','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-046','Action® Lubriplus','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-047','Action® Silicon','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-048','AdBlue®','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-049','Adhesivos De Poliuretano','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-050','Aditivos Minerales Especiales','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-051','Agen','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-052','Agente Perlante','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-053','Agua Desmineralizada','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-054','Alcohol Cetílico','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-055','Alcohol Cetoestearílico','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-056','Alcohol Estearílico','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-057','Alcoholes Grasos Etoxilados','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-058','AOS 35 Alfa Olefin Sulfonato De Sodio 35%','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-059','Allinea','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-060','Alquil Sulfato De Sodio','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-061','Amodimethicone CTAC Trideceth-12','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-062','Amonio Cuaternario 5ta Generación','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-063','Anhídrido Ftálico','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-064','Anhídrido Maléico','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-065','Antiespumante Líquido Base Acuosa','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-066','Antiespumante Siliconado','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-067','Aquasiloil®','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-068','Arcolys®','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-069','Aspartame','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-070','ATMP Ácido Triamino Metilenfosfónico','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-071','AUS32','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-072','AUS40','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-073','Avobenzone','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-074','Base De Jabón Carbón Activado','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-075','Base De Jabón Leche De Cabra','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-076','Base Jabón (Syndet)','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-077','Base Jabón Opaco','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-078','Base Jabón Transparente','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-079','Bentonita','Espesantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-080','Bentonitas Base Solvente','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-081','Benzoato De Sodio','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-082','Benzofenona 3','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-083','Bicarbonato De Sodio FG','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-084','Biocidas','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-085','Biomoduline','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-086','Biotilys® (NAT)','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-087','Bórax Anhidro Y Decahidratado','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-088','C12C15 Alquilbenzoato','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-089','Caprylyl Methicone','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-090','Carbonato De Sodio Liviano','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-091','Cellfie®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-092','Celofiber','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-093','Celopro® Éteres De Metilcelulosa','Espesantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-094','Celopro® Éteres De Celulosa','Espesantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-095','Ceniza De Soda Pesada','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-096','Cera De Piso Concentrada Surfaquim Wax','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-097','Ceramida SH 1% 3R','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-098','Chemycare','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-099','Ciclamato De Sodio','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-100','Ciclopentano 95 70/30','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-101','Ciclopentasiloxano','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-102','Ciclopentasiloxano Y Ciclohexasiloxano','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-103','Circalys®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-104','Citrato De Sodio','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-105','Clorfenesina','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-106','Cloruro De Benzalconio 50%','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-107','Cloruro De Metileno','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-108','Cloruro De Potasio','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-109','Cloruro Férrico','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-110','CMC Carboximetilcelulosa','Espesantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-111','CMIT/MIT','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-112','Cocamida MEA','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-113','Cocamide DEA','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-114','Cocamidopropil Betaína','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-115','Cocoa Alcalina','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-116','Colágeno Hidrolizado','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-117','Complejo Para Cabello Castaño','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-118','Complejo Para Cabello Castaño Rojizo','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-119','Complejo Para Cabello Rubio','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-120','Compuestos Minerales Especiales','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-121','Copolímero De Acrilato','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-122','D-Glucono Sodium Benzoate Calcium Gluconate','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-123','Dandrilys®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-124','Dextrosa Monohidratada','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-125','Dimeticona 100','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-126','Dimeticona 1000','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-127','Dimeticona 350','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-128','Dimeticonol Y Ciclopentasiloxano','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-129','Dioctil Sulfosuccinato De Sodio 70%','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-130','Dióxido De Titanio','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-131','Dióxido Titanio Grado Alimenticio','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-132','Dispersantes Base Agua','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-133','DMDM Hidantoína','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-134','Dodecilbencenosulfonato De Sodio 80%','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-135','DTPA Na5','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-136','DTPMPA','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-137','EDTA 4 Sal Tetrasódica','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-138','EffectiveU Pigmento Mineral UV','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-139','Emulsión Acrílica','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-140','Emulsión Catiónica De Acrilamida','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-141','Emulsión De Silicona Al 60%','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-142','Emulsión Estireno Acrílica','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-143','Emulsión Vinil Acrílica','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-144','EnhanceU Filtros Solares Minerales','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-145','EPS Alta Densidad','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-146','EPS Baja A Media Densidad','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-147','Espesantes Acrílicos','Espesantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-148','Espuma De Poliuretano Un Componente','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-149','Estearato De Etilhexilo','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-150','Ester','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-151','Éter Butílico Polialcoxilado En Cera','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-152','Éter Butílico Polialcoxilado Líquido','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-153','Ethoxcare® 165V','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-154','Ethoxcare® 4216','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-155','Ethoxcare® CSA-20','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-156','Ethoxcare® GMS Pure','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-157','Ethylhexyl Triazone','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-158','Etilenglicol Diestearato','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-159','Etilenglicol Monoestearato','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-160','Etilhexilglicerina','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-161','Expozen®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-162','Extracto Botánico Anticaída','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-163','Extracto De Caviar','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-164','Extracto De Centella Asiática','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-165','Extracto De Fucus','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-166','Extracto De Nácar','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-167','Extracto Hidrosoluble De Té Verde','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-168','Extracto Liposoluble Mezcla De Algas','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-169','Feniltrimeticona','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-170','Fenoxietanol','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-171','Galseer Tresscon','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-172','Gas Refrigerante R-1233zd','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-173','Gas Refrigerante R-1234yf','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-174','Gas Refrigerante R-1234ze','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-175','Gas Refrigerante R-134a','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-176','Gas Refrigerante R-152a','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-177','Gas Refrigerante R-290','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-178','Gas Refrigerante R-32','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-179','Gas Refrigerante R-404a','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-180','Gas Refrigerante R-407c','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-181','Gas Refrigerante R-410a','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-182','Gas Refrigerante R-448A','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-183','Gas Refrigerante R-449A','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-184','Gas Refrigerante R-454A','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-185','Gas Refrigerante R-454B','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-186','Gas Refrigerante R-454C Solstice®','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-187','Gas Refrigerante R-455A','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-188','Gas Refrigerante R-507','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-189','Gas Refrigerante R-513A','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-190','Gas Refrigerante R-515B Solstice® N15','Refrigerantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-191','Glicerina USP','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-192','Glucopon® 225 DK','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-193','Glucopon® 425 N','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-194','Glucopon® 600 CSUP','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-195','GoBlond® Proteínas De Seda','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-196','Goma Guar','Espesantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-197','Goma Xantana','Espesantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-198','H-Vit Plus','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-199','Hairiline®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-200','Hebeatol® Preservante Natural','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-201','Hebelys®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-202','HEDP Ácido 1-Hidroxietilideno','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-203','Hidragloss Quat C22','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-204','Hidrahair® O2 3R','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-205','Hique C-332','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-206','Holobiosys®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-207','Humectantes Y Niveladores','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-208','Hygeaphos A.S.','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-209','Lauril Éter Sulfato De Sodio 28% / 70%','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-210','Lauril Sulfato De Sodio','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-211','Liftiss®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-212','Lutensol® XL-70','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-213','Lutropur® MSA','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-214','Maltodextrina','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-215','Manteca Vegetal Hidrogenada De Palma','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-216','Mantequilla Natural De Baobab','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-217','Mantequilla Natural De Karité','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-218','MDI','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-219','Membrana De Ósmosis Inversa','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-220','Metabisulfito De Sodio','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-221','Metasilicato De Sodio Pentahidratado','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-222','Metilparabeno','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-223','Mezcla No Iónico + Sílica Coloidal','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-224','Miristato De Isopropilo','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-225','Modificador Reológico Acrílico','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-226','Modificador Reológico Acrílico Uretánico','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-227','Modificador Reológico Uretánico','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-228','Monoetilenglicol','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-229','Monolaurato De Sorbitan','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-230','Monooleato Sorbitan','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-231','Myralys','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-232','Na4HEDP Sal Tetrasódica','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-233','Nitrilotriacetato Trisódico','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-234','Nonil Fenol Etoxilado 4 A 10 Moles','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-235','Octanosulfonato De Sodio','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-236','Octil Metoxicinamato','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-237','Octil Salicilato','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-238','Octocrileno','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-239','Organic Apricot Soft Butter®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-240','Organic Babassu Lipactive','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-241','Óxido De Lauramina','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-242','Óxido De Miristilamina','Surfactantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-243','Palmitato De Etilhexilo','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-244','Palmitato De Isopropilo','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-245','Parafina Clorada 42%','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-246','Parafina Clorada 52%','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-247','PBTCA Ácido 2-Fosfonobutan','Ácidos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-248','PEG 200 400 Y 600','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-249','PEG-12 Dimeticona','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-250','Percarbonato De Sodio','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-251','Phenoxyethanol Caprylyl Glycol Chlorphenesin','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-252','Phenylbenzamidazole Sulphonic Acid','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-253','Physavie®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-254','Pigmentos Orgánicos','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-255','Pistola Calafatera','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-256','Pochtecanol DN12','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-257','Pochtecanol DN16','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-258','Pochtecasec T100','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-259','Pochtecasperse S45','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-260','Poliacrilato Modificado','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-261','Poligen® MV 270','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-262','Poligen® WE 1','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-263','Poliol Copolimérico','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-264','Polipropilenglicol','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-265','Polisorbatos','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-266','Polluout® Detox','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-267','Preservante Para Pesca Protacid Aqua','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-268','Preservante Para Pesca Protacid Barcos','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-269','Preservantes Para Plásticos','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-270','Propilenglicol Farma / USP','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-271','Propilparabeno','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-272','Propionato De Calcio','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-273','ProShine®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-274','PT-PK Aceite Penetrante 7 En 1','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-275','PT-Tronicsil Limpiador Circuitos','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-276','QAC 101','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-277','Resina Epóxica Industrial','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-278','Restart PRO','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-279','Rheomine 95','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-280','Salibact','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-281','Saliguard® EHGP','Preservantes / Biocidas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-282','Sellador Acrílico Blanco','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-283','Sellador Acrílico Para Concreto Action® Seal','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-284','Sellador De Montaje','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-285','Sellador De Poliuretano Action® F1 Plus','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-286','Sellador De Poliuretano Action® P1 Plus','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-287','Sellador De Poliuretano PU 40','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-288','Sellador De Silicona Acética','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-289','Sellador De Silicona Neutro','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-290','Sellador Estructural De Silicona','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-291','Sellador Y Endurecedor Action® Hard','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-292','SENSOL 100® Alternativa Natural Siliconas','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-293','Sensoveil Soft','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-294','Sílica Pirogénica Hidrofílica E Hidrófoba','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-295','Sistemas De Poliuretano Rígido (PUR)','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-296','Soda Cáustica','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-297','Sokalan® CP 5','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-298','Sokalan® PA 30','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-299','Solstice® EZ Flush','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-300','Solstice® LBA','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-301','Sorbato De Potasio','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-302','Sorbitol 70','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-303','Sucralosa','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-304','Sulfato De Cobalto','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-305','Sulfato De Cobre Pentahidratado','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-306','Sulfato De Sodio Anhidro','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-307','Sulfato Ferroso Heptahidratado','Sales / Inorgánicos','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-308','Talco','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-309','Talcos Industriales Para Pinturas Y Recubrimientos','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-310','TDI 80/20','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-311','ThermoShield Premium','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-312','Tilicine®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-313','Tinopal® CBS-X','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-314','Triglicérido Caprico/Caprílico','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-315','Trilon® B','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-316','Trilon® M','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-317','Turbowan 004','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-318','Ultraplast','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-319','Vaselina Líquida','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-320','Vaselina Sólida USP','Solventes / Humectantes','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-321','Versabi Cold','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-322','Versabi Plus','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-323','Vinabond','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-324','WSP2','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-325','Xilen Sulfonato De Sodio','Materias Primas','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+['POCH-326','Zoryalys®','Cosmética','—','—',['pochteca'],'Por Revisar',null,'COMERCIALIZACIÓN'],
+];
+
+const PRODUCTOS = RAW.map(r=>({
+  cod:r[0], nombre:r[1], cat:r[2], um:r[3], pres:r[4],
+  provs:r[5], uso:r[6], precio:r[7], fuente:r[8]
+}));
+return { PROVEEDORES, PRODUCTOS };
+})();
+
+// ════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════
+let pvOCItems  = [];
+let pvOCList   = JSON.parse(localStorage.getItem('gbisness_oc_list') || '[]');
+let pvOCCtr    = pvOCList.length + 1;
+let pvUsoFilter = 'all';
+// Overlay edits stored per session (persist to localStorage)
+let pvEdits    = JSON.parse(localStorage.getItem('gbisness_pv_edits') || '{}');
+
+function pvGetProd(cod) {
+  const p = PV_DATA.PRODUCTOS.find(x => x.cod === cod);
+  if(!p) return null;
+  const e = pvEdits[cod] || {};
+  return Object.assign({}, p, e);
+}
+function pvAllProds() {
+  return PV_DATA.PRODUCTOS.map(p => pvGetProd(p.cod));
+}
+
+// ════════════════════════════════════════════════════════════════
+// BOOT & NAV
+// ════════════════════════════════════════════════════════════════
+function bootProveedores() {
+  // Fill category filter
+  const cats = [...new Set(PV_DATA.PRODUCTOS.map(p=>p.cat))].sort();
+  const sel = document.getElementById('pv-cat-cat');
+  if(sel && sel.options.length <= 1) {
+    cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+  }
+  // Fill prov selects in OC forms
+  ['oc-prov-sel','pv-oc-prov-f'].forEach(id=>{
+    const s = document.getElementById(id);
+    if(s && s.options.length <= 1) {
+      PV_DATA.PROVEEDORES.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.nombre; s.appendChild(o); });
+    }
+  });
+  // Today date
+  const fd = document.getElementById('oc-fecha');
+  if(fd) fd.value = new Date().toISOString().slice(0,10);
+
+  pvRenderKPIs();
+  pvRenderCatalogo();
+  pvRenderProveedores();
+  pvRenderOrdenes();
+}
+
+function pvNav(el, sec) {
+  document.querySelectorAll('#app-proveedores .pv-nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  ['catalogo','proveedores','ordenes','nueva-oc'].forEach(s=>{
+    const d = document.getElementById('pvsec-'+s);
+    if(d) d.style.display = s===sec ? '' : 'none';
+  });
+  if(sec==='nueva-oc') pvResetOCForm();
+}
+function pvLogout() {
+  document.getElementById('app-proveedores').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+}
+
+// ════════════════════════════════════════════════════════════════
+// KPIs
+// ════════════════════════════════════════════════════════════════
+function pvRenderKPIs() {
+  const prods = pvAllProds();
+  const total = prods.length;
+  const comercio = prods.filter(p=>p.uso==='Comercialización').length;
+  const conPrecio = prods.filter(p=>p.precio).length;
+  const pochteca = prods.filter(p=>p.provs.includes('pochteca')).length;
+  const ambos = prods.filter(p=>p.provs.includes('holchem')&&p.provs.includes('navarro')).length;
+
+  document.getElementById('pv-kpis').innerHTML = `
+    <div class="pv-kpi ct"><div class="pv-kpi-lbl">Total Productos</div><div class="pv-kpi-val">${total}</div><div class="pv-kpi-sub">3 proveedores</div></div>
+    <div class="pv-kpi cg"><div class="pv-kpi-lbl">Comercialización</div><div class="pv-kpi-val">${comercio}</div><div class="pv-kpi-sub">activos ML/venta</div></div>
+    <div class="pv-kpi ca"><div class="pv-kpi-lbl">Con Precio S/IVA</div><div class="pv-kpi-val">${conPrecio}</div><div class="pv-kpi-sub">registrados</div></div>
+    <div class="pv-kpi cp"><div class="pv-kpi-lbl">Pochteca</div><div class="pv-kpi-val">${pochteca}</div><div class="pv-kpi-sub">productos exclusivos</div></div>
+    <div class="pv-kpi cr"><div class="pv-kpi-lbl">Holchem + Navarro</div><div class="pv-kpi-val">${ambos}</div><div class="pv-kpi-sub">ambos proveedores</div></div>
+  `;
+  document.getElementById('pv-cat-sub').textContent =
+    `CATÁLOGO CONSOLIDADO · HOLCHEM + NAVARRO \u0026 CIA + POCHTECA · ${total} PRODUCTOS`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════════
+function pvFmt(n) { return n ? '$ '+Math.round(n).toLocaleString('es-CL') : '—'; }
+function pvUsoBadge(uso) {
+  const map = { 'Comercialización':'uso-com','Fabricación':'uso-fab','Por Revisar':'uso-rev','Infactible':'uso-inf' };
+  return `<span class="${map[uso]||'uso-rev'}">${uso}</span>`;
+}
+function pvProvBadge(id) {
+  const map = { holchem:'badge-hol HOLCHEM', navarro:'badge-nav NAVARRO', pochteca:'badge-poc POCHTECA' };
+  const v = map[id] || ''; const [cls, lbl] = v.split(' ');
+  return `<span class="pv-badge ${cls}">${lbl}</span>`;
+}
+function pvOCStatusBadge(st) {
+  const m = {borrador:['oc-draft','BORRADOR'],enviada:['oc-sent','ENVIADA'],confirmada:['oc-confirmed','CONFIRMADA'],recibida:['oc-received','RECIBIDA'],cancelada:['oc-cancelled','CANCELADA']};
+  const [cls,lbl] = m[st]||['oc-draft','—'];
+  return `<span class="pv-badge ${cls}">${lbl}</span>`;
+}
+function pvSaveLocal() {
+  try { localStorage.setItem('gbisness_oc_list', JSON.stringify(pvOCList)); } catch(e){}
+  try { localStorage.setItem('gbisness_pv_edits', JSON.stringify(pvEdits)); } catch(e){}
+}
+
+// ════════════════════════════════════════════════════════════════
+// CATÁLOGO
+// ════════════════════════════════════════════════════════════════
+function pvUsoPill(el, u) {
+  document.querySelectorAll('.uso-pill').forEach(p=>{
+    p.classList.remove('on','on-all','on-com','on-fab','on-rev','on-inf');
+  });
+  el.classList.add('on');
+  const clsMap = {all:'on-all','Comercialización':'on-com','Fabricación':'on-fab','Por Revisar':'on-rev','Infactible':'on-inf'};
+  el.classList.add(clsMap[u]||'on-all');
+  pvUsoFilter = u;
+  pvRenderCatalogo();
+}
+
+function pvGetFiltered() {
+  const q   = (document.getElementById('pv-cat-q')?.value||'').toLowerCase();
+  const pf  = document.getElementById('pv-cat-prov')?.value||'';
+  const cf  = document.getElementById('pv-cat-cat')?.value||'';
+  return pvAllProds().filter(p=>{
+    const mQ = !q || p.nombre.toLowerCase().includes(q) || p.cod.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q);
+    const mP = !pf || (pf==='ambos' ? p.provs.includes('holchem')&&p.provs.includes('navarro') : p.provs.includes(pf)&&(pf==='holchem'||pf==='navarro'?p.provs.length===1:true));
+    const mC = !cf || p.cat===cf;
+    const mU = pvUsoFilter==='all' || p.uso===pvUsoFilter;
+    return mQ && mP && mC && mU;
+  });
+}
+
+function pvRenderCatalogo() {
+  const list = pvGetFiltered();
+  const tbody = document.getElementById('pv-cat-body');
+  if(!tbody) return;
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</td></tr>';
+    document.getElementById('pv-cat-info').textContent='0 productos';
+    return;
+  }
+  const shown = list.slice(0, 300);
+  tbody.innerHTML = shown.map(p=>{
+    const provs = p.provs.map(pr=>pvProvBadge(pr)).join(' ');
+    const prCell = p.precio
+      ? `<span class="precio-val" onclick="event.stopPropagation();pvEditPrecio('${p.cod}')" style="cursor:pointer" title="Clic para editar">${pvFmt(p.precio)}</span>`
+      : `<span class="precio-vacio" onclick="event.stopPropagation();pvEditPrecio('${p.cod}')" style="cursor:pointer" title="Agregar precio">+ precio</span>`;
+    const civa = p.precio ? pvFmt(Math.round(p.precio*1.19)) : '—';
+    const fuente = '';
+    return `<tr onclick="pvQuickAddOC('${p.cod}')">
+      <td><span style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">${p.cod}</span></td>
+      <td style="font-weight:500;max-width:280px">${p.nombre}${fuente}</td>
+      <td style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cat}</td>
+      <td style="font-family:var(--font-mono);font-size:9px;text-align:center">${p.um}</td>
+      <td style="font-size:11px;color:var(--text2)">${p.pres}</td>
+      <td>${provs}</td>
+      <td>${prCell}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">${civa}</td>
+      <td><button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px" onclick="event.stopPropagation();pvOpenEdit('${p.cod}')">✏</button></td>
+    </tr>`;
+  }).join('');
+  const extra = list.length > 300 ? ` (mostrando 300 de ${list.length})` : '';
+  document.getElementById('pv-cat-info').textContent = `${list.length} productos${extra} · ${pvAllProds().filter(x=>x.precio).length} con precio`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// PRECIOS
+// ════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════
+// EDIT PRODUCT (precio + uso inline)
+// ════════════════════════════════════════════════════════════════
+function pvEditPrecio(cod) {
+  pvOpenEdit(cod);
+}
+function pvOpenEdit(cod) {
+  const p = pvGetProd(cod);
+  if(!p) return;
+  document.getElementById('edit-cod').value = cod;
+  document.getElementById('edit-nombre').value = p.nombre;
+  document.getElementById('edit-precio').value = p.precio || '';
+  document.getElementById('edit-uso').value = p.uso;
+  document.getElementById('edit-pres').value = p.pres;
+  document.getElementById('pv-edit-modal').classList.add('open');
+}
+function pvSaveEdit() {
+  const cod    = document.getElementById('edit-cod').value;
+  const nombre = document.getElementById('edit-nombre').value.trim();
+  const precio = parseFloat(document.getElementById('edit-precio').value) || null;
+  const uso    = document.getElementById('edit-uso').value;
+  const pres   = document.getElementById('edit-pres').value.trim();
+  if(!pvEdits[cod]) pvEdits[cod] = {};
+  if(nombre) pvEdits[cod].nombre = nombre;
+  if(precio) pvEdits[cod].precio = precio; else delete pvEdits[cod].precio;
+  pvEdits[cod].uso  = uso;
+  if(pres) pvEdits[cod].pres = pres;
+  pvSaveLocal();
+  document.getElementById('pv-edit-modal').classList.remove('open');
+  pvRenderKPIs(); pvRenderCatalogo();
+  showToast('Producto actualizado');
+}
+
+// ════════════════════════════════════════════════════════════════
+// PROVEEDORES
+// ════════════════════════════════════════════════════════════════
+function pvRenderProveedores() {
+  const grid = document.getElementById('pv-prov-grid');
+  if(!grid) return;
+  grid.innerHTML = PV_DATA.PROVEEDORES.map(p=>{
+    const all = pvAllProds().filter(x=>x.provs.includes(p.id));
+    const comercio = all.filter(x=>x.uso==='Comercialización').length;
+    const conPrecio = all.filter(x=>x.precio).length;
+    const lineBg = {hol:'#a090ff',nav:'#60b0ff',poc:'#f09060'}[p.cls];
+    return `<div class="pv-prov-card ${p.cls}" style="border-top:3px solid ${lineBg}">
+      <div class="pv-prov-name">${p.nombre}</div>
+      <div class="pv-prov-contact">📞 ${p.tel} · ${p.contacto}</div>
+      ${p.email!=='—'?`<div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">🌐 ${p.email}</div>`:''}
+      ${p.direccion!=='—'?`<div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:2px">📍 ${p.direccion}</div>`:''}
+      <div class="pv-prov-stats">
+        <div class="pv-prov-stat"><b>${all.length}</b>productos</div>
+        <div class="pv-prov-stat"><b>${comercio}</b>comercializ.</div>
+        <div class="pv-prov-stat"><b>${conPrecio}</b>con precio</div>
+      </div>
+      <button class="pv-btn pv-btn-teal" style="width:100%;margin-top:10px;font-size:9px" onclick="pvCreateOCProv('${p.id}')">＋ Nueva OC</button>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════
+// ÓRDENES
+// ════════════════════════════════════════════════════════════════
+function pvRenderOrdenes() {
+  const q  = (document.getElementById('pv-oc-q')?.value||'').toLowerCase();
+  const sf = document.getElementById('pv-oc-status')?.value||'';
+  const pf = document.getElementById('pv-oc-prov-f')?.value||'';
+  const list = pvOCList.filter(oc=>{
+    const mQ = !q || oc.num.toLowerCase().includes(q) || (oc.provNombre||'').toLowerCase().includes(q);
+    return mQ && (!sf||oc.status===sf) && (!pf||oc.provId===pf);
+  }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+
+  document.getElementById('kpi-oc-total').textContent  = pvOCList.length;
+  document.getElementById('kpi-oc-rec').textContent    = pvOCList.filter(o=>o.status==='recibida').length;
+  document.getElementById('kpi-oc-sent').textContent   = pvOCList.filter(o=>o.status==='enviada').length;
+  document.getElementById('kpi-oc-pend').textContent   = pvOCList.filter(o=>['borrador','confirmada'].includes(o.status)).length;
+
+  const tbody = document.getElementById('pv-oc-body');
+  if(!tbody) return;
+  if(!list.length){
+    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin órdenes. <span style="color:var(--teal);cursor:pointer" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">Crear OC →</span></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(oc=>{
+    const neto = (oc.items||[]).reduce((s,i)=>s+i.qty*(i.precio||0),0);
+    return `<tr>
+      <td><span class="oc-num">${oc.num}</span></td>
+      <td style="font-weight:500">${oc.provNombre}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text2)">${oc.fecha}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;text-align:center">${(oc.items||[]).length}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--teal);text-align:right">${pvFmt(neto)}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;text-align:right">${pvFmt(neto*1.19)}</td>
+      <td>${pvOCStatusBadge(oc.status)}</td>
+      <td style="white-space:nowrap">
+        <button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvViewOC('${oc.num}')">👁</button>
+        <button class="pv-btn pv-btn-teal" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvPrintOCById('${oc.num}')">🖨</button>
+        <select style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:3px 6px;font-family:var(--font-mono);font-size:9px;border-radius:2px;outline:none" onchange="pvChangeStatus('${oc.num}',this.value);this.value=''">
+          <option value="">Estado…</option>
+          <option value="borrador">Borrador</option><option value="enviada">Enviada</option>
+          <option value="confirmada">Confirmada</option><option value="recibida">Recibida</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function pvChangeStatus(num, status) {
+  if(!status) return;
+  const oc = pvOCList.find(o=>o.num===num);
+  if(oc){ oc.status=status; pvSaveLocal(); pvRenderOrdenes(); showToast('Estado: '+status); }
+}
+function pvViewOC(num) {
+  const oc = pvOCList.find(o=>o.num===num);
+  if(!oc) return;
+  document.getElementById('pv-oc-modal-title').textContent = 'Orden De Compra '+oc.num;
+  document.getElementById('pv-oc-modal-body').innerHTML = pvBuildOCHTML(oc, false);
+  document.getElementById('pv-oc-modal').classList.add('open');
+  document.getElementById('pv-oc-modal').dataset.currentNum = num;
+}
+
+// ════════════════════════════════════════════════════════════════
+// NUEVA OC
+// ════════════════════════════════════════════════════════════════
+function pvResetOCForm() {
+  pvOCItems = [];
+  document.getElementById('oc-fecha').value = new Date().toISOString().slice(0,10);
+  ['oc-prov-sel','oc-notas'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  document.getElementById('oc-prod-q').value = '';
+  document.getElementById('oc-prod-results').innerHTML = '';
+  pvRenderOCItems();
+}
+function pvOCProvChange() { pvOCSearchProds(); }
+function pvOCSearchProds() {
+  const q    = (document.getElementById('oc-prod-q')?.value||'').toLowerCase();
+  const prov = document.getElementById('oc-prov-sel')?.value||'';
+  const res  = document.getElementById('oc-prod-results');
+  if(!res) return;
+  if(!q && !prov){ res.innerHTML=''; return; }
+  const matches = pvAllProds().filter(p=>{
+    const mQ = !q || p.nombre.toLowerCase().includes(q) || p.cod.toLowerCase().includes(q);
+    const mP = !prov || p.provs.includes(prov);
+    return mQ && mP;
+  }).slice(0,50);
+  if(!matches.length){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</div>'; return; }
+  res.innerHTML = matches.map(p=>{
+    const pr = p.precio ? pvFmt(p.precio)+' S/IVA' : 'sin precio';
+    return `<div style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''" onclick="pvAddItemToOC('${p.cod}')">
+      <div style="font-size:12px;font-weight:500">${p.nombre}</div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cod} · ${p.pres} · ${p.um} · <span style="color:var(--teal)">${pr}</span></div>
+    </div>`;
+  }).join('');
+}
+function pvAddItemToOC(cod) {
+  const p = pvGetProd(cod);
+  if(!p) return;
+  const ex = pvOCItems.find(i=>i.cod===cod);
+  if(ex){ ex.qty++; pvRenderOCItems(); showToast('Cantidad +1'); return; }
+  pvOCItems.push({ cod:p.cod, nombre:p.nombre, um:p.um, pres:p.pres, qty:1, precio:p.precio||0 });
+  pvRenderOCItems();
+  showToast('Agregado: '+p.nombre.slice(0,30));
+}
+function pvQuickAddOC(cod) {
+  pvNav(document.getElementById('pvnav-nueva-oc'), 'nueva-oc');
+  setTimeout(()=>pvAddItemToOC(cod), 80);
+}
+function pvCreateOCProv(provId) {
+  pvNav(document.getElementById('pvnav-nueva-oc'), 'nueva-oc');
+  setTimeout(()=>{ const s=document.getElementById('oc-prov-sel'); if(s){s.value=provId;pvOCProvChange();} }, 80);
+}
+function pvRemoveOCItem(idx) { pvOCItems.splice(idx,1); pvRenderOCItems(); }
+function pvUpdateQty(idx,v){ pvOCItems[idx].qty=Math.max(1,parseFloat(v)||1); pvRenderOCItems(); }
+function pvUpdatePrecio(idx,v){ pvOCItems[idx].precio=parseFloat(v)||0; pvRenderOCItems(); }
+function pvRenderOCItems() {
+  const c = document.getElementById('oc-items-list');
+  if(!c) return;
+  if(!pvOCItems.length){
+    c.innerHTML='<div style="padding:16px;text-align:center;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin items. Busca productos arriba o haz clic en una fila del catálogo.</div>';
+    document.getElementById('oc-items-count').textContent='0 items';
+    document.getElementById('oc-total-neto').textContent='$ 0';
+    document.getElementById('oc-total-civa').textContent='$ 0';
+    return;
+  }
+  c.innerHTML = pvOCItems.map((item,idx)=>
+    `<div class="oc-item-row">
+      <div>
+        <div style="font-size:12px;font-weight:500">${item.nombre}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${item.cod} · ${item.pres}</div>
+      </div>
+      <input type="number" min="1" value="${item.qty}" onchange="pvUpdateQty(${idx},this.value)">
+      <input type="number" min="0" value="${item.precio||''}" placeholder="$ precio" onchange="pvUpdatePrecio(${idx},this.value)">
+      <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px" onclick="pvRemoveOCItem(${idx})">✕</button>
+    </div>`
+  ).join('');
+  document.getElementById('oc-items-count').textContent = pvOCItems.length+' items';
+  const neto = pvOCItems.reduce((s,i)=>s+i.qty*(i.precio||0),0);
+  document.getElementById('oc-total-neto').textContent = pvFmt(neto)||'$ 0';
+  document.getElementById('oc-total-civa').textContent = pvFmt(Math.round(neto*1.19))||'$ 0';
+}
+function pvSaveOC(status) {
+  const provId = document.getElementById('oc-prov-sel')?.value;
+  const fecha  = document.getElementById('oc-fecha')?.value;
+  if(!provId){ showToast('Selecciona proveedor', true); return; }
+  if(!pvOCItems.length){ showToast('Agrega productos', true); return; }
+  const prov = PV_DATA.PROVEEDORES.find(p=>p.id===provId);
+  const num = 'OC-'+String(pvOCCtr++).padStart(4,'0');
+  const oc = {
+    num, provId, provNombre:prov?.nombre||provId,
+    provContacto:prov?.contacto||'', provTel:prov?.tel||'',
+    fecha:fecha||new Date().toISOString().slice(0,10),
+    notas:document.getElementById('oc-notas')?.value||'',
+    items:JSON.parse(JSON.stringify(pvOCItems)),
+    status, createdAt:new Date().toISOString()
+  };
+  pvOCList.unshift(oc);
+  pvSaveLocal();
+  pvRenderOrdenes();
+  showToast('OC '+num+' guardada — '+status);
+  if(status==='enviada') pvPrintOCObj(oc);
+  pvNav(document.getElementById('pvnav-ordenes'),'ordenes');
+}
+function pvPreviewOC() {
+  const provId = document.getElementById('oc-prov-sel')?.value;
+  if(!provId||!pvOCItems.length){ showToast('Completa proveedor e items', true); return; }
+  const prov = PV_DATA.PROVEEDORES.find(p=>p.id===provId);
+  pvPrintOCObj({ num:'OC-PREV', provId, provNombre:prov?.nombre||provId,
+    provContacto:prov?.contacto||'', provTel:prov?.tel||'',
+    fecha:document.getElementById('oc-fecha')?.value||new Date().toISOString().slice(0,10),
+    notas:document.getElementById('oc-notas')?.value||'',
+    items:pvOCItems, status:'borrador' });
+}
+function pvPrintOC(){ const n=document.getElementById('pv-oc-modal').dataset.currentNum; if(n) pvPrintOCById(n); }
+function pvPrintOCById(num){ const oc=pvOCList.find(o=>o.num===num); if(oc) pvPrintOCObj(oc); }
+function pvPrintOCObj(oc){
+  const area = document.getElementById('pv-print-area');
+  area.innerHTML = pvBuildOCHTML(oc, true);
+  area.style.display='block';
+  window.print();
+  setTimeout(()=>{ area.style.display='none'; area.innerHTML=''; }, 1200);
+}
+function pvBuildOCHTML(oc, forPrint) {
+  const neto=(oc.items||[]).reduce((s,i)=>s+i.qty*(i.precio||0),0);
+  const iva=Math.round(neto*0.19), civa=Math.round(neto+iva);
+  const ink=forPrint?'#111':'var(--text)', ink2=forPrint?'#444':'var(--text2)', ink3=forPrint?'#888':'var(--text3)';
+  const bdr=forPrint?'#ddd':'var(--border)', bg2=forPrint?'#f8f9fc':'var(--bg2)';
+  const teal='#00d4aa';
+  const rows=(oc.items||[]).map((item,i)=>{
+    const sub=item.qty*(item.precio||0);
+    return `<tr style="border-bottom:1px solid ${bdr}">
+      <td style="padding:7px 10px;font-size:12px;color:${ink2}">${i+1}</td>
+      <td style="padding:7px 10px;font-size:12px;font-weight:500;color:${ink}">${item.nombre}</td>
+      <td style="padding:7px 10px;font-size:10px;color:${ink3};font-family:monospace">${item.cod}</td>
+      <td style="padding:7px 10px;font-size:11px;color:${ink3};text-align:center">${item.um||'—'}</td>
+      <td style="padding:7px 10px;font-size:12px;text-align:right;color:${ink}">${item.qty}</td>
+      <td style="padding:7px 10px;font-size:11px;text-align:right;color:${ink2};font-family:monospace">${item.precio?('$ '+Math.round(item.precio).toLocaleString('es-CL')):'—'}</td>
+      <td style="padding:7px 10px;font-size:12px;text-align:right;font-weight:600;color:${ink};font-family:monospace">${sub?('$ '+Math.round(sub).toLocaleString('es-CL')):'—'}</td>
+    </tr>`;
+  }).join('');
+  return `<div style="background:${forPrint?'#fff':bg2};color:${ink};font-family:'DM Sans',Arial,sans-serif;max-width:800px;margin:0 auto">
+    <div style="background:#0d0f1a;padding:18px 24px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:${teal}">GBISNESS</div>
+        <div style="font-family:monospace;font-size:9px;letter-spacing:2px;color:#606888">CYBERNETIC SPA · RUT 77.215.071-7</div></div>
+      <div style="text-align:right"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#fff">ORDEN DE COMPRA</div>
+        <div style="font-family:monospace;font-size:13px;color:${teal}">${oc.num}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:2px solid ${teal}">
+      <div style="padding:14px 20px;border-right:1px solid ${bdr}">
+        <div style="font-family:monospace;font-size:9px;letter-spacing:2px;color:${ink3};text-transform:uppercase;margin-bottom:5px">Proveedor</div>
+        <div style="font-size:15px;font-weight:700;color:${ink};margin-bottom:2px">${oc.provNombre}</div>
+        ${oc.provContacto?`<div style="font-size:12px;color:${ink2}">${oc.provContacto}</div>`:''}
+        ${oc.provTel?`<div style="font-family:monospace;font-size:11px;color:${ink3}">${oc.provTel}</div>`:''}
+      </div>
+      <div style="padding:14px 20px">
+        <div style="font-family:monospace;font-size:9px;letter-spacing:2px;color:${ink3};margin-bottom:5px">DETALLES</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:${ink3}">Fecha</span><span style="font-size:12px;font-weight:600;font-family:monospace">${oc.fecha}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:${ink3}">N° OC</span><span style="font-size:12px;font-weight:600;color:${teal};font-family:monospace">${oc.num}</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:${ink3}">Estado</span><span style="font-size:12px;font-weight:600;text-transform:uppercase;font-family:monospace">${oc.status}</span></div>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#1a1d2e">
+        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:left">#</th>
+        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:left">Producto</th>
+        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:left">Código</th>
+        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:center">UM</th>
+        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:right">Cant.</th>
+        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:right">P.Unit S/IVA</th>
+        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:right">Subtotal</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="padding:14px 20px;border-top:2px solid ${teal};background:#0d0f1a">
+      <div style="display:flex;justify-content:flex-end">
+        <div style="min-width:280px">
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1a1d2e">
+            <span style="font-family:monospace;font-size:10px;color:#606888">Neto S/IVA</span>
+            <span style="font-family:monospace;font-size:12px;color:#e8eaf6">$ ${neto.toLocaleString('es-CL')}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1a1d2e">
+            <span style="font-family:monospace;font-size:10px;color:#606888">IVA 19%</span>
+            <span style="font-family:monospace;font-size:12px;color:#e8eaf6">$ ${iva.toLocaleString('es-CL')}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0">
+            <span style="font-family:monospace;font-size:11px;letter-spacing:1px;color:#a0a8c8;text-transform:uppercase">Total C/IVA</span>
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:${teal}">$ ${civa.toLocaleString('es-CL')}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    ${oc.notas?`<div style="padding:12px 20px;border-top:1px solid ${bdr}"><div style="font-family:monospace;font-size:9px;letter-spacing:1px;color:${ink3};margin-bottom:4px">NOTAS</div><div style="font-size:12px;color:${ink2}">${oc.notas}</div></div>`:''}
+    <div style="padding:10px 20px;text-align:center;font-family:monospace;font-size:9px;color:${ink3};border-top:1px solid ${bdr}">Generado por GBisness · Cybernetic SpA · ${new Date().toLocaleDateString('es-CL')}</div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// EXPORT CATALOGO XLS
+// ════════════════════════════════════════════════════════════════
+function pvExportCatalogo() {
+  if(typeof XLSX==='undefined'){ showToast('XLSX no disponible',true); return; }
+  const list = pvGetFiltered();
+  const rows = list.map(p=>({
+    'Código':p.cod, 'Nombre':p.nombre, 'Categoría':p.cat, 'UM':p.um, 'Presentación':p.pres,
+    'Holchem':p.provs.includes('holchem')?'✓':'',
+    'Navarro':p.provs.includes('navarro')?'✓':'',
+    'Pochteca':p.provs.includes('pochteca')?'✓':'',
+    'Precio S/IVA (CLP)':p.precio||'',
+    'IVA 19%':p.precio?Math.round(p.precio*0.19):'',
+    'Precio C/IVA':p.precio?Math.round(p.precio*1.19):'',
+    'Uso':p.uso,
+    'Fuente':p.fuente||''
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:10},{wch:46},{wch:24},{wch:6},{wch:22},{wch:9},{wch:9},{wch:9},{wch:14},{wch:11},{wch:13},{wch:16},{wch:22}];
+  const wb2 = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb2, ws, 'Catálogo Químicos');
+  XLSX.writeFile(wb2, 'catalogo_quimicos_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  showToast('Exportado: '+list.length+' productos');
+}
+</script>
+
 </body>
 </html>
