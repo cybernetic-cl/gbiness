@@ -9707,21 +9707,32 @@ function cgAddProduct() {
 
 <!-- EDIT PRODUCT MODAL -->
 <div id="pv-edit-modal">
-  <div class="pv-modal-box">
-    <div class="pv-modal-hdr" style="background:var(--bg2)">
-      <div class="pv-modal-title">Editar Producto</div>
-      <button style="background:none;border:none;color:var(--text3);font-size:17px;cursor:pointer;line-height:1;padding:4px 8px" onclick="document.getElementById('pv-edit-modal').classList.remove('open')">✕</button>
+  <div class="pv-modal-box" style="background:var(--card);border:1px solid var(--border2);border-radius:2px;width:100%;max-width:480px;overflow:hidden">
+    <!-- header con accent line -->
+    <div style="position:relative;background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--teal)"></div>
+      <div>
+        <div style="font-family:var(--font-display);font-size:16px;letter-spacing:2px;color:var(--text)">Editar Producto</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-top:1px" id="edit-cod-label">—</div>
+      </div>
+      <button style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px 6px;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'" onclick="document.getElementById('pv-edit-modal').classList.remove('open')">✕</button>
     </div>
-    <div style="padding:20px;background:var(--bg2)">
+    <!-- body -->
+    <div style="padding:18px;background:var(--card)">
       <input type="hidden" id="edit-cod">
+      <!-- Nombre -->
       <div style="margin-bottom:14px">
-        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Nombre</div>
+        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Nombre Del Producto</div>
         <input class="pv-fi" id="edit-nombre" style="width:100%">
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <!-- Precio + Uso -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         <div>
-          <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Precio S/IVA (CLP)</div>
-          <input class="pv-fi" id="edit-precio" type="number" style="width:100%;color:var(--green)" placeholder="0">
+          <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Precio S/IVA · CLP/kg</div>
+          <div style="position:relative">
+            <span style="position:absolute;left:0;top:0;bottom:0;display:flex;align-items:center;padding:0 8px;font-family:var(--font-mono);font-size:9px;color:var(--teal);background:rgba(0,212,170,0.08);border-right:1px solid rgba(0,212,170,0.2);border-radius:2px 0 0 2px;pointer-events:none;letter-spacing:1px">$</span>
+            <input class="pv-fi" id="edit-precio" type="number" style="width:100%;padding-left:36px;color:var(--green)" placeholder="0">
+          </div>
         </div>
         <div>
           <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Uso</div>
@@ -9733,13 +9744,15 @@ function cgAddProduct() {
           </select>
         </div>
       </div>
+      <!-- Presentación -->
       <div style="margin-bottom:18px">
         <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Presentación</div>
         <input class="pv-fi" id="edit-pres" style="width:100%">
       </div>
-      <div style="display:flex;justify-content:flex-end;gap:8px">
+      <!-- Footer -->
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:14px;border-top:1px solid var(--border)">
         <button class="pv-btn pv-btn-sec" onclick="document.getElementById('pv-edit-modal').classList.remove('open')">Cancelar</button>
-        <button class="pv-btn pv-btn-teal" onclick="pvSaveEdit()">Guardar</button>
+        <button class="pv-btn pv-btn-teal" onclick="pvSaveEdit()">💾 Guardar</button>
       </div>
     </div>
   </div>
@@ -10401,6 +10414,7 @@ function pvOpenEdit(cod) {
   const p = pvGetProd(cod);
   if(!p) return;
   document.getElementById('edit-cod').value = cod;
+  document.getElementById('edit-cod-label').textContent = cod + ' · ' + p.provs.map(x=>x.toUpperCase()).join(' + ');
   document.getElementById('edit-nombre').value = p.nombre;
   document.getElementById('edit-precio').value = p.precio || '';
   document.getElementById('edit-uso').value = p.uso;
@@ -10521,24 +10535,29 @@ function pvResetOCForm() {
   document.getElementById('oc-prod-results').innerHTML = '';
   pvRenderOCItems();
 }
-function pvOCProvChange() { pvOCSearchProds(); }
+function pvOCProvChange() {
+  // Clear items when provider changes
+  const q = document.getElementById('oc-prod-q');
+  if(q) q.value = '';
+  pvOCSearchProds();
+}
 function pvOCSearchProds() {
   const q    = (document.getElementById('oc-prod-q')?.value||'').toLowerCase();
   const prov = document.getElementById('oc-prov-sel')?.value||'';
   const res  = document.getElementById('oc-prod-results');
   if(!res) return;
-  if(!q && !prov){ res.innerHTML=''; return; }
+  // Require a provider to be selected
+  if(!prov){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Selecciona un proveedor primero</div>'; return; }
   const matches = pvAllProds().filter(p=>{
     const mQ = !q || p.nombre.toLowerCase().includes(q) || p.cod.toLowerCase().includes(q);
-    const mP = !prov || p.provs.includes(prov);
+    const mP = p.provs.includes(prov);
     return mQ && mP;
-  }).slice(0,50);
+  }).slice(0,80);
   if(!matches.length){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</div>'; return; }
   res.innerHTML = matches.map(p=>{
-    const pr = p.precio ? pvFmt(p.precio)+' S/IVA' : 'sin precio';
     return `<div style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''" onclick="pvAddItemToOC('${p.cod}')">
       <div style="font-size:12px;font-weight:500">${p.nombre}</div>
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cod} · ${p.pres} · ${p.um} · <span style="color:var(--teal)">${pr}</span></div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cod} · ${p.pres} · ${p.um}</div>
     </div>`;
   }).join('');
 }
@@ -10630,79 +10649,89 @@ function pvPrintOCObj(oc){
   setTimeout(()=>{ area.style.display='none'; area.innerHTML=''; }, 1200);
 }
 function pvBuildOCHTML(oc, forPrint) {
-  const neto=(oc.items||[]).reduce((s,i)=>s+i.qty*(i.precio||0),0);
-  const iva=Math.round(neto*0.19), civa=Math.round(neto+iva);
-  const ink=forPrint?'#111':'var(--text)', ink2=forPrint?'#444':'var(--text2)', ink3=forPrint?'#888':'var(--text3)';
-  const bdr=forPrint?'#ddd':'var(--border)', bg2=forPrint?'#f8f9fc':'var(--bg2)';
-  const teal='#00d4aa';
-  const rows=(oc.items||[]).map((item,i)=>{
-    const sub=item.qty*(item.precio||0);
-    return `<tr style="border-bottom:1px solid ${bdr}">
-      <td style="padding:7px 10px;font-size:12px;color:${ink2}">${i+1}</td>
-      <td style="padding:7px 10px;font-size:12px;font-weight:500;color:${ink}">${item.nombre}</td>
-      <td style="padding:7px 10px;font-size:10px;color:${ink3};font-family:monospace">${item.cod}</td>
-      <td style="padding:7px 10px;font-size:11px;color:${ink3};text-align:center">${item.um||'—'}</td>
-      <td style="padding:7px 10px;font-size:12px;text-align:right;color:${ink}">${item.qty}</td>
-      <td style="padding:7px 10px;font-size:11px;text-align:right;color:${ink2};font-family:monospace">${item.precio?('$ '+Math.round(item.precio).toLocaleString('es-CL')):'—'}</td>
-      <td style="padding:7px 10px;font-size:12px;text-align:right;font-weight:600;color:${ink};font-family:monospace">${sub?('$ '+Math.round(sub).toLocaleString('es-CL')):'—'}</td>
+  const teal = '#00b894';
+  const rows = (oc.items||[]).map((item,i)=>{
+    return `<tr style="border-bottom:1px solid #e8ecf0">
+      <td style="padding:8px 12px;font-size:12px;color:#888;font-family:monospace;white-space:nowrap">${i+1}</td>
+      <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#111">${item.nombre}</td>
+      <td style="padding:8px 12px;font-size:11px;color:#888;font-family:monospace">${item.cod}</td>
+      <td style="padding:8px 12px;font-size:12px;color:#444">${item.pres||'—'}</td>
+      <td style="padding:8px 12px;font-size:12px;text-align:center;color:#888;font-family:monospace">${item.um||'—'}</td>
+      <td style="padding:8px 12px;font-size:14px;font-weight:700;color:#111;text-align:center;font-family:monospace">${item.qty}</td>
     </tr>`;
   }).join('');
-  return `<div style="background:${forPrint?'#fff':bg2};color:${ink};font-family:'DM Sans',Arial,sans-serif;max-width:800px;margin:0 auto">
-    <div style="background:#0d0f1a;padding:18px 24px;display:flex;align-items:center;justify-content:space-between">
-      <div><div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:${teal}">GBISNESS</div>
-        <div style="font-family:monospace;font-size:9px;letter-spacing:2px;color:#606888">CYBERNETIC SPA · RUT 77.215.071-7</div></div>
-      <div style="text-align:right"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#fff">ORDEN DE COMPRA</div>
-        <div style="font-family:monospace;font-size:13px;color:${teal}">${oc.num}</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:2px solid ${teal}">
-      <div style="padding:14px 20px;border-right:1px solid ${bdr}">
-        <div style="font-family:monospace;font-size:9px;letter-spacing:2px;color:${ink3};text-transform:uppercase;margin-bottom:5px">Proveedor</div>
-        <div style="font-size:15px;font-weight:700;color:${ink};margin-bottom:2px">${oc.provNombre}</div>
-        ${oc.provContacto?`<div style="font-size:12px;color:${ink2}">${oc.provContacto}</div>`:''}
-        ${oc.provTel?`<div style="font-family:monospace;font-size:11px;color:${ink3}">${oc.provTel}</div>`:''}
+
+  return `<div style="background:#fff;color:#111;font-family:'DM Sans',Arial,sans-serif;max-width:800px;margin:0 auto">
+    <!-- HEADER -->
+    <div style="background:#0d1117;padding:20px 28px;display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:5px;color:${teal}">GBISNESS</div>
+        <div style="font-family:monospace;font-size:9px;letter-spacing:2px;color:#555;margin-top:2px">CYBERNETIC SPA · RUT 77.215.071-7</div>
+        <div style="font-family:monospace;font-size:9px;letter-spacing:1px;color:#555">Antonio Bellet 143 Of. 310, Providencia</div>
       </div>
-      <div style="padding:14px 20px">
-        <div style="font-family:monospace;font-size:9px;letter-spacing:2px;color:${ink3};margin-bottom:5px">DETALLES</div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:${ink3}">Fecha</span><span style="font-size:12px;font-weight:600;font-family:monospace">${oc.fecha}</span></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:${ink3}">N° OC</span><span style="font-size:12px;font-weight:600;color:${teal};font-family:monospace">${oc.num}</span></div>
-        <div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:${ink3}">Estado</span><span style="font-size:12px;font-weight:600;text-transform:uppercase;font-family:monospace">${oc.status}</span></div>
+      <div style="text-align:right">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:#fff;margin-bottom:4px">ORDEN DE COMPRA</div>
+        <div style="font-family:monospace;font-size:16px;font-weight:700;color:${teal}">${oc.num}</div>
+        <div style="font-family:monospace;font-size:10px;color:#555;margin-top:3px">${oc.fecha}</div>
       </div>
     </div>
-    <table style="width:100%;border-collapse:collapse">
-      <thead><tr style="background:#1a1d2e">
-        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:left">#</th>
-        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:left">Producto</th>
-        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:left">Código</th>
-        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:center">UM</th>
-        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:right">Cant.</th>
-        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:right">P.Unit S/IVA</th>
-        <th style="padding:8px 10px;font-family:monospace;font-size:9px;letter-spacing:1.5px;color:#606888;text-align:right">Subtotal</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <div style="padding:14px 20px;border-top:2px solid ${teal};background:#0d0f1a">
-      <div style="display:flex;justify-content:flex-end">
-        <div style="min-width:280px">
-          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1a1d2e">
-            <span style="font-family:monospace;font-size:10px;color:#606888">Neto S/IVA</span>
-            <span style="font-family:monospace;font-size:12px;color:#e8eaf6">$ ${neto.toLocaleString('es-CL')}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1a1d2e">
-            <span style="font-family:monospace;font-size:10px;color:#606888">IVA 19%</span>
-            <span style="font-family:monospace;font-size:12px;color:#e8eaf6">$ ${iva.toLocaleString('es-CL')}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:8px 0">
-            <span style="font-family:monospace;font-size:11px;letter-spacing:1px;color:#a0a8c8;text-transform:uppercase">Total C/IVA</span>
-            <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:${teal}">$ ${civa.toLocaleString('es-CL')}</span>
-          </div>
+    <!-- ACCENT LINE -->
+    <div style="height:3px;background:linear-gradient(90deg,${teal},#0078d4)"></div>
+    <!-- PROVEEDOR / INFO -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #e8ecf0">
+      <div style="padding:16px 24px;border-right:1px solid #e8ecf0">
+        <div style="font-family:monospace;font-size:8px;letter-spacing:2px;color:#aaa;text-transform:uppercase;margin-bottom:6px">Proveedor</div>
+        <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:3px">${oc.provNombre}</div>
+        ${oc.provContacto?`<div style="font-size:12px;color:#555">${oc.provContacto}</div>`:''}
+        ${oc.provTel?`<div style="font-family:monospace;font-size:11px;color:#888">${oc.provTel}</div>`:''}
+      </div>
+      <div style="padding:16px 24px">
+        <div style="font-family:monospace;font-size:8px;letter-spacing:2px;color:#aaa;text-transform:uppercase;margin-bottom:6px">Detalles</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;color:#888">N° Orden</span>
+          <span style="font-family:monospace;font-size:12px;font-weight:700;color:${teal}">${oc.num}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;color:#888">Fecha</span>
+          <span style="font-family:monospace;font-size:11px;color:#333">${oc.fecha}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:11px;color:#888">Estado</span>
+          <span style="font-family:monospace;font-size:11px;font-weight:600;text-transform:uppercase;color:#333">${oc.status}</span>
         </div>
       </div>
     </div>
-    ${oc.notas?`<div style="padding:12px 20px;border-top:1px solid ${bdr}"><div style="font-family:monospace;font-size:9px;letter-spacing:1px;color:${ink3};margin-bottom:4px">NOTAS</div><div style="font-size:12px;color:${ink2}">${oc.notas}</div></div>`:''}
-    <div style="padding:10px 20px;text-align:center;font-family:monospace;font-size:9px;color:${ink3};border-top:1px solid ${bdr}">Generado por GBisness · Cybernetic SpA · ${new Date().toLocaleDateString('es-CL')}</div>
+    <!-- TABLE -->
+    <div style="padding:0 0 8px">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f4f6f9;border-bottom:2px solid #e0e4ea">
+            <th style="padding:10px 12px;font-family:monospace;font-size:8px;letter-spacing:1.5px;color:#888;text-align:left;text-transform:uppercase;white-space:nowrap">#</th>
+            <th style="padding:10px 12px;font-family:monospace;font-size:8px;letter-spacing:1.5px;color:#888;text-align:left;text-transform:uppercase">Producto</th>
+            <th style="padding:10px 12px;font-family:monospace;font-size:8px;letter-spacing:1.5px;color:#888;text-align:left;text-transform:uppercase">Código</th>
+            <th style="padding:10px 12px;font-family:monospace;font-size:8px;letter-spacing:1.5px;color:#888;text-align:left;text-transform:uppercase">Presentación</th>
+            <th style="padding:10px 12px;font-family:monospace;font-size:8px;letter-spacing:1.5px;color:#888;text-align:center;text-transform:uppercase">UM</th>
+            <th style="padding:10px 12px;font-family:monospace;font-size:8px;letter-spacing:1.5px;color:#888;text-align:center;text-transform:uppercase">Cantidad</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <!-- SUMMARY BAR -->
+    <div style="background:#f4f6f9;border-top:2px solid #e0e4ea;padding:14px 24px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:monospace;font-size:10px;color:#888;letter-spacing:1px">${(oc.items||[]).length} PRODUCTOS EN ESTA ORDEN</div>
+      <div style="font-family:monospace;font-size:10px;color:#888">Los precios serán confirmados por el proveedor</div>
+    </div>
+    ${oc.notas?`<div style="padding:12px 24px;border-top:1px solid #e8ecf0;background:#fffdf5">
+      <div style="font-family:monospace;font-size:8px;letter-spacing:2px;color:#aaa;text-transform:uppercase;margin-bottom:4px">Notas / Observaciones</div>
+      <div style="font-size:12px;color:#444">${oc.notas}</div>
+    </div>`:''}
+    <!-- FOOTER -->
+    <div style="padding:12px 24px;text-align:center;border-top:1px solid #e8ecf0">
+      <div style="font-family:monospace;font-size:9px;color:#bbb;letter-spacing:1px">Generado por GBisness · Cybernetic SpA · ${new Date().toLocaleDateString('es-CL')}</div>
+    </div>
   </div>`;
 }
-
 // ════════════════════════════════════════════════════════════════
 // EXPORT CATALOGO XLS
 // ════════════════════════════════════════════════════════════════
