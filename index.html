@@ -6945,6 +6945,136 @@ function generarCertificado(t, v) {
   </div>
 </div>
 <script>window.print();<\/script>
+
+
+<script>
+/* ==== PATCH BUSCADOR SIN ACENTOS + FORMATO 200L => TINETA 20L ==== */
+(function(){
+  function pvNormText(s){
+    return String(s||'')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .trim();
+  }
+  window.pvNormText = pvNormText;
+
+  function pvFixFormato200L(prod){
+    if(!prod) return prod;
+    const p = Object.assign({}, prod);
+    const pres = String(p.pres||'');
+    // Todo formato de 200 L / 200 LT / 200 litros pasa a Tineta 20 L.
+    // No toca 200 kg, porque ese corresponde a otro formato físico.
+    if(/\b200\s*(l|lt|lts|litro|litros)\b/i.test(pres) || /\b200\s*-\s*250\s*(l|lt|lts|litro|litros)\b/i.test(pres)){
+      p.pres = 'Tineta 20 L';
+      p.um = 'L';
+    }
+    return p;
+  }
+  window.pvFixFormato200L = pvFixFormato200L;
+
+  const oldGetProd = window.pvGetProd;
+  if(typeof oldGetProd === 'function'){
+    window.pvGetProd = function(cod){ return pvFixFormato200L(oldGetProd(cod)); };
+  }
+
+  const oldAllProds = window.pvAllProds;
+  if(typeof oldAllProds === 'function'){
+    window.pvAllProds = function(){ return oldAllProds().map(pvFixFormato200L); };
+  }
+
+  window.pvGetFiltered = function() {
+    const q   = pvNormText(document.getElementById('pv-cat-q')?.value||'');
+    const pf  = document.getElementById('pv-cat-prov')?.value||'';
+    const cf  = document.getElementById('pv-cat-cat')?.value||'';
+    return pvAllProds().filter(p=>{
+      const haystack = [p.nombre, p.cod, p.cat, p.pres, p.um, p.fuente].map(pvNormText).join(' ');
+      const mQ = !q || haystack.includes(q);
+      const mP = !pf || (pf==='ambos' ? p.provs.includes('holchem')&&p.provs.includes('navarro') : p.provs.includes(pf)&&(pf==='holchem'||pf==='navarro'?p.provs.length===1:true));
+      const mC = !cf || p.cat===cf;
+      const mU = pvUsoFilter==='all' || p.uso===pvUsoFilter;
+      return mQ && mP && mC && mU;
+    });
+  };
+
+  window.pvRenderOrdenes = function() {
+    const q  = pvNormText(document.getElementById('pv-oc-q')?.value||'');
+    const sf = document.getElementById('pv-oc-status')?.value||'';
+    const pf = document.getElementById('pv-oc-prov-f')?.value||'';
+    const list = pvOCList.filter(oc=>{
+      const haystack = [oc.num, oc.provNombre, oc.fecha, oc.status].map(pvNormText).join(' ');
+      const mQ = !q || haystack.includes(q);
+      return mQ && (!sf||oc.status===sf) && (!pf||oc.provId===pf);
+    }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+
+    document.getElementById('kpi-oc-total').textContent  = pvOCList.length;
+    document.getElementById('kpi-oc-rec').textContent    = pvOCList.filter(o=>o.status==='recibida').length;
+    document.getElementById('kpi-oc-sent').textContent   = pvOCList.filter(o=>o.status==='enviada').length;
+    document.getElementById('kpi-oc-pend').textContent   = pvOCList.filter(o=>['borrador','confirmada'].includes(o.status)).length;
+
+    const tbody = document.getElementById('pv-oc-body');
+    if(!tbody) return;
+    if(!list.length){
+      tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin órdenes. <span style="color:var(--teal);cursor:pointer" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">Crear OC →</span></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(oc=>{
+      const neto = (oc.items||[]).reduce((s,i)=>s+i.qty*(i.precio||0),0);
+      const editBtn = oc.status==='borrador' ? `<button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvEditDraftOC('${oc.num}')">✏</button>` : '';
+      return `<tr>
+        <td><span class="oc-num">${oc.num}</span></td>
+        <td style="font-weight:500">${oc.provNombre}</td>
+        <td style="font-family:var(--font-mono);font-size:10px;color:var(--text2)">${oc.fecha}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;text-align:center">${(oc.items||[]).length}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--teal);text-align:right">${pvFmt(neto)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;text-align:right">${pvFmt(neto*1.19)}</td>
+        <td>${pvOCStatusBadge(oc.status)}</td>
+        <td style="white-space:nowrap">
+          ${editBtn}
+          <button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvViewOC('${oc.num}')">👁</button>
+          <button class="pv-btn pv-btn-teal" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvPrintOCById('${oc.num}')">🖨</button>
+          <select style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:3px 6px;font-family:var(--font-mono);font-size:9px;border-radius:2px;outline:none" onchange="pvChangeStatus('${oc.num}',this.value);this.value=''">
+            <option value="">Estado…</option>
+            <option value="borrador">Borrador</option><option value="enviada">Enviada</option>
+            <option value="confirmada">Confirmada</option><option value="recibida">Recibida</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+        </td>
+      </tr>`;
+    }).join('');
+  };
+
+  window.pvOCSearchProds = function() {
+    const q    = pvNormText(document.getElementById('oc-prod-q')?.value||'');
+    const prov = document.getElementById('oc-prov-sel')?.value||'';
+    const res  = document.getElementById('oc-prod-results');
+    if(!res) return;
+    if(!prov){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Selecciona un proveedor primero</div>'; return; }
+    const matches = pvAllProds().filter(p=>{
+      const haystack = [p.nombre, p.cod, p.cat, p.pres, p.um].map(pvNormText).join(' ');
+      const mQ = !q || haystack.includes(q);
+      const mP = p.provs.includes(prov);
+      return mQ && mP;
+    }).slice(0,80);
+    if(!matches.length){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</div>'; return; }
+    res.innerHTML = matches.map(p=>{
+      return `<div style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''" onclick="pvAddItemToOC('${p.cod}')">
+        <div style="font-size:12px;font-weight:500">${p.nombre}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cod} · ${p.pres} · ${p.um}</div>
+      </div>`;
+    }).join('');
+  };
+
+  const oldBoot = window.bootProveedores;
+  if(typeof oldBoot === 'function'){
+    window.bootProveedores = function(){
+      oldBoot();
+      try{ pvRefreshCategoryOptions(); pvRenderKPIs(); pvRenderCatalogo(); pvRenderOrdenes(); }catch(e){}
+    };
+  }
+})();
+</script>
+
 </body></html>`;
 
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
@@ -7533,7 +7663,137 @@ function exportarOrg() {
   @media print{body{background:#fff;color:#000}}</style></head>
   <body><h1 style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:#00d4aa;margin-bottom:4px">ORGANIGRAMA</h1>
   <p style="font-family:'Space Mono',monospace;font-size:9px;color:#606888;margin-bottom:24px">GBISNESS · GESTIÓN RRHH · Generado ${new Date().toLocaleDateString('es-CL')}</p>
-  ${wrap.innerHTML}<script>window.print();<\/script></body></html>`;
+  ${wrap.innerHTML}<script>window.print();<\/script>
+
+<script>
+/* ==== PATCH BUSCADOR SIN ACENTOS + FORMATO 200L => TINETA 20L ==== */
+(function(){
+  function pvNormText(s){
+    return String(s||'')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .trim();
+  }
+  window.pvNormText = pvNormText;
+
+  function pvFixFormato200L(prod){
+    if(!prod) return prod;
+    const p = Object.assign({}, prod);
+    const pres = String(p.pres||'');
+    // Todo formato de 200 L / 200 LT / 200 litros pasa a Tineta 20 L.
+    // No toca 200 kg, porque ese corresponde a otro formato físico.
+    if(/\b200\s*(l|lt|lts|litro|litros)\b/i.test(pres) || /\b200\s*-\s*250\s*(l|lt|lts|litro|litros)\b/i.test(pres)){
+      p.pres = 'Tineta 20 L';
+      p.um = 'L';
+    }
+    return p;
+  }
+  window.pvFixFormato200L = pvFixFormato200L;
+
+  const oldGetProd = window.pvGetProd;
+  if(typeof oldGetProd === 'function'){
+    window.pvGetProd = function(cod){ return pvFixFormato200L(oldGetProd(cod)); };
+  }
+
+  const oldAllProds = window.pvAllProds;
+  if(typeof oldAllProds === 'function'){
+    window.pvAllProds = function(){ return oldAllProds().map(pvFixFormato200L); };
+  }
+
+  window.pvGetFiltered = function() {
+    const q   = pvNormText(document.getElementById('pv-cat-q')?.value||'');
+    const pf  = document.getElementById('pv-cat-prov')?.value||'';
+    const cf  = document.getElementById('pv-cat-cat')?.value||'';
+    return pvAllProds().filter(p=>{
+      const haystack = [p.nombre, p.cod, p.cat, p.pres, p.um, p.fuente].map(pvNormText).join(' ');
+      const mQ = !q || haystack.includes(q);
+      const mP = !pf || (pf==='ambos' ? p.provs.includes('holchem')&&p.provs.includes('navarro') : p.provs.includes(pf)&&(pf==='holchem'||pf==='navarro'?p.provs.length===1:true));
+      const mC = !cf || p.cat===cf;
+      const mU = pvUsoFilter==='all' || p.uso===pvUsoFilter;
+      return mQ && mP && mC && mU;
+    });
+  };
+
+  window.pvRenderOrdenes = function() {
+    const q  = pvNormText(document.getElementById('pv-oc-q')?.value||'');
+    const sf = document.getElementById('pv-oc-status')?.value||'';
+    const pf = document.getElementById('pv-oc-prov-f')?.value||'';
+    const list = pvOCList.filter(oc=>{
+      const haystack = [oc.num, oc.provNombre, oc.fecha, oc.status].map(pvNormText).join(' ');
+      const mQ = !q || haystack.includes(q);
+      return mQ && (!sf||oc.status===sf) && (!pf||oc.provId===pf);
+    }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+
+    document.getElementById('kpi-oc-total').textContent  = pvOCList.length;
+    document.getElementById('kpi-oc-rec').textContent    = pvOCList.filter(o=>o.status==='recibida').length;
+    document.getElementById('kpi-oc-sent').textContent   = pvOCList.filter(o=>o.status==='enviada').length;
+    document.getElementById('kpi-oc-pend').textContent   = pvOCList.filter(o=>['borrador','confirmada'].includes(o.status)).length;
+
+    const tbody = document.getElementById('pv-oc-body');
+    if(!tbody) return;
+    if(!list.length){
+      tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin órdenes. <span style="color:var(--teal);cursor:pointer" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">Crear OC →</span></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(oc=>{
+      const neto = (oc.items||[]).reduce((s,i)=>s+i.qty*(i.precio||0),0);
+      const editBtn = oc.status==='borrador' ? `<button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvEditDraftOC('${oc.num}')">✏</button>` : '';
+      return `<tr>
+        <td><span class="oc-num">${oc.num}</span></td>
+        <td style="font-weight:500">${oc.provNombre}</td>
+        <td style="font-family:var(--font-mono);font-size:10px;color:var(--text2)">${oc.fecha}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;text-align:center">${(oc.items||[]).length}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--teal);text-align:right">${pvFmt(neto)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;text-align:right">${pvFmt(neto*1.19)}</td>
+        <td>${pvOCStatusBadge(oc.status)}</td>
+        <td style="white-space:nowrap">
+          ${editBtn}
+          <button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvViewOC('${oc.num}')">👁</button>
+          <button class="pv-btn pv-btn-teal" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvPrintOCById('${oc.num}')">🖨</button>
+          <select style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:3px 6px;font-family:var(--font-mono);font-size:9px;border-radius:2px;outline:none" onchange="pvChangeStatus('${oc.num}',this.value);this.value=''">
+            <option value="">Estado…</option>
+            <option value="borrador">Borrador</option><option value="enviada">Enviada</option>
+            <option value="confirmada">Confirmada</option><option value="recibida">Recibida</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+        </td>
+      </tr>`;
+    }).join('');
+  };
+
+  window.pvOCSearchProds = function() {
+    const q    = pvNormText(document.getElementById('oc-prod-q')?.value||'');
+    const prov = document.getElementById('oc-prov-sel')?.value||'';
+    const res  = document.getElementById('oc-prod-results');
+    if(!res) return;
+    if(!prov){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Selecciona un proveedor primero</div>'; return; }
+    const matches = pvAllProds().filter(p=>{
+      const haystack = [p.nombre, p.cod, p.cat, p.pres, p.um].map(pvNormText).join(' ');
+      const mQ = !q || haystack.includes(q);
+      const mP = p.provs.includes(prov);
+      return mQ && mP;
+    }).slice(0,80);
+    if(!matches.length){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</div>'; return; }
+    res.innerHTML = matches.map(p=>{
+      return `<div style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''" onclick="pvAddItemToOC('${p.cod}')">
+        <div style="font-size:12px;font-weight:500">${p.nombre}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cod} · ${p.pres} · ${p.um}</div>
+      </div>`;
+    }).join('');
+  };
+
+  const oldBoot = window.bootProveedores;
+  if(typeof oldBoot === 'function'){
+    window.bootProveedores = function(){
+      oldBoot();
+      try{ pvRefreshCategoryOptions(); pvRenderKPIs(); pvRenderCatalogo(); pvRenderOrdenes(); }catch(e){}
+    };
+  }
+})();
+</script>
+
+</body></html>`;
   const blob = new Blob([html],{type:'text/html;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -11158,6 +11418,445 @@ function pvExportCatalogo() {
 #app-proveedores .pv-rank-low{background:rgba(0,229,160,.12);color:var(--green);border:1px solid rgba(0,229,160,.28)}
 #app-proveedores .pv-rank-high{background:rgba(255,71,87,.12);color:var(--red);border:1px solid rgba(255,71,87,.30)}
 </style>
+
+
+<script>
+/* ══ PATCH INSÚQUIM · proveedor + unificación inteligente de títulos ══ */
+(function(){
+  const INSUQUIM_RAW = [
+  "ACEITE DE COCO",
+  "ACETATO DE ETILO",
+  "ACETATO DE SODIO FG / TG",
+  "ACETONA",
+  "ACIDO ACETICO 99%",
+  "ACIDO ACETICO 99% (ACIDO ACETICO GLACIAL)",
+  "ACIDO ASCORBICO",
+  "ACIDO BORICO",
+  "ACIDO CITRICO ANHIDRO USP",
+  "ACIDO CLORHIDRICO 32%",
+  "ACIDO FLUORHIDRICO 75%",
+  "ACIDO FORMICO 85%",
+  "ACIDO FOSFORICO 85% FG",
+  "ACIDO FOSFOROSO",
+  "ACIDO LACTICO",
+  "ACIDO NITRICO 68%",
+  "ACIDO OLEICO",
+  "ACIDO OXALICO 93%",
+  "ACIDO OXALICO 99%",
+  "ACIDO SALICILICO",
+  "ACIDO SULFAMICO",
+  "ACIDO SULFONICO LINEAL 96%",
+  "ACIDO SULFURICO 98%",
+  "ACIDO TARTARICO",
+  "AGAR AGAR",
+  "AGUA OXIGENADA 50% / 35%",
+  "AGUARRAS MINERAL",
+  "ALCOHOL ETILICO 96% (BIOETANOL)",
+  "ALCOHOL GEL",
+  "ALCOHOL ISOPROPILICO (IPA) / ISOPROPANOL",
+  "ALCOHOL METILICO (METANOL)",
+  "AMONIACO",
+  "AMONIO CUATERNARIO 50% / CLORURO DE BENZALCONIO",
+  "ANTIESPUMANTE ALIMENTICIO",
+  "ANTIESPUMANTE INDUSTRIAL",
+  "ASCORBATO DE SODIO",
+  "AZUL DE METILENO POLVO",
+  "AZUL DE METILENO SOLUCION 1%",
+  "BENTONITA",
+  "BENZOATO DE SODIO FG",
+  "BETAINA",
+  "BICARBONATO DE AMONIO FG",
+  "BICARBONATO DE SODIO FG",
+  "BICROMATO DE POTASIO",
+  "BICROMATO DE SODIO / DICROMATO DE SODIO",
+  "BISULFATO DE SODIO",
+  "BORAX DECAHIDRATADO (BORATO DE SODIO)",
+  "BUTIL GLICOL / BUTIL OXITOL",
+  "BUTILHIDROXITOLUENO (ANTIOXIDANTE B.H.T)",
+  "CAOLIN",
+  "CARBON ACTIVADO",
+  "CARBONATO DE CALCIO",
+  "CARBONATO DE POTASIO",
+  "CARBONATO DE SODIO-CENIZA DE SODA LIVIANA",
+  "CARBONATO DE SODIO-CENIZA DE SODA PESADA",
+  "CARBOXIMETIL CELULOSA (CMC)",
+  "CELULOSA MICROCRISTALINA",
+  "CICLAMATO DE SODIO",
+  "CITRATO DE POTASIO",
+  "CITRATO DE SODIO FG",
+  "CLORITO DE SODIO 80%",
+  "CLORO GRANULADO",
+  "CLORO TABLETAS TRIPLE ACCION",
+  "CLOROFORMO",
+  "CLORURO DE CALCIO 77% FG y TEC",
+  "CLORURO DE ESTANO",
+  "CLORURO DE MAGNESIO USP",
+  "CLORURO DE METILENO",
+  "CLORURO DE POTASIO USP",
+  "CLORURO DE SODIO (SAL FINA)",
+  "CLORURO DE ZINC",
+  "COLAGENO HIDROLIZADO",
+  "COLORANTES / ANILINAS",
+  "CREOLINA",
+  "DEXTROSA ANHIDRA",
+  "DEXTROSA MONOHIDRATADA",
+  "DIETANOLAMIDA DE COCO",
+  "DIOXIDO DE SILICIO FG y TEC",
+  "DIOXIDO DE TITANIO",
+  "ERITORBATO DE SODIO FG",
+  "ESTEARATO DE MAGNESIO USP",
+  "ETILENGLICOL / MONOETILENGLICOL",
+  "FLUORURO DE SODIO",
+  "FORMALINA 37% (FORMOL)",
+  "FOSFATO DIAMONICO FERT / FG",
+  "FOSFATO DISODICO FG",
+  "FOSFATO TRISODICO / ANH",
+  "FOSTATO MONOSODICO FG",
+  "FRAGANCIAS VARIAS",
+  "GLICERINA VEGETAL",
+  "GLUCONATO DE SODIO FG",
+  "GLUTAMATO MONOSODICO FG",
+  "GLUTARALDEHIDO",
+  "GLUTEN DE TRIGO",
+  "GOMA ARABIGA USP",
+  "GOMA GUAR FG 200 MESH",
+  "GOMA XANTHAN FG 200 MESH",
+  "OXIDO DE AMINA",
+  "OXIDO DE COBRE (OXIDO CUPRICO)",
+  "OXIDO DE HIERRO",
+  "OXIDO DE MAGNESIO",
+  "OXIDO DE MANGANESO",
+  "OXIDO DE ZINC SELLO DE ORO",
+  "PERCARBONATO DE SODIO",
+  "PERMANGANATO DE POTASIO",
+  "PROPILENGLICOL",
+  "PROPIONATO DE CALCIO",
+  "SACARINA SODICA",
+  "SACAROSA (AZUCAR BLANCA)",
+  "SILICA GEL NARANJA (GRANEL)",
+  "SILICA GEL NARANJA, SACHETS 10 grs",
+  "SILICA GEL NARANJA, SACHETS 100 grs",
+  "SILICA GEL NARANJA, SACHETS 250 grs",
+  "SILICA GEL NARANJA, SACHETS 500 grs",
+  "SILICA GEL NATURAL",
+  "SILICA GEL NATURAL (GRANEL)",
+  "SILICA GEL NATURAL USP, SACHETS 1,5 grs",
+  "SILICONA 60/350",
+  "SORBATO DE POTASIO FG",
+  "SORBITOL 70%",
+  "SUCRALOSA",
+  "SULFATO DE ALUMINIO",
+  "SULFATO DE AMONIO",
+  "SULFATO DE COBRE NIEVE / PENTAHIDRATAD",
+  "SULFATO DE MAGNESIO HEPTAHIDRATADO",
+  "SULFATO DE MANGANESO",
+  "SULFATO DE SODIO ANHIDRO",
+  "SULFATO FERROSO HEPTAHIDRATADO",
+  "TALCO INDUSTRIAL",
+  "TALCO USP",
+  "TIOSULFATO DE SODIO",
+  "TOLUENO",
+  "TRICLOROETILENO",
+  "TRIETANOLAMINA 85%",
+  "TRIPOLIFOSFATO DE SODIO FG / IND",
+  "TWEEN 60 (POLISORBATO 60)",
+  "TWEEN 80 (POLISORBATO 80)",
+  "UREA",
+  "VASELINA",
+  "XILENO (XILOL)"
+];
+  const INSU_PROV = { id:'insuquim', nombre:'Insuquim', contacto:'—', tel:'—', email:'—', direccion:'—', condPago:'A convenir', cls:'ins' };
+
+  function insNoAcc(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,''); }
+  function insTitleCase(s){
+    return String(s||'').toLowerCase().split(/\s+/).map(w=>{
+      if(/^(fg|tg|usp|ipa|mek|mibk|bht|cmc|atmp|hedp|adblue)$/i.test(w)) return w.toUpperCase();
+      if(/^\d/.test(w)) return w.toUpperCase();
+      return w.charAt(0).toUpperCase()+w.slice(1);
+    }).join(' ').replace(/Acido/g,'Ácido').replace(/Oxalico/g,'Oxálico').replace(/Fosforico/g,'Fosfórico').replace(/Citrico/g,'Cítrico').replace(/Borico/g,'Bórico').replace(/Lactico/g,'Láctico').replace(/Nitrico/g,'Nítrico').replace(/Sulfurico/g,'Sulfúrico').replace(/Sulfamico/g,'Sulfámico').replace(/Ferroso/g,'Ferroso').replace(/Etilico/g,'Etílico').replace(/Isopropilico/g,'Isopropílico').replace(/Sodico/g,'Sódico').replace(/Potasico/g,'Potásico').replace(/Magnesio/g,'Magnesio');
+  }
+  function insBaseKey(s){
+    let x = insNoAcc(s).toLowerCase();
+    x = x.replace(/\([^)]*\)/g,' ');
+    x = x.replace(/(fg|f\.g\.|tg|t\.g\.|usp|ind|industrial|alimenticio|alimenticia|tecnico|tec|sello de oro|aleman)/g,' ');
+    x = x.replace(/(acido acetico glacial)/g,'acido acetico 99');
+    x = x.replace(/(isopropanol)/g,'alcohol isopropilico');
+    x = x.replace(/(butil oxitol)/g,'butil glicol');
+    x = x.replace(/(ceniza de soda)/g,'carbonato de sodio');
+    x = x.replace(/(soda caustica)/g,'hidroxido de sodio');
+    x = x.replace(/(lauril polvo)/g,'lauril sulfato de sodio 90');
+    x = x.replace(/(hiposulfito de sodio)/g,'tiosulfato de sodio');
+    x = x.replace(/(pentahidratad)/g,'pentahidratado');
+    x = x.replace(/[^a-z0-9%]+/g,' ').replace(/\s+/g,' ').trim();
+    return x;
+  }
+  function insFormatKey(name, pres){
+    const t = insNoAcc((name||'')+' '+(pres||'')).toLowerCase().replace(',', '.');
+    const pct = [...t.matchAll(/(\d+(?:\.\d+)?)\s*%/g)].map(m=>m[1]+'%').join('/');
+    const grade = (t.match(/(fg|tg|usp|industrial|alimenticio|tec|tecnico)/g)||[]).sort().join('-');
+    const mesh = (t.match(/\d+\s*mesh/)||[''])[0].replace(/\s+/g,'');
+    return [pct,grade,mesh].filter(Boolean).join('|') || 'general';
+  }
+  function insCat(name){
+    const n=insBaseKey(name);
+    if(/acido/.test(n)) return 'Ácidos';
+    if(/sulfato|cloruro|carbonato|bicarbonato|borax|metabisulfito|metasilicato|fosfato|nitrato|nitrito|citrato|benzoato|sorbato|sacarina|sucralosa|ciclamato/.test(n)) return 'Sales / Inorgánicos';
+    if(/alcohol|acetona|tolueno|xileno|glicol|glicerina|aguarras|cloroformo|ketona|silicona|vaselina/.test(n)) return 'Solventes / Humectantes';
+    if(/betaina|lauril|nonil|tween|oxido de amina|dietanolamida|perlante|amonio cuaternario/.test(n)) return 'Tensoactivos';
+    if(/cloro|hipoclorito|agua oxigenada|percarbonato|permanganato|formalina|glutaraldehido/.test(n)) return 'Desinfectantes / Oxidantes';
+    if(/goma|cmc|celulosa|agar|colageno/.test(n)) return 'Espesantes';
+    if(/fragancia|colorante|anilina/.test(n)) return 'Aditivos';
+    return 'Materias Primas';
+  }
+  function insUM(name){
+    const n=insBaseKey(name);
+    if(/alcohol|acetona|tolueno|xileno|glicol|glicerina|amonio cuaternario|agua oxigenada|hipoclorito|formalina|trietanolamina|monoetanolamina|silicona|sorbitol/.test(n)) return 'L';
+    return 'kg';
+  }
+  function insPres(name){
+    const fmt = insFormatKey(name,'');
+    if(fmt !== 'general') return 'Consultar formato · '+fmt.replace(/\|/g,' · ');
+    return 'Consultar formato';
+  }
+  function insVariants(name){
+    const raw=String(name||'').trim();
+    if(!raw.includes('/')) return [raw];
+    const parts=raw.split('/').map(x=>x.trim()).filter(Boolean);
+    if(parts.length<2) return [raw];
+    const base=parts[0];
+    const prefix=base.split(/\s+/).slice(0,-1).join(' ');
+    return parts.map((p,i)=> i===0 ? base : (/^(acido|ácido|cloruro|sulfato|alcohol|tween|silica|hidroxido|hipoclorito|carbonato|bicarbonato|butil|isopropanol)/i.test(p) ? p : (prefix+' '+p).trim()));
+  }
+  function insTokenScore(a,b){
+    const A=new Set(insBaseKey(a).split(' ').filter(x=>x.length>2));
+    const B=new Set(insBaseKey(b).split(' ').filter(x=>x.length>2));
+    if(!A.size || !B.size) return 0;
+    let inter=0; A.forEach(x=>{ if(B.has(x)) inter++; });
+    return inter / Math.max(A.size,B.size);
+  }
+  function insFindProduct(rawName){
+    const key=insBaseKey(rawName), fmt=insFormatKey(rawName,'');
+    const prods = PV_DATA.PRODUCTOS.concat((window.pvCustomProducts||[]));
+    let exact = prods.find(p=>insBaseKey(p.nombre)===key && (fmt==='general' || insFormatKey(p.nombre,p.pres)===fmt || insFormatKey(p.nombre,p.pres)==='general'));
+    if(exact) return exact;
+    exact = prods.find(p=>{
+      const pk=insBaseKey(p.nombre), pf=insFormatKey(p.nombre,p.pres);
+      return (pk.includes(key)||key.includes(pk)) && (fmt==='general'||pf===fmt||pf==='general');
+    });
+    if(exact) return exact;
+    let best=null, score=0;
+    prods.forEach(p=>{ const sc=insTokenScore(rawName,p.nombre); if(sc>score){score=sc;best=p;} });
+    return score>=0.86 ? best : null;
+  }
+  function insApply(){
+    if(!window.PV_DATA) return;
+    if(!PV_DATA.PROVEEDORES.some(p=>p.id==='insuquim')) PV_DATA.PROVEEDORES.push(INSU_PROV);
+    const created=[];
+    INSUQUIM_RAW.flatMap(insVariants).forEach((raw,idx)=>{
+      const name = insTitleCase(raw);
+      let p = insFindProduct(raw);
+      if(p){
+        p.provs = [...new Set([...(p.provs||[]),'insuquim'])];
+        if(!p.fuente || !String(p.fuente).includes('Insuquim')) p.fuente = [p.fuente,'Listado Insuquim 2026'].filter(Boolean).join(' / ');
+      } else {
+        const cod = 'INS-'+String(created.length+1).padStart(3,'0');
+        p = { cod, codBase:cod, nombre:name, cat:insCat(raw), um:insUM(raw), pres:insPres(raw), provs:['insuquim'], uso:'Por Revisar', precio:null, fuente:'Listado Insuquim 2026', precios:{} };
+        PV_DATA.PRODUCTOS.push(p); created.push(p);
+      }
+    });
+  }
+  function insRefreshUI(){
+    const f=document.getElementById('pv-cat-prov');
+    if(f && ![...f.options].some(o=>o.value==='insuquim')){
+      const o=document.createElement('option'); o.value='insuquim'; o.textContent='Insuquim'; f.insertBefore(o, f.querySelector('option[value="ambos"]')||null);
+    }
+    ['oc-prov-sel','pv-oc-prov-f','add-provs'].forEach(id=>{
+      const s=document.getElementById(id); if(!s) return;
+      if(s.tagName==='SELECT' && ![...s.options].some(o=>o.value==='insuquim')){ const o=document.createElement('option'); o.value='insuquim'; o.textContent='Insuquim'; s.appendChild(o); }
+    });
+  }
+  const prevAll = window.pvAllProds;
+  window.pvAllProds = function(){ insApply(); return prevAll ? prevAll() : PV_DATA.PRODUCTOS; };
+  const prevBoot = window.bootProveedores;
+  window.bootProveedores = function(){ insApply(); if(prevBoot) prevBoot(); insRefreshUI(); };
+  const prevBadge = window.pvProvBadge;
+  window.pvProvBadge = function(id){ if(id==='insuquim') return '<span class="pv-badge badge-ins">INSUQUIM</span>'; return prevBadge ? prevBadge(id) : ''; };
+  const prevNormProv = window.pvNormalizeProvList;
+  window.pvNormalizeProvList = function(v){
+    const out = prevNormProv ? prevNormProv(v) : [];
+    const txt = Array.isArray(v) ? v.join(',') : String(v||'');
+    if(/insuquim/i.test(txt)) out.push('insuquim');
+    return [...new Set(out)];
+  };
+  const prevFiltered = window.pvGetFiltered;
+  window.pvGetFiltered = function(){
+    // Búsqueda sin acentos y proveedor sin restricciones antiguas.
+    const q = insBaseKey(document.getElementById('pv-cat-q')?.value||'');
+    const pf = document.getElementById('pv-cat-prov')?.value||'';
+    const cf = document.getElementById('pv-cat-cat')?.value||'';
+    return pvAllProds().filter(p=>{
+      const txt = insBaseKey([p.nombre,p.cod,p.cat,p.pres].join(' '));
+      const mQ = !q || txt.includes(q);
+      const mP = !pf || (pf==='ambos' ? p.provs.includes('holchem')&&p.provs.includes('navarro') : (p.provs||[]).includes(pf));
+      const mC = !cf || p.cat===cf;
+      const mU = window.pvUsoFilter==='all' || p.uso===window.pvUsoFilter || (typeof pvUsoFilter!=='undefined' && (pvUsoFilter==='all'||p.uso===pvUsoFilter));
+      return mQ && mP && mC && mU;
+    });
+  };
+  const prevProvRich = window.pvProvBadgeRich;
+  window.pvProvBadgeRich = function(p,id){ if(id==='insuquim') return pvProvBadge(id)+'<span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:4px">—</span>'; return prevProvRich ? prevProvRich(p,id) : pvProvBadge(id); };
+  const prevExport = window.pvExportCatalogo;
+  window.pvExportCatalogo = function(){
+    if(typeof XLSX==='undefined') return prevExport && prevExport();
+    const rows = pvGetFiltered().map(p=>({
+      'Código':p.cod,'Nombre':p.nombre,'Categoría':p.cat,'UM':p.um,'Presentación':p.pres,
+      'Precio más bajo S/IVA':p.precio||'',
+      'Proveedor más bajo':Object.entries(p.precios||{}).filter(([k,v])=>Number(v)>0).sort((a,b)=>a[1]-b[1])[0]?.[0]||'',
+      'Holchem S/IVA':p.precios?.holchem||'','Navarro S/IVA':p.precios?.navarro||'','Pochteca S/IVA':p.precios?.pochteca||'','Insuquim S/IVA':p.precios?.insuquim||'',
+      'Uso':p.uso,'Fuente':p.fuente||''
+    }));
+    const ws=XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:12},{wch:42},{wch:22},{wch:8},{wch:22},{wch:16},{wch:18},{wch:14},{wch:14},{wch:14},{wch:14},{wch:16},{wch:28}];
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Catálogo Químicos');
+    XLSX.writeFile(wb,'catalogo_quimicos_insuquim_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  };
+  document.addEventListener('DOMContentLoaded',()=>{ insApply(); insRefreshUI(); });
+  try{ insApply(); }catch(e){ console.warn('Insuquim patch pendiente:',e); }
+})();
+</script>
+<style>
+#app-proveedores .badge-ins{background:rgba(5,150,105,0.18);color:#34d399;border:1px solid rgba(5,150,105,0.35)}
+#app-proveedores .pv-prov-card.ins::before{background:#34d399}
+</style>
+
+
+
+<script>
+/* ==== PATCH BUSCADOR SIN ACENTOS + FORMATO 200L => TINETA 20L ==== */
+(function(){
+  function pvNormText(s){
+    return String(s||'')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .trim();
+  }
+  window.pvNormText = pvNormText;
+
+  function pvFixFormato200L(prod){
+    if(!prod) return prod;
+    const p = Object.assign({}, prod);
+    const pres = String(p.pres||'');
+    // Todo formato de 200 L / 200 LT / 200 litros pasa a Tineta 20 L.
+    // No toca 200 kg, porque ese corresponde a otro formato físico.
+    if(/\b200\s*(l|lt|lts|litro|litros)\b/i.test(pres) || /\b200\s*-\s*250\s*(l|lt|lts|litro|litros)\b/i.test(pres)){
+      p.pres = 'Tineta 20 L';
+      p.um = 'L';
+    }
+    return p;
+  }
+  window.pvFixFormato200L = pvFixFormato200L;
+
+  const oldGetProd = window.pvGetProd;
+  if(typeof oldGetProd === 'function'){
+    window.pvGetProd = function(cod){ return pvFixFormato200L(oldGetProd(cod)); };
+  }
+
+  const oldAllProds = window.pvAllProds;
+  if(typeof oldAllProds === 'function'){
+    window.pvAllProds = function(){ return oldAllProds().map(pvFixFormato200L); };
+  }
+
+  window.pvGetFiltered = function() {
+    const q   = pvNormText(document.getElementById('pv-cat-q')?.value||'');
+    const pf  = document.getElementById('pv-cat-prov')?.value||'';
+    const cf  = document.getElementById('pv-cat-cat')?.value||'';
+    return pvAllProds().filter(p=>{
+      const haystack = [p.nombre, p.cod, p.cat, p.pres, p.um, p.fuente].map(pvNormText).join(' ');
+      const mQ = !q || haystack.includes(q);
+      const mP = !pf || (pf==='ambos' ? p.provs.includes('holchem')&&p.provs.includes('navarro') : p.provs.includes(pf)&&(pf==='holchem'||pf==='navarro'?p.provs.length===1:true));
+      const mC = !cf || p.cat===cf;
+      const mU = pvUsoFilter==='all' || p.uso===pvUsoFilter;
+      return mQ && mP && mC && mU;
+    });
+  };
+
+  window.pvRenderOrdenes = function() {
+    const q  = pvNormText(document.getElementById('pv-oc-q')?.value||'');
+    const sf = document.getElementById('pv-oc-status')?.value||'';
+    const pf = document.getElementById('pv-oc-prov-f')?.value||'';
+    const list = pvOCList.filter(oc=>{
+      const haystack = [oc.num, oc.provNombre, oc.fecha, oc.status].map(pvNormText).join(' ');
+      const mQ = !q || haystack.includes(q);
+      return mQ && (!sf||oc.status===sf) && (!pf||oc.provId===pf);
+    }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+
+    document.getElementById('kpi-oc-total').textContent  = pvOCList.length;
+    document.getElementById('kpi-oc-rec').textContent    = pvOCList.filter(o=>o.status==='recibida').length;
+    document.getElementById('kpi-oc-sent').textContent   = pvOCList.filter(o=>o.status==='enviada').length;
+    document.getElementById('kpi-oc-pend').textContent   = pvOCList.filter(o=>['borrador','confirmada'].includes(o.status)).length;
+
+    const tbody = document.getElementById('pv-oc-body');
+    if(!tbody) return;
+    if(!list.length){
+      tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin órdenes. <span style="color:var(--teal);cursor:pointer" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">Crear OC →</span></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(oc=>{
+      const neto = (oc.items||[]).reduce((s,i)=>s+i.qty*(i.precio||0),0);
+      const editBtn = oc.status==='borrador' ? `<button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvEditDraftOC('${oc.num}')">✏</button>` : '';
+      return `<tr>
+        <td><span class="oc-num">${oc.num}</span></td>
+        <td style="font-weight:500">${oc.provNombre}</td>
+        <td style="font-family:var(--font-mono);font-size:10px;color:var(--text2)">${oc.fecha}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;text-align:center">${(oc.items||[]).length}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--teal);text-align:right">${pvFmt(neto)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;text-align:right">${pvFmt(neto*1.19)}</td>
+        <td>${pvOCStatusBadge(oc.status)}</td>
+        <td style="white-space:nowrap">
+          ${editBtn}
+          <button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvViewOC('${oc.num}')">👁</button>
+          <button class="pv-btn pv-btn-teal" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvPrintOCById('${oc.num}')">🖨</button>
+          <select style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:3px 6px;font-family:var(--font-mono);font-size:9px;border-radius:2px;outline:none" onchange="pvChangeStatus('${oc.num}',this.value);this.value=''">
+            <option value="">Estado…</option>
+            <option value="borrador">Borrador</option><option value="enviada">Enviada</option>
+            <option value="confirmada">Confirmada</option><option value="recibida">Recibida</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+        </td>
+      </tr>`;
+    }).join('');
+  };
+
+  window.pvOCSearchProds = function() {
+    const q    = pvNormText(document.getElementById('oc-prod-q')?.value||'');
+    const prov = document.getElementById('oc-prov-sel')?.value||'';
+    const res  = document.getElementById('oc-prod-results');
+    if(!res) return;
+    if(!prov){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Selecciona un proveedor primero</div>'; return; }
+    const matches = pvAllProds().filter(p=>{
+      const haystack = [p.nombre, p.cod, p.cat, p.pres, p.um].map(pvNormText).join(' ');
+      const mQ = !q || haystack.includes(q);
+      const mP = p.provs.includes(prov);
+      return mQ && mP;
+    }).slice(0,80);
+    if(!matches.length){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</div>'; return; }
+    res.innerHTML = matches.map(p=>{
+      return `<div style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''" onclick="pvAddItemToOC('${p.cod}')">
+        <div style="font-size:12px;font-weight:500">${p.nombre}</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cod} · ${p.pres} · ${p.um}</div>
+      </div>`;
+    }).join('');
+  };
+
+  const oldBoot = window.bootProveedores;
+  if(typeof oldBoot === 'function'){
+    window.bootProveedores = function(){
+      oldBoot();
+      try{ pvRefreshCategoryOptions(); pvRenderKPIs(); pvRenderCatalogo(); pvRenderOrdenes(); }catch(e){}
+    };
+  }
+})();
+</script>
 
 </body>
 </html>
