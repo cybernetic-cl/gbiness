@@ -11858,5 +11858,126 @@ function pvExportCatalogo() {
 })();
 </script>
 
+
+<script>
+/* ══ PATCH NAVARRO · costos cotizaciones 120.130 + match inteligente ══ */
+(function(){
+  const NAVARRO_COSTOS = [
+    {nombre:'Bicarbonato De Sodio F.G.', aliases:['bicarbonato de sodio','bicarbonato de sodio fg'], cat:'Bases / Álcalis', um:'kg', pres:'Saco 25 kg', precio:501, fuente:'Navarro 120.237'},
+    {nombre:'Bicarbonato De Potasio', aliases:['bicarbonato de potasio','bicarbonato de potasio 25 kgs'], cat:'Sales Inorgánicas', um:'kg', pres:'Saco 25 kg', precio:2237, fuente:'Navarro 120.237'},
+    {nombre:'Cloruro De Magnesio Hexahidratado', aliases:['cloruro de magnesio hexahidratado','cloruro de magnesio'], cat:'Sales Inorgánicas', um:'kg', pres:'Saco 25 kg', precio:844, fuente:'Navarro 120.130'},
+    {nombre:'Cremor Tártaro Proeno', aliases:['cremor tartaro proeno','cremor tartaro','acido tartarico'], cat:'Conservantes', um:'kg', pres:'Saco 25 kg', precio:4664, fuente:'Navarro 120.130'},
+    {nombre:'Sulfato De Cobre Nieve Técnico', aliases:['sulfato de cobre nieve tecnico','sulfato de cobre nieve','sulfato de cobre pentahidratado'], cat:'Sulfatos', um:'kg', pres:'Saco 25 kg', precio:3909, fuente:'Navarro 120.130'},
+    {nombre:'Citrato De Potasio', aliases:['citrato de potasio'], cat:'Conservantes', um:'kg', pres:'Saco 25 kg', precio:1510, fuente:'Navarro 120.130'},
+    {nombre:'Safale S-04 Fermentis', aliases:['safale s 04 fermentis','safale s04','safale s 04'], cat:'Ingredientes Alimentarios', um:'kg', pres:'Pack 1/2 kg', precio:114608, fuente:'Navarro 120.130'},
+    {nombre:'Safale US-05 Fermentis', aliases:['safale us 05 fermentis','safale us05','safale us 05'], cat:'Ingredientes Alimentarios', um:'kg', pres:'Pack 1/2 kg', precio:117706, fuente:'Navarro 120.130'},
+    {nombre:'Gluten Vital De Trigo 80%', aliases:['gluten vital de trigo 80','gluten vital de trigo','gluten de trigo'], cat:'Ingredientes Alimentarios', um:'kg', pres:'Saco 25 kg', precio:1999, fuente:'Navarro 120.130'},
+    {nombre:'Sulfato Ferroso 30% Monohidratado', aliases:['sulfato ferroso 30 monohidratado','sulfato ferroso monohidratado','sulfato ferroso'], cat:'Sulfatos', um:'kg', pres:'Saco 25 kg', precio:755, fuente:'Navarro 120.130'},
+    {nombre:'Zeolita', aliases:['zeolita'], cat:'Filtración', um:'kg', pres:'Saco 25 kg', precio:373, fuente:'Navarro 120.130'},
+    {nombre:'Celite Hy Flo', aliases:['celite hy flo','hy flo'], cat:'Filtración', um:'kg', pres:'Saco 22.7 kg', precio:2470, fuente:'Navarro 120.130'},
+    {nombre:'Celite 535', aliases:['celite 535'], cat:'Filtración', um:'kg', pres:'Saco 22.7 kg', precio:2816, fuente:'Navarro 120.130'},
+    {nombre:'Celite 545', aliases:['celite 545'], cat:'Filtración', um:'kg', pres:'Saco 22.7 kg', precio:2816, fuente:'Navarro 120.130'},
+    {nombre:'Cloruro De Calcio 77% Escamas', aliases:['cloruro de calcio 77 escamas','cloruro de calcio 77','cloruro de calcio'], cat:'Sales Inorgánicas', um:'kg', pres:'Saco 25 kg', precio:453, fuente:'Navarro 120.130'},
+    {nombre:'Carbón Activado', aliases:['carbon activado','carbón activado'], cat:'Filtración', um:'kg', pres:'Saco 12 kg', precio:2932, fuente:'Navarro 120.130'},
+    {nombre:'Betaína 30%', aliases:['betaina 30','betaína 30','betaina','betaína'], cat:'Surfactantes', um:'kg', pres:'Tineta 20 kg', precio:1466, fuente:'Navarro 120.130'},
+    {nombre:'Formalina 37%', aliases:['formalina 37','formol 37','formalina'], cat:'Desinfectantes / Biocidas', um:'kg', pres:'Bidón 25 kg', precio:1821, fuente:'Navarro 120.130'},
+    {nombre:'Ceniza Soda Liviana', aliases:['ceniza soda liviana','carbonato de sodio ceniza de soda liviana','carbonato de sodio liviana'], cat:'Bases / Álcalis', um:'kg', pres:'Saco 25 kg', precio:489, fuente:'Navarro 120.130'}
+  ];
+  function nrm(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').replace(/\b(fg|tg|usp|ind|tec|tecnico|proeno|chino|kgs|kg|lt|l)\b/g,' ').replace(/\s+/g,' ').trim(); }
+  function fmtKey(p){
+    const t=String((p&&p.pres)||'').toLowerCase();
+    let m=t.match(/(\d+(?:[\.,]\d+)?)\s*(kg|kilos?|kgs|grs?|g|lt|l)\b/);
+    if(!m) return 'sin-formato';
+    let v=parseFloat(m[1].replace(',','.')), u=m[2];
+    if(/^g/.test(u) && !/^granel/.test(u)) { v=v/1000; u='kg'; }
+    else if(/^l|^lt/.test(u)) u='l'; else u='kg';
+    return (Math.round(v*100)/100)+u;
+  }
+  function canonicalProductName(name){
+    const x=nrm(name);
+    const tests=[
+      ['bicarbonato de sodio','Bicarbonato De Sodio F.G.'],['bicarbonato de potasio','Bicarbonato De Potasio'],
+      ['cloruro de magnesio','Cloruro De Magnesio Hexahidratado'],['cremor tartaro','Cremor Tártaro Proeno'],
+      ['acido tartarico','Cremor Tártaro Proeno'],['sulfato de cobre','Sulfato De Cobre Nieve Técnico'],
+      ['citrato de potasio','Citrato De Potasio'],['safale s 04','Safale S-04 Fermentis'],['safale us 05','Safale US-05 Fermentis'],
+      ['gluten vital de trigo','Gluten Vital De Trigo 80%'],['gluten de trigo','Gluten Vital De Trigo 80%'],
+      ['sulfato ferroso 30 monohidratado','Sulfato Ferroso 30% Monohidratado'],['zeolita','Zeolita'],
+      ['celite hy flo','Celite Hy Flo'],['celite 535','Celite 535'],['celite 545','Celite 545'],
+      ['cloruro de calcio','Cloruro De Calcio 77% Escamas'],['carbon activado','Carbón Activado'],
+      ['betaina','Betaína'],['formalina','Formalina 37%'],['ceniza soda liviana','Ceniza Soda Liviana'],['carbonato de sodio ceniza de soda liviana','Ceniza Soda Liviana']
+    ];
+    for(const [needle,canon] of tests){ if(x.includes(needle)) return canon; }
+    return name;
+  }
+  function matchCost(p,c){
+    const pn=nrm(p.nombre), cn=nrm(c.nombre), aliases=(c.aliases||[]).map(nrm);
+    return pn===cn || aliases.some(a=>pn===a || pn.includes(a) || a.includes(pn));
+  }
+  function findBestProduct(list,c){
+    const cf=fmtKey(c);
+    let cand=list.filter(p=>matchCost(p,c));
+    if(!cand.length) return null;
+    let same=cand.find(p=>fmtKey(p)===cf);
+    if(same) return same;
+    return cand.sort((a,b)=>nrm(a.nombre).length-nrm(b.nombre).length)[0];
+  }
+  function applyNavarroCostos(){
+    if(!window.PV_DATA) return;
+    const prods=PV_DATA.PRODUCTOS;
+    NAVARRO_COSTOS.forEach((c,idx)=>{
+      let p=findBestProduct(prods.concat(window.pvCustomProducts||[]),c);
+      if(!p){
+        p={cod:'NAV-'+String(idx+1).padStart(3,'0'), codBase:'NAV-'+String(idx+1).padStart(3,'0'), nombre:c.nombre, cat:c.cat, um:c.um, pres:c.pres, provs:['navarro'], uso:'Comercialización', precio:c.precio, fuente:c.fuente, precios:{navarro:c.precio}};
+        prods.push(p);
+      }else{
+        p.nombre=canonicalProductName(p.nombre||c.nombre);
+        if(!p.provs) p.provs=[];
+        if(!p.provs.includes('navarro')) p.provs.push('navarro');
+        p.um=p.um||c.um; p.pres=p.pres||c.pres; p.uso=p.uso||'Comercialización';
+        p.precios=Object.assign({},p.precios||{}); p.precios.navarro=c.precio;
+        p.fuente=[...new Set(String((p.fuente||'')+' / '+c.fuente).split(' / ').filter(Boolean))].join(' / ');
+      }
+    });
+  }
+  function mergeUnified(list){
+    const map=new Map();
+    list.forEach(orig=>{
+      const p=Object.assign({},orig);
+      p.nombre=canonicalProductName(p.nombre);
+      p.provs=[...new Set(p.provs||[])];
+      p.precios=Object.assign({},p.precios||{});
+      const key=nrm(p.nombre)+'|'+fmtKey(p);
+      if(!map.has(key)) map.set(key,p);
+      else{
+        const ex=map.get(key);
+        ex.provs=[...new Set([...(ex.provs||[]),...(p.provs||[])])];
+        ex.precios=Object.assign({},ex.precios||{},p.precios||{});
+        ex.fuente=[...new Set([ex.fuente,p.fuente].filter(Boolean).join(' / ').split(' / '))].join(' / ');
+        if((p.nombre||'').length>(ex.nombre||'').length) ex.nombre=p.nombre;
+        if(!ex.pres || ex.pres==='—') ex.pres=p.pres;
+        if(!ex.um || ex.um==='—') ex.um=p.um;
+      }
+    });
+    return [...map.values()].map(p=>{ const vals=Object.values(p.precios||{}).map(Number).filter(v=>v>0); if(vals.length) p.precio=Math.min(...vals); return p; });
+  }
+  const prevAll=window.pvAllProds;
+  window.pvAllProds=function(){
+    applyNavarroCostos();
+    const base=prevAll?prevAll():PV_DATA.PRODUCTOS;
+    return mergeUnified(base);
+  };
+  const prevGet=window.pvGetProd;
+  window.pvGetProd=function(cod){
+    const p=(window.pvAllProds?window.pvAllProds():[]).find(x=>x.cod===cod) || (prevGet?prevGet(cod):null);
+    return p||null;
+  };
+  const prevBoot=window.bootProveedores;
+  if(typeof prevBoot==='function'){
+    window.bootProveedores=function(){ applyNavarroCostos(); prevBoot(); try{ pvRenderKPIs(); pvRenderCatalogo(); pvRenderOrdenes(); }catch(e){} };
+  }
+  applyNavarroCostos();
+})();
+</script>
+
 </body>
 </html>
