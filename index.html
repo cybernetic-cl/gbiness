@@ -9499,6 +9499,14 @@ function cgAddProduct() {
 #app-proveedores .pv-prov-stats{display:flex;gap:14px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
 #app-proveedores .pv-prov-stat{font-family:var(--font-mono);font-size:9px;color:var(--text3)}
 #app-proveedores .pv-prov-stat b{color:var(--text);display:block;font-size:14px;font-family:var(--font-display);letter-spacing:1px}
+
+#app-proveedores .pv-import-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#app-proveedores .pv-mini-note{font-family:var(--font-mono);font-size:9px;color:var(--text3);line-height:1.45}
+#pv-product-modal{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px}
+#pv-product-modal.open{display:flex}
+#pv-product-modal .pv-modal-box{background:var(--card);border:1px solid var(--border2);border-radius:2px;width:100%;max-width:560px;overflow:hidden;max-height:90vh;overflow-y:auto}
+#app-proveedores .pv-check-row{display:flex;gap:12px;flex-wrap:wrap;background:var(--bg3);border:1px solid var(--border2);padding:8px 10px;border-radius:2px}
+#app-proveedores .pv-check-row label{font-family:var(--font-mono);font-size:10px;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer}
 #app-proveedores .oc-item-row{display:grid;grid-template-columns:1fr 80px 110px 95px 28px;gap:8px;align-items:center;margin-bottom:6px}
 #app-proveedores .oc-item-row input,#app-proveedores .oc-item-row select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 9px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;width:100%}
 #app-proveedores .oc-item-row input:focus,#app-proveedores .oc-item-row select:focus{border-color:var(--teal)}
@@ -9570,8 +9578,13 @@ function cgAddProduct() {
               <button class="uso-pill" data-u="Por Revisar" onclick="pvUsoPill(this,'Por Revisar')">Por Revisar</button>
               <button class="uso-pill" data-u="Infactible" onclick="pvUsoPill(this,'Infactible')">Infactible</button>
             </div>
-            <button class="pv-btn pv-btn-teal" onclick="pvExportCatalogo()">↓ XLS</button>
-            <button class="pv-btn pv-btn-sec" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">＋ Nueva OC</button>
+            <div class="pv-import-actions">
+              <button class="pv-btn pv-btn-teal" onclick="pvExportCatalogo()">↓ XLS</button>
+              <button class="pv-btn pv-btn-sec" onclick="pvOpenProductAdd('catalogo')">＋ Químico</button>
+              <button class="pv-btn pv-btn-sec" onclick="pvDownloadProductTemplate()">Plantilla</button>
+              <button class="pv-btn pv-btn-amber" onclick="pvTriggerBulkImport('catalogo')">Importar XLS</button>
+              <button class="pv-btn pv-btn-sec" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">＋ Nueva OC</button>
+            </div>
           </div>
           <div style="overflow-x:auto">
             <table class="pv-tbl">
@@ -9645,7 +9658,14 @@ function cgAddProduct() {
             </div>
           </div>
           <div class="pv-section">
-            <div class="pv-sec-hdr"><span class="pv-sec-title">Buscar Producto</span></div>
+            <div class="pv-sec-hdr">
+              <span class="pv-sec-title">Buscar Producto</span>
+              <div class="pv-import-actions">
+                <button class="pv-btn pv-btn-sec" style="padding:5px 9px;font-size:9px" onclick="pvOpenProductAdd('oc')">＋ Manual</button>
+                <button class="pv-btn pv-btn-sec" style="padding:5px 9px;font-size:9px" onclick="pvDownloadProductTemplate()">Plantilla</button>
+                <button class="pv-btn pv-btn-amber" style="padding:5px 9px;font-size:9px" onclick="pvTriggerBulkImport('oc')">Importar</button>
+              </div>
+            </div>
             <div style="padding:12px">
               <div class="pv-search-wrap" style="margin-bottom:10px">
                 <span class="pv-search-ico">⌕</span>
@@ -9757,6 +9777,37 @@ function cgAddProduct() {
         <button class="pv-btn pv-btn-sec" onclick="document.getElementById('pv-edit-modal').classList.remove('open')">Cancelar</button>
         <button class="pv-btn pv-btn-teal" onclick="pvSaveEdit()">💾 Guardar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / IMPORT PRODUCT MODAL -->
+<input type="file" id="pv-bulk-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="pvHandleBulkImport(event)">
+<div id="pv-product-modal">
+  <div class="pv-modal-box">
+    <div style="position:relative;background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--teal)"></div>
+      <div><div style="font-family:var(--font-display);font-size:16px;letter-spacing:2px;color:var(--text)" id="pv-prod-modal-title">Agregar Químico</div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-top:1px">Usa los mismos campos del catálogo</div></div>
+      <button style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px 6px;line-height:1" onclick="document.getElementById('pv-product-modal').classList.remove('open')">✕</button>
+    </div>
+    <div style="padding:18px;background:var(--card)">
+      <input type="hidden" id="pv-add-target" value="catalogo">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Código</div><input class="pv-fi" id="pv-add-cod" style="width:100%" placeholder="Auto si se deja vacío"></div>
+        <div><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Categoría</div><input class="pv-fi" id="pv-add-cat" style="width:100%" placeholder="Ej: Ácidos"></div>
+      </div>
+      <div style="margin-bottom:12px"><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Nombre Del Producto *</div><input class="pv-fi" id="pv-add-nombre" style="width:100%" placeholder="Ej: Ácido Cítrico Anhidro"></div>
+      <div style="display:grid;grid-template-columns:110px 1fr 1fr;gap:10px;margin-bottom:12px">
+        <div><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">UM</div><input class="pv-fi" id="pv-add-um" style="width:100%" placeholder="KG"></div>
+        <div><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Presentación</div><input class="pv-fi" id="pv-add-pres" style="width:100%" placeholder="Ej: 25 KG"></div>
+        <div><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Precio S/IVA</div><input class="pv-fi" id="pv-add-precio" type="number" style="width:100%;color:var(--green)" placeholder="0"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Uso</div><select class="pv-fi" id="pv-add-uso" style="width:100%"><option value="Comercialización">Comercialización</option><option value="Fabricación">Fabricación</option><option value="Por Revisar" selected>Por Revisar</option><option value="Infactible">Infactible</option></select></div>
+        <div><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Fuente</div><input class="pv-fi" id="pv-add-fuente" style="width:100%" placeholder="Manual / Factura / Proveedor"></div>
+      </div>
+      <div style="margin-bottom:14px"><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Proveedores</div><div class="pv-check-row"><label><input type="checkbox" id="pv-add-prov-holchem" value="holchem"> Holchem</label><label><input type="checkbox" id="pv-add-prov-navarro" value="navarro"> Navarro & Cia</label><label><input type="checkbox" id="pv-add-prov-pochteca" value="pochteca"> Pochteca</label></div><div class="pv-mini-note" style="margin-top:6px">En OC, si ya hay proveedor seleccionado, se marcará automáticamente.</div></div>
+      <div style="display:flex;justify-content:space-between;gap:8px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap"><button class="pv-btn pv-btn-sec" onclick="pvDownloadProductTemplate()">↓ Descargar plantilla Excel</button><div style="display:flex;gap:8px"><button class="pv-btn pv-btn-sec" onclick="document.getElementById('pv-product-modal').classList.remove('open')">Cancelar</button><button class="pv-btn pv-btn-teal" onclick="pvSaveManualProduct()">💾 Guardar</button></div></div>
     </div>
   </div>
 </div>
@@ -10270,19 +10321,37 @@ return { PROVEEDORES, PRODUCTOS };
 // ════════════════════════════════════════════════════════════════
 let pvOCItems  = [];
 let pvOCList   = JSON.parse(localStorage.getItem('gbisness_oc_list') || '[]');
-let pvOCCtr    = pvOCList.length + 1;
+let pvOCCtr    = parseInt(localStorage.getItem('gbisness_oc_ctr') || String(pvOCList.length + 1), 10);
 let pvUsoFilter = 'all';
 // Overlay edits stored per session (persist to localStorage)
 let pvEdits    = JSON.parse(localStorage.getItem('gbisness_pv_edits') || '{}');
+let pvCustomProducts = JSON.parse(localStorage.getItem('gbisness_pv_custom_products') || '[]');
+let pvBulkTarget = 'catalogo';
 
+function pvBaseProd(cod){ return PV_DATA.PRODUCTOS.find(x => x.cod === cod) || pvCustomProducts.find(x => x.cod === cod); }
 function pvGetProd(cod) {
-  const p = PV_DATA.PRODUCTOS.find(x => x.cod === cod);
+  const p = pvBaseProd(cod);
   if(!p) return null;
   const e = pvEdits[cod] || {};
   return Object.assign({}, p, e);
 }
 function pvAllProds() {
-  return PV_DATA.PRODUCTOS.map(p => pvGetProd(p.cod));
+  const base = PV_DATA.PRODUCTOS.map(p => pvGetProd(p.cod));
+  const custom = pvCustomProducts.filter(p => !PV_DATA.PRODUCTOS.some(b=>b.cod===p.cod)).map(p => pvGetProd(p.cod));
+  return base.concat(custom);
+}
+function pvSaveCustomProducts(){ try{ localStorage.setItem('gbisness_pv_custom_products', JSON.stringify(pvCustomProducts)); }catch(e){} }
+function pvNormalizeProvList(v){
+  const txt = Array.isArray(v) ? v.join(',') : String(v||'');
+  const out = [];
+  if(/holchem/i.test(txt)) out.push('holchem');
+  if(/navarro|cia|cía/i.test(txt)) out.push('navarro');
+  if(/pochteca/i.test(txt)) out.push('pochteca');
+  return [...new Set(out)];
+}
+function pvSlugCode(txt){
+  const t = String(txt||'QUIM').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,18);
+  return 'MAN-'+(t||'QUIM')+'-'+Date.now().toString().slice(-5);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -10290,7 +10359,7 @@ function pvAllProds() {
 // ════════════════════════════════════════════════════════════════
 function bootProveedores() {
   // Fill category filter
-  const cats = [...new Set(PV_DATA.PRODUCTOS.map(p=>p.cat))].sort();
+  const cats = [...new Set(pvAllProds().map(p=>p.cat).filter(Boolean))].sort();
   const sel = document.getElementById('pv-cat-cat');
   if(sel && sel.options.length <= 1) {
     cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
@@ -10384,6 +10453,8 @@ function pvOCStatusBadge(st) {
 function pvSaveLocal() {
   try { localStorage.setItem('gbisness_oc_list', JSON.stringify(pvOCList)); } catch(e){}
   try { localStorage.setItem('gbisness_pv_edits', JSON.stringify(pvEdits)); } catch(e){}
+  try { localStorage.setItem('gbisness_oc_ctr', String(pvOCCtr)); } catch(e){}
+  pvSaveCustomProducts();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -10784,6 +10855,87 @@ function pvBuildOCHTML(oc, forPrint) {
     </div>
   </div>`;
 }
+
+// ════════════════════════════════════════════════════════════════
+// MANUAL + MASSIVE IMPORT (CATÁLOGO / OC)
+// ════════════════════════════════════════════════════════════════
+function pvOpenProductAdd(target){
+  document.getElementById('pv-add-target').value = target || 'catalogo';
+  document.getElementById('pv-prod-modal-title').textContent = target==='oc' ? 'Agregar Químico A OC' : 'Agregar Químico Al Catálogo';
+  ['pv-add-cod','pv-add-nombre','pv-add-cat','pv-add-pres','pv-add-precio','pv-add-fuente'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  const um=document.getElementById('pv-add-um'); if(um) um.value='KG';
+  const uso=document.getElementById('pv-add-uso'); if(uso) uso.value='Por Revisar';
+  ['holchem','navarro','pochteca'].forEach(pr=>{ const e=document.getElementById('pv-add-prov-'+pr); if(e) e.checked=false; });
+  const ocProv = document.getElementById('oc-prov-sel')?.value || '';
+  if(target==='oc' && ocProv){ const e=document.getElementById('pv-add-prov-'+ocProv); if(e) e.checked=true; }
+  document.getElementById('pv-product-modal').classList.add('open');
+}
+function pvCollectManualProduct(){
+  const nombre = (document.getElementById('pv-add-nombre')?.value||'').trim();
+  if(!nombre){ showToast('Ingresa nombre del químico', true); return null; }
+  const provs = ['holchem','navarro','pochteca'].filter(pr=>document.getElementById('pv-add-prov-'+pr)?.checked);
+  if(!provs.length){ showToast('Marca al menos un proveedor', true); return null; }
+  const cod = (document.getElementById('pv-add-cod')?.value||'').trim() || pvSlugCode(nombre);
+  return {cod, nombre, cat:(document.getElementById('pv-add-cat')?.value||'Manual').trim() || 'Manual', um:(document.getElementById('pv-add-um')?.value||'KG').trim() || 'KG', pres:(document.getElementById('pv-add-pres')?.value||'').trim(), provs, precio:parseFloat(document.getElementById('pv-add-precio')?.value)||0, uso:document.getElementById('pv-add-uso')?.value || 'Por Revisar', fuente:(document.getElementById('pv-add-fuente')?.value||'Manual').trim() || 'Manual'};
+}
+function pvUpsertCustomProduct(prod){
+  const base = PV_DATA.PRODUCTOS.find(p=>p.cod===prod.cod);
+  const idx = pvCustomProducts.findIndex(p=>p.cod===prod.cod);
+  if(base){ if(!pvEdits[prod.cod]) pvEdits[prod.cod]={}; Object.assign(pvEdits[prod.cod], prod); }
+  else if(idx>=0) pvCustomProducts[idx] = Object.assign({}, pvCustomProducts[idx], prod);
+  else pvCustomProducts.push(prod);
+}
+function pvSaveManualProduct(){
+  const target = document.getElementById('pv-add-target')?.value || 'catalogo';
+  const prod = pvCollectManualProduct(); if(!prod) return;
+  pvUpsertCustomProduct(prod); pvSaveCustomProducts(); pvSaveLocal(); pvRefreshCategoryOptions();
+  pvRenderKPIs(); pvRenderCatalogo(); pvRenderProveedores();
+  if(target==='oc'){
+    const sel = document.getElementById('oc-prov-sel'); if(sel && !sel.value && prod.provs.length===1){ sel.value = prod.provs[0]; pvOCProvChange(); }
+    pvAddItemToOC(prod.cod);
+  }
+  document.getElementById('pv-product-modal').classList.remove('open');
+  showToast(target==='oc' ? 'Químico agregado a la OC' : 'Químico agregado al catálogo');
+}
+function pvRefreshCategoryOptions(){
+  const sel = document.getElementById('pv-cat-cat'); if(!sel) return;
+  const cur = sel.value; const cats = [...new Set(pvAllProds().map(p=>p.cat).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todas las categorías</option>' + cats.map(c=>`<option value="${c.replace(/"/g,'&quot;')}">${c}</option>`).join('');
+  if(cur) sel.value = cur;
+}
+function pvDownloadProductTemplate(){
+  if(typeof XLSX==='undefined'){ showToast('XLSX no disponible',true); return; }
+  const rows = [
+    {'Código':'', 'Nombre':'Ácido Cítrico Anhidro', 'Categoría':'Ácidos', 'UM':'KG', 'Presentación':'25 KG', 'Proveedores':'Pochteca', 'Precio S/IVA':0, 'Uso':'Por Revisar', 'Fuente':'Carga masiva', 'Cantidad OC':1},
+    {'Código':'', 'Nombre':'Betaína 20/200 LT', 'Categoría':'Tensoactivos', 'UM':'LT', 'Presentación':'200 LT', 'Proveedores':'Holchem; Navarro', 'Precio S/IVA':0, 'Uso':'Fabricación', 'Fuente':'Carga masiva', 'Cantidad OC':1}
+  ];
+  const ws = XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:16},{wch:38},{wch:18},{wch:8},{wch:18},{wch:24},{wch:14},{wch:18},{wch:18},{wch:10}];
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Plantilla Catálogo');
+  XLSX.writeFile(wb, 'plantilla_quimicos_catalogo_oc.xlsx'); showToast('Plantilla descargada');
+}
+function pvTriggerBulkImport(target){ pvBulkTarget = target || 'catalogo'; const inp = document.getElementById('pv-bulk-file'); if(inp){ inp.value=''; inp.click(); } }
+function pvVal(row, names){ for(const n of names){ const key = Object.keys(row).find(k=>String(k).trim().toLowerCase()===n.toLowerCase()); if(key!=null && row[key]!==undefined && row[key]!==null && String(row[key]).trim()!=='') return row[key]; } return ''; }
+function pvRowToProduct(row){
+  const nombre = String(pvVal(row,['Nombre','Producto','Químico','Quimico','Descripcion','Descripción'])).trim(); if(!nombre) return null;
+  const cod = String(pvVal(row,['Código','Codigo','COD','SKU'])).trim() || pvSlugCode(nombre);
+  const provs = pvNormalizeProvList(pvVal(row,['Proveedores','Proveedor','Prov'])); const ocProv = document.getElementById('oc-prov-sel')?.value || ''; if(!provs.length && ocProv) provs.push(ocProv);
+  return {cod, nombre, cat:String(pvVal(row,['Categoría','Categoria','Cat']) || 'Manual').trim() || 'Manual', um:String(pvVal(row,['UM','Unidad','Unidad Medida']) || 'KG').trim() || 'KG', pres:String(pvVal(row,['Presentación','Presentacion','Formato','Envase']) || '').trim(), provs:[...new Set(provs)], precio:parseFloat(String(pvVal(row,['Precio S/IVA','Precio SIVA','Precio','P. S/IVA'])).replace(/\./g,'').replace(',','.')) || 0, uso:String(pvVal(row,['Uso']) || 'Por Revisar').trim() || 'Por Revisar', fuente:String(pvVal(row,['Fuente']) || 'Carga masiva').trim() || 'Carga masiva', cantidad:parseFloat(String(pvVal(row,['Cantidad OC','Cantidad','Qty'])).replace(',','.')) || 1};
+}
+function pvHandleBulkImport(ev){
+  const file = ev.target.files && ev.target.files[0]; if(!file) return; if(typeof XLSX==='undefined'){ showToast('XLSX no disponible',true); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){ try{
+    const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); const ws = wb.Sheets[wb.SheetNames[0]]; const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+    let added=0, toOC=0;
+    rows.forEach(r=>{ const prod = pvRowToProduct(r); if(!prod) return; if(!prod.provs.length) prod.provs=['pochteca']; const qty = prod.cantidad || 1; delete prod.cantidad; pvUpsertCustomProduct(prod); added++;
+      if(pvBulkTarget==='oc'){ const sel = document.getElementById('oc-prov-sel'); if(sel && !sel.value && prod.provs.length===1) sel.value = prod.provs[0]; const p = pvGetProd(prod.cod) || prod; const ex = pvOCItems.find(i=>i.cod===prod.cod); if(ex) ex.qty += qty; else pvOCItems.push({ cod:p.cod, nombre:p.nombre, um:p.um, pres:p.pres, qty:qty, precio:p.precio||0, pesoUnit:pvUnitWeight(p) }); toOC++; }
+    });
+    pvSaveCustomProducts(); pvSaveLocal(); pvRefreshCategoryOptions(); pvRenderKPIs(); pvRenderCatalogo(); pvRenderProveedores(); pvRenderOCItems(); pvOCSearchProds();
+    showToast(added+' químicos importados'+(pvBulkTarget==='oc' ? ' · '+toOC+' agregados a la OC' : ''));
+  }catch(err){ console.error(err); showToast('No se pudo leer el Excel', true); } };
+  reader.readAsArrayBuffer(file);
+}
+
 // ════════════════════════════════════════════════════════════════
 // EXPORT CATALOGO XLS
 // ════════════════════════════════════════════════════════════════
@@ -10809,6 +10961,203 @@ function pvExportCatalogo() {
   showToast('Exportado: '+list.length+' productos');
 }
 </script>
+
+
+<script>
+/* ==== PATCH HOLCHEM EXCEL: costos, títulos únicos y badges alto/bajo ==== */
+(function(){
+  const PV_HOLCHEM_COSTOS = [{"nombre": "Ácido Cítrico Anhidro", "alias": "Ácido Cítrico Anhidro FG", "pres": "Saco 25 kg", "um": "kg", "precio": 1125, "pedido": "19-00083907"}, {"nombre": "Percarbonato de Sodio", "alias": "Percarbonato de Sodio", "pres": "Saco 25 kg", "um": "kg", "precio": 1035, "pedido": "19-00083907"}, {"nombre": "Propilenglicol", "alias": "Propilenglicol 20 KG", "pres": "Balde/Tineta 20 kg", "um": "kg", "precio": 1854, "pedido": "19-00083907"}, {"nombre": "Silicona 350", "alias": "Silicona DMP-350 20 KG", "pres": "Bidón 20 kg", "um": "kg", "precio": 3708, "pedido": "19-00083907"}, {"nombre": "Secuestrante Tetrasódico EDTA", "alias": "Secuestrante EDTA Chino", "pres": "Saco 25 kg", "um": "kg", "precio": 2133, "pedido": "19-00083907"}, {"nombre": "Urea", "alias": "Urea 25 KG", "pres": "Saco 25 kg", "um": "kg", "precio": 1125, "pedido": "19-00083906"}, {"nombre": "Blanqueador Óptico", "alias": "Blanqueador Óptico Polvo 25 KG", "pres": "Saco 25 kg", "um": "kg", "precio": 6750, "pedido": "19-00083907"}, {"nombre": "Hiposulfito de Sodio", "alias": "Hiposulfito de Sodio", "pres": "Saco 25 kg", "um": "kg", "precio": 360, "pedido": "19-00083907"}, {"nombre": "Sulfato de Magnesio Hepta", "alias": "Sulfato de Magnesio Hepta 99%", "pres": "Saco 25 kg", "um": "kg", "precio": 405, "pedido": "19-00083906"}, {"nombre": "Cloruro de Amonio", "alias": "Cloruro de Amonio Chino", "pres": "Saco 25 kg", "um": "kg", "precio": 450, "pedido": "19-00083906"}, {"nombre": "Isopropanol", "alias": "Isopropanol 20 LT", "pres": "Balde 20 L", "um": "L", "precio": 1854, "pedido": "19-00083908"}, {"nombre": "Ácido Ascórbico F.G.", "alias": "Ácido Ascórbico FG", "pres": "Saco 25 kg", "um": "kg", "precio": 2871, "pedido": "19-00083908"}, {"nombre": "Ácido Bórico", "alias": "Ácido Bórico V 99.9% Quiborax", "pres": "Saco 25 kg", "um": "kg", "precio": 1215, "pedido": "19-00083908"}, {"nombre": "Benzoato de Sodio F.G.", "alias": "Benzoato de Sodio FG Polvo", "pres": "Saco 25 kg", "um": "kg", "precio": 1395, "pedido": "19-00083908"}, {"nombre": "Glutamato Monosódico F.G.", "alias": "Glutamato Monosódico FG", "pres": "Saco 25 kg", "um": "kg", "precio": 1215, "pedido": "19-00083908"}, {"nombre": "Ácido Fosfórico 85% F.G.", "alias": "Ácido Fosfórico 85% FG 35 KG", "pres": "Bidón 35 kg", "um": "kg", "precio": 1665, "pedido": "19-00083908"}, {"nombre": "Tripolifosfato de Sodio T.G.", "alias": "Tripolifosfato de Sodio Técnico", "pres": "Saco 25 kg", "um": "kg", "precio": 1710, "pedido": "19-00083908"}, {"nombre": "Ácido Sulfónico", "alias": "Ácido Sulfónico 20 KG", "pres": "Tineta 20 kg", "um": "kg", "precio": 3753, "pedido": "19-00083909"}, {"nombre": "Betaína", "alias": "Betaína 20 KG", "pres": "Tineta 20 kg", "um": "kg", "precio": 1485, "pedido": "19-00083909"}, {"nombre": "Perlante Nácar", "alias": "Perlante Nácar 20 KG", "pres": "Tineta 20 kg", "um": "kg", "precio": 2322, "pedido": "19-00083909"}, {"nombre": "Dietanolamida de Coco", "alias": "Dietanolamida de Coco 20 KG", "pres": "Tineta 20 kg", "um": "kg", "precio": 2871, "pedido": "19-00083909"}, {"nombre": "Formalina 37%", "alias": "Formalina 25 KG", "pres": "Bidón 25 kg", "um": "kg", "precio": 1512, "pedido": "19-00083909"}, {"nombre": "Óxido de Amina", "alias": "Hisaox 30 20 KG", "pres": "Tineta 20 kg", "um": "kg", "precio": 2133, "pedido": "19-00083909"}, {"nombre": "Ácido Acético 99%", "alias": "Ácido Acético Glacial 99% 30KG", "pres": "Bidón 30 kg", "um": "kg", "precio": 972, "pedido": "19-00083909"}, {"nombre": "Sorbato de Potasio F.G.", "alias": "Sorbato de Potasio FG", "pres": "Saco 25 kg", "um": "kg", "precio": 2502, "pedido": "19-00083910"}, {"nombre": "Nonil Fenol Etoxilado 10 Mol", "alias": "Nonil Fenol 10 Moles 20 KG", "pres": "Balde 20 kg", "um": "kg", "precio": 2592, "pedido": "19-00083910"}, {"nombre": "Metasilicato de Sodio Penta", "alias": "Metasilicato Sodio Penta Chino", "pres": "Saco 25 kg", "um": "kg", "precio": 531, "pedido": "19-00083910"}, {"nombre": "Metabisulfito de Sodio F.G.", "alias": "Metabisulfito Sodio F.G. BASF", "pres": "Saco 25 kg", "um": "kg", "precio": 1080, "pedido": "19-00083910"}, {"nombre": "Agua Oxigenada 50%", "alias": "Agua Oxigenada 50% 30 KG", "pres": "Bidón 30 kg", "um": "kg", "precio": 720, "pedido": "19-00083910"}];
+
+  function pvCleanTitleForMatch(s){
+    return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
+      .replace(/\b(f\.?g\.?|fg|t\.?g\.?|tecnico|tecnica|chino|china|basf|quiborax|polvo|glacial|dmp|v\s*99\.?9%?|99%|85%|37%|50%|30\s*kg|25\s*kg|20\s*kg|20\s*lt|20\s*l|10\s*moles?|hepta|heptahidratado|pentahidratado)\b/g,' ')
+      .replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
+  }
+  function pvFormatKey(p){
+    const txt = String((p && (p.pres||p.nombre))||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(',', '.');
+    const m = txt.match(/(\d+(?:\.\d+)?)\s*(kg|kilo|kilos|lt|lts|l|litro|litros)\b/);
+    if(!m) return 'sin-formato';
+    const unit = /^l|^lt|litro/.test(m[2]) ? 'l' : 'kg';
+    return parseFloat(m[1]) + unit;
+  }
+  function pvCostFor(p){
+    const pk = pvCleanTitleForMatch(p.nombre||p.alias);
+    const pf = pvFormatKey(p);
+    return PV_HOLCHEM_COSTOS.find(c=>{
+      const c1 = pvCleanTitleForMatch(c.nombre), c2 = pvCleanTitleForMatch(c.alias), cf = pvFormatKey(c);
+      return (pk===c1 || pk===c2 || c1.includes(pk) || pk.includes(c1) || c2.includes(pk) || pk.includes(c2)) && (pf==='sin-formato' || cf===pf || cf==='sin-formato');
+    });
+  }
+  function pvInferCat(name){
+    const n = pvCleanTitleForMatch(name);
+    if(/acido/.test(n)) return 'Ácidos';
+    if(/sulfato|cloruro|metabisulfito|metasilicato|tripolifosfato|benzoato|sorbato/.test(n)) return 'Sales / Inorgánicos';
+    if(/betaina|perlant|dietanolamida|oxido|nonil/.test(n)) return 'Tensoactivos';
+    if(/agua oxigenada|percarbonato/.test(n)) return 'Oxidantes';
+    if(/propilenglicol|isopropanol|silicona/.test(n)) return 'Solventes / Humectantes';
+    return 'Materias Primas';
+  }
+  function pvEnsurePricesObj(p){
+    if(!p.precios) p.precios = {};
+    if(p.precio && !Object.keys(p.precios).length){
+      const fuente = String(p.fuente||'').toLowerCase();
+      if(fuente.includes('holchem') || fuente.includes('fact') || fuente.includes('pedido')) p.precios.holchem = Number(p.precio)||0;
+    }
+  }
+  let applied = false;
+  window.pvApplyHolchemExcelPatch = function(){
+    if(applied) return; applied = true;
+    const productos = PV_DATA.PRODUCTOS;
+    PV_HOLCHEM_COSTOS.forEach((c, idx)=>{
+      const ck = pvCleanTitleForMatch(c.nombre), ca = pvCleanTitleForMatch(c.alias), cf = pvFormatKey(c);
+      let p = productos.find(x=>{
+        const pk = pvCleanTitleForMatch(x.nombre), pf = pvFormatKey(x);
+        return (pk===ck || pk===ca || pk.includes(ck) || ck.includes(pk) || pk.includes(ca) || ca.includes(pk)) && (pf===cf || pf==='sin-formato');
+      });
+      if(!p){
+        p = {cod:'HOL-'+String(idx+1).padStart(3,'0'), codBase:'HOL-'+String(idx+1).padStart(3,'0'), nombre:c.nombre, cat:pvInferCat(c.nombre), um:c.um, pres:c.pres, provs:['holchem'], uso:'Comercialización', precio:c.precio, fuente:'Holchem '+c.pedido, precios:{holchem:c.precio}};
+        productos.push(p);
+      } else {
+        p.nombre = c.nombre; p.pres = c.pres; p.um = c.um || p.um; p.uso = p.uso || 'Comercialización'; p.fuente = 'Holchem '+c.pedido;
+        if(!p.provs.includes('holchem')) p.provs.push('holchem');
+        pvEnsurePricesObj(p); p.precios.holchem = c.precio; p.precio = c.precio;
+      }
+    });
+  };
+
+  const oldAll = window.pvAllProds;
+  window.pvAllProds = function(){
+    if(window.pvApplyHolchemExcelPatch) window.pvApplyHolchemExcelPatch();
+    const raw = oldAll();
+    const map = new Map();
+    raw.forEach(orig=>{
+      const cost = pvCostFor(orig);
+      const p = Object.assign({}, orig);
+      p.provs = [...new Set(p.provs || [])];
+      p.precios = Object.assign({}, orig.precios || {});
+      if(cost){
+        p.nombre = cost.nombre; p.pres = cost.pres; p.um = cost.um || p.um;
+        if(!p.provs.includes('holchem')) p.provs.push('holchem');
+        p.precios.holchem = cost.precio; p.fuente = 'Holchem '+cost.pedido;
+      } else {
+        pvEnsurePricesObj(p);
+      }
+      const key = pvCleanTitleForMatch(p.nombre) + '|' + pvFormatKey(p);
+      if(!map.has(key)) map.set(key, p);
+      else {
+        const ex = map.get(key);
+        ex.provs = [...new Set([...(ex.provs||[]), ...(p.provs||[])])];
+        ex.precios = Object.assign({}, p.precios||{}, ex.precios||{});
+        ex.fuente = [...new Set([ex.fuente, p.fuente].filter(Boolean).join(' / ').split(' / '))].join(' / ');
+      }
+    });
+    return [...map.values()].map(p=>{
+      const vals = Object.values(p.precios||{}).map(Number).filter(v=>v>0);
+      if(vals.length) p.precio = Math.min(...vals);
+      return p;
+    });
+  };
+
+  window.pvProvPriceRank = function(p, prov){
+    const entries = Object.entries(p.precios || {}).filter(([k,v])=>Number(v)>0);
+    if(!entries.length || !(p.precios||{})[prov]) return '';
+    const vals = entries.map(([k,v])=>Number(v)), price = Number(p.precios[prov]);
+    const min = Math.min(...vals), max = Math.max(...vals);
+    if(entries.length === 1 || price === min) return '<span class="pv-rank pv-rank-low">↓ BAJO</span>';
+    if(price === max) return '<span class="pv-rank pv-rank-high">↑ ALTO</span>';
+    return '';
+  };
+  window.pvProvBadgeRich = function(p, id){
+    const v = p.precios && p.precios[id] ? pvFmt(p.precios[id]) : '—';
+    return pvProvBadge(id) + '<span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:4px">'+v+'</span>' + pvProvPriceRank(p,id);
+  };
+
+  window.pvRenderCatalogo = function(){
+    const list = pvGetFiltered();
+    const tbody = document.getElementById('pv-cat-body');
+    if(!tbody) return;
+    if(!list.length){
+      tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</td></tr>';
+      document.getElementById('pv-cat-info').textContent='0 productos'; return;
+    }
+    tbody.innerHTML = list.slice(0,300).map(p=>{
+      const provs = (p.provs||[]).map(pr=>pvProvBadgeRich(p,pr)).join('<br>');
+      const minProv = Object.entries(p.precios||{}).filter(([k,v])=>Number(v)>0).sort((a,b)=>a[1]-b[1])[0];
+      const prCell = p.precio ? `<span class="precio-val" onclick="event.stopPropagation();pvEditPrecio('${p.cod}')" style="cursor:pointer" title="Clic para editar">${pvFmt(p.precio)}</span>${minProv?`<div style="font-family:var(--font-mono);font-size:8px;color:var(--green);margin-top:2px">↓ más bajo: ${PV_DATA.PROVEEDORES.find(x=>x.id===minProv[0])?.nombre||minProv[0]}</div>`:''}` : `<span class="precio-vacio" onclick="event.stopPropagation();pvEditPrecio('${p.cod}')" style="cursor:pointer" title="Agregar precio">+ precio</span>`;
+      const civa = p.precio ? pvFmt(Math.round(p.precio*1.19)) : '—';
+      return `<tr onclick="pvQuickAddOC('${p.cod}')">
+        <td><span style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">${p.cod}</span></td>
+        <td style="font-weight:500;max-width:280px">${p.nombre}</td>
+        <td style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cat}</td>
+        <td style="font-family:var(--font-mono);font-size:9px;text-align:center">${p.um}</td>
+        <td style="font-size:11px;color:var(--text2)">${p.pres}</td>
+        <td>${provs}</td><td>${prCell}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">${civa}</td>
+        <td><button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px" onclick="event.stopPropagation();pvOpenEdit('${p.cod}')">✏</button></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('pv-cat-info').textContent = `${list.length} productos · ${pvAllProds().filter(x=>x.precio).length} con precio · títulos unificados por producto + formato`;
+  };
+
+  window.pvAddItemToOC = function(cod){
+    const prov = document.getElementById('oc-prov-sel')?.value || '';
+    const p = pvGetProd(cod) || pvAllProds().find(x=>x.cod===cod);
+    if(!p) return;
+    const ex = pvOCItems.find(i=>i.cod===cod);
+    const precioProv = (p.precios && prov && p.precios[prov]) ? Number(p.precios[prov]) : (p.precio||0);
+    if(ex){ ex.qty++; ex.precio = ex.precio || precioProv; pvRenderOCItems(); showToast('Cantidad +1'); return; }
+    pvOCItems.push({ cod:p.cod, nombre:p.nombre, um:p.um, pres:p.pres, qty:1, precio:precioProv, pesoUnit:pvUnitWeight(p), proveedorPrecio:prov, precios:p.precios||{} });
+    pvRenderOCItems(); showToast('Agregado: '+p.nombre.slice(0,30));
+  };
+
+  const oldRenderOCItems = window.pvRenderOCItems;
+  window.pvRenderOCItems = function(){
+    const prov = document.getElementById('oc-prov-sel')?.value || '';
+    pvOCItems.forEach(it=>{ const p = pvAllProds().find(x=>x.cod===it.cod); if(p){ it.precios=p.precios||it.precios||{}; it.proveedorPrecio=prov||it.proveedorPrecio||''; } });
+    const c = document.getElementById('oc-items-list');
+    if(!c || !pvOCItems.length) return oldRenderOCItems();
+    c.innerHTML = pvOCItems.map((item,idx)=>{
+      const p = pvAllProds().find(x=>x.cod===item.cod) || item;
+      const rank = prov ? pvProvPriceRank(p, prov) : '';
+      return `<div class="oc-item-row">
+        <div><div style="font-size:12px;font-weight:500">${item.nombre} ${rank}</div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${item.cod} · ${item.pres}</div></div>
+        <input type="number" min="1" value="${item.qty}" onchange="pvUpdateQty(${idx},this.value)">
+        <input type="number" min="0" value="${item.precio||''}" placeholder="$ precio" onchange="pvUpdatePrecio(${idx},this.value)">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--amber);text-align:right;white-space:nowrap">${pvPesoTxt((Number(item.qty)||0)*(Number(item.pesoUnit)||pvUnitWeight(item)))}</div>
+        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px" onclick="pvRemoveOCItem(${idx})">✕</button>
+      </div>`;
+    }).join('');
+    document.getElementById('oc-items-count').textContent = pvOCItems.length+' items';
+    const neto = pvOCItems.reduce((s,i)=>s+i.qty*(i.precio||0),0);
+    document.getElementById('oc-total-neto').textContent = pvFmt(neto)||'$ 0';
+    document.getElementById('oc-total-civa').textContent = pvFmt(Math.round(neto*1.19))||'$ 0';
+    const pw=document.getElementById('oc-total-peso'); if(pw) pw.textContent = pvPesoTxt(pvTotalWeight(pvOCItems)).replace('—','0 kg');
+  };
+
+  const oldExport = window.pvExportCatalogo;
+  window.pvExportCatalogo = function(){
+    if(typeof XLSX==='undefined') return oldExport();
+    const rows = pvGetFiltered().map(p=>({
+      'Código':p.cod,'Nombre':p.nombre,'Categoría':p.cat,'UM':p.um,'Presentación':p.pres,
+      'Precio más bajo S/IVA':p.precio||'',
+      'Proveedor más bajo':Object.entries(p.precios||{}).filter(([k,v])=>Number(v)>0).sort((a,b)=>a[1]-b[1])[0]?.[0]||'',
+      'Holchem S/IVA':p.precios?.holchem||'','Navarro S/IVA':p.precios?.navarro||'','Pochteca S/IVA':p.precios?.pochteca||'',
+      'Uso':p.uso,'Fuente':p.fuente||''
+    }));
+    const ws=XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:12},{wch:42},{wch:22},{wch:8},{wch:18},{wch:16},{wch:18},{wch:14},{wch:14},{wch:14},{wch:16},{wch:24}];
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Catálogo Químicos');
+    XLSX.writeFile(wb,'catalogo_quimicos_costos_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  };
+
+  const oldBoot = window.bootProveedores;
+  window.bootProveedores = function(){ window.pvApplyHolchemExcelPatch(); oldBoot(); };
+})();
+</script>
+<style>
+#app-proveedores .pv-rank{display:inline-block;font-family:var(--font-mono);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px;letter-spacing:.7px;white-space:nowrap}
+#app-proveedores .pv-rank-low{background:rgba(0,229,160,.12);color:var(--green);border:1px solid rgba(0,229,160,.28)}
+#app-proveedores .pv-rank-high{background:rgba(255,71,87,.12);color:var(--red);border:1px solid rgba(255,71,87,.30)}
+</style>
 
 </body>
 </html>
