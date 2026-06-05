@@ -9508,7 +9508,7 @@ function cgAddProduct() {
 #pv-product-modal .pv-modal-box{background:var(--card);border:1px solid var(--border2);border-radius:2px;width:100%;max-width:560px;overflow:hidden;max-height:90vh;overflow-y:auto}
 #app-proveedores .pv-check-row{display:flex;gap:12px;flex-wrap:wrap;background:var(--bg3);border:1px solid var(--border2);padding:8px 10px;border-radius:2px}
 #app-proveedores .pv-check-row label{font-family:var(--font-mono);font-size:10px;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer}
-#app-proveedores .oc-item-row{display:grid;grid-template-columns:1fr 80px 110px 95px 28px;gap:8px;align-items:center;margin-bottom:6px}
+#app-proveedores .oc-item-row{display:grid;grid-template-columns:1fr 70px 100px 110px 80px 28px;gap:8px;align-items:center;margin-bottom:6px}
 #app-proveedores .oc-item-row input,#app-proveedores .oc-item-row select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 9px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;width:100%}
 #app-proveedores .oc-item-row input:focus,#app-proveedores .oc-item-row select:focus{border-color:var(--teal)}
 #app-proveedores .pv-page-title{font-family:var(--font-display);font-size:26px;letter-spacing:2px;margin-bottom:2px}
@@ -9584,6 +9584,7 @@ function cgAddProduct() {
               <button class="pv-btn pv-btn-sec" onclick="pvOpenProductAdd('catalogo')">＋ Químico</button>
               <button class="pv-btn pv-btn-sec" onclick="pvDownloadProductTemplate()">Plantilla</button>
               <button class="pv-btn pv-btn-amber" onclick="pvTriggerBulkImport('catalogo')">Importar XLS</button>
+              <button class="pv-btn pv-btn-sec" id="btn-mas-barato" onclick="pvToggleMasBarato()" title="Mostrar solo quimicos con mejor precio por proveedor">↓ MÁS BARATO</button>
               <button class="pv-btn pv-btn-sec" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">＋ Nueva OC</button>
             </div>
           </div>
@@ -9682,10 +9683,11 @@ function cgAddProduct() {
             <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)" id="oc-items-count">0 items</span>
           </div>
           <div style="padding:14px">
-            <div style="display:grid;grid-template-columns:1fr 80px 110px 95px 28px;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:8px">
+            <div style="display:grid;grid-template-columns:1fr 70px 100px 110px 80px 28px;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:8px">
               <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">PRODUCTO</span>
-              <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">CANTIDAD</span>
-              <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">PRECIO S/IVA</span>
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">CANT.</span>
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">$/KG</span>
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--teal)">$ UNIDAD</span>
               <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">PESO</span>
               <span></span>
             </div>
@@ -9742,21 +9744,18 @@ function cgAddProduct() {
       <button style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px 6px;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'" onclick="document.getElementById('pv-edit-modal').classList.remove('open')">✕</button>
     </div>
     <!-- body -->
-    <div style="padding:18px;background:var(--card)">
+    <div style="padding:18px;background:var(--card);max-height:70vh;overflow-y:auto">
       <input type="hidden" id="edit-cod">
       <!-- Nombre -->
       <div style="margin-bottom:14px">
         <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Nombre Del Producto</div>
         <input class="pv-fi" id="edit-nombre" style="width:100%">
       </div>
-      <!-- Precio + Uso -->
+      <!-- Presentación + Uso -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         <div>
-          <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Precio S/IVA · CLP/kg</div>
-          <div style="position:relative">
-            <span style="position:absolute;left:0;top:0;bottom:0;display:flex;align-items:center;padding:0 8px;font-family:var(--font-mono);font-size:9px;color:var(--teal);background:rgba(0,212,170,0.08);border-right:1px solid rgba(0,212,170,0.2);border-radius:2px 0 0 2px;pointer-events:none;letter-spacing:1px">$</span>
-            <input class="pv-fi" id="edit-precio" type="number" style="width:100%;padding-left:36px;color:var(--green)" placeholder="0">
-          </div>
+          <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Presentación</div>
+          <input class="pv-fi" id="edit-pres" style="width:100%">
         </div>
         <div>
           <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Uso</div>
@@ -9768,10 +9767,10 @@ function cgAddProduct() {
           </select>
         </div>
       </div>
-      <!-- Presentación -->
-      <div style="margin-bottom:18px">
-        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Presentación</div>
-        <input class="pv-fi" id="edit-pres" style="width:100%">
+      <!-- Precios por proveedor (dinámico) -->
+      <div style="margin-bottom:14px">
+        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Precios Por Proveedor <span style="color:var(--text3);font-weight:400">(CLP/kg)</span></div>
+        <div id="edit-prov-prices"></div>
       </div>
       <!-- Footer -->
       <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:14px;border-top:1px solid var(--border)">
@@ -11720,5 +11719,547 @@ function pvExportCatalogo() {
 })();
 </script>
 
+<script>
+/* ══ PATCH FINAL · rompe recursión circular · formatos · equivalencias · OC edit ══ */
+(function(){
+
+// 1 · ROMPER RECURSIÓN CIRCULAR
+// Navarro sobrescribió pvGetProd para llamar pvAllProds,
+// y pvAllProds original llama pvGetProd → stack overflow silencioso.
+window.pvGetProd = function(cod) {
+  var base = (typeof pvBaseProd === 'function') ? pvBaseProd(cod) : null;
+  if (!base) return null;
+  var e = (typeof pvEdits !== 'undefined' && pvEdits && pvEdits[cod]) ? pvEdits[cod] : {};
+  return Object.assign({}, base, e);
+};
+
+// 2 · NORMALIZACIÓN DE FORMATOS (sin lookahead)
+function pvNormFmt(pres) {
+  if (!pres) return pres;
+  var s = String(pres).trim();
+  var tbNum = s.match(/\bTB\s*(\d+)\b/i);
+  if (tbNum) return 'Tineta ' + tbNum[1] + ' kg';
+  var lt = s.match(/\b(\d{1,3})\s*(LT|LITROS?)\b/i);
+  if (lt) { var v = parseInt(lt[1]); return (v >= 100 ? 'Tambor ' : 'Tineta ') + v + ' kg'; }
+  var lsolo = s.match(/\b(\d{1,3})\s*L\b/i);
+  if (lsolo && !/\b\d{1,3}\s*LT\b/i.test(s)) { var vl = parseInt(lsolo[1]); return (vl >= 100 ? 'Tambor ' : 'Tineta ') + vl + ' kg'; }
+  var saco = s.match(/\bSACO\s*(\d+)\b/i);
+  if (saco) return 'Saco ' + saco[1] + ' kg';
+  var bidon = s.match(/\bBID[OÓ]N\s*(\d+)\b/i);
+  if (bidon) return 'Bid\u00f3n ' + bidon[1] + ' kg';
+  var balde = s.match(/\bBALDE\s*(\d+)\b/i);
+  if (balde) return 'Balde ' + balde[1] + ' kg';
+  return s;
+}
+
+// 3 · NORMALIZACIÓN DE TEXTO (sin acentos)
+function pvNormTxt(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+// 4 · EQUIVALENCIAS DE BÚSQUEDA
+var EQUIV = [
+  ['agua oxigenada', 'peroxido hidrogeno'],
+  ['peroxido de hidrogeno', 'agua oxigenada'],
+  ['cmc', 'carboximetil celulosa'],
+  ['carboximetil celulosa', 'cmc'],
+  ['soda caustica', 'hidroxido sodio'],
+  ['hidroxido de sodio', 'soda caustica'],
+  ['isopropanol', 'isopropilico ipa'],
+  ['formalina', 'formol formaldehido'],
+  ['formol', 'formalina'],
+  ['edta', 'etilendiaminotetracetico'],
+  ['betaina', 'betaina coco'],
+  ['ceniza soda', 'carbonato sodio'],
+  ['carbonato de sodio', 'ceniza soda'],
+  ['tween 20', 'polisorbato 20'],
+  ['polisorbato 20', 'tween 20'],
+  ['less 70', 'lauril eter sulfato sodio'],
+];
+
+// 5 · pvGetFiltered con equivalencias y filtro multi-proveedor correcto
+window.pvGetFiltered = function() {
+  var raw = pvNormTxt(document.getElementById('pv-cat-q') ? document.getElementById('pv-cat-q').value : '');
+  var pf  = document.getElementById('pv-cat-prov') ? document.getElementById('pv-cat-prov').value : '';
+  var cf  = document.getElementById('pv-cat-cat') ? document.getElementById('pv-cat-cat').value : '';
+  var uso = (typeof pvUsoFilter !== 'undefined') ? pvUsoFilter : 'all';
+
+  var terms = raw ? [raw] : [];
+  if (raw) {
+    EQUIV.forEach(function(pair) {
+      if (pvNormTxt(pair[0]).indexOf(raw) !== -1 || pvNormTxt(pair[0]) === raw) {
+        terms.push(pvNormTxt(pair[1]));
+      }
+    });
+  }
+
+  return pvAllProds().filter(function(p) {
+    var hay = [p.nombre, p.cod, p.cat, p.pres, p.um, String(p.fuente || '')].map(pvNormTxt).join(' ');
+    var mQ = !raw || terms.some(function(t) { return hay.indexOf(t) !== -1; });
+    var mP = !pf || (pf === 'ambos'
+      ? (p.provs || []).indexOf('holchem') !== -1 && (p.provs || []).indexOf('navarro') !== -1
+      : (p.provs || []).indexOf(pf) !== -1);
+    var mC = !cf || p.cat === cf;
+    var mU = uso === 'all' || p.uso === uso;
+    return mQ && mP && mC && mU;
+  });
+};
+
+// 6 · pvAllProds con normalización de formatos
+var _prevAll = window.pvAllProds;
+window.pvAllProds = function() {
+  var list = _prevAll ? _prevAll() : [];
+  return list.map(function(p) {
+    var norm = pvNormFmt(p.pres);
+    return (norm && norm !== p.pres) ? Object.assign({}, p, { pres: norm }) : p;
+  });
+};
+
+// 7 · Badges MÁS BARATO / MÁS CARO
+window.pvProvPriceRank = function(p, prov) {
+  var precios = p.precios || {};
+  var entries = Object.keys(precios).filter(function(k) { return Number(precios[k]) > 0; });
+  if (!entries.length || !precios[prov]) return '';
+  var vals = entries.map(function(k) { return Number(precios[k]); });
+  var price = Number(precios[prov]);
+  var mn = Math.min.apply(null, vals);
+  var mx = Math.max.apply(null, vals);
+  if (entries.length === 1 || price === mn) return '<span class="pv-rank pv-rank-low">\u2193 M\u00c1S BARATO</span>';
+  if (price === mx) return '<span class="pv-rank pv-rank-high">\u2191 M\u00c1S CARO</span>';
+  return '';
+};
+
+// 8 · OC search con comparativa
+window.pvOCSearchProds = function() {
+  var raw  = pvNormTxt(document.getElementById('oc-prod-q') ? document.getElementById('oc-prod-q').value : '');
+  var prov = document.getElementById('oc-prov-sel') ? document.getElementById('oc-prov-sel').value : '';
+  var res  = document.getElementById('oc-prod-results');
+  if (!res) return;
+  if (!prov) { res.innerHTML = '<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Selecciona un proveedor primero</div>'; return; }
+
+  var terms = raw ? [raw] : [];
+  if (raw) {
+    EQUIV.forEach(function(pair) {
+      if (pvNormTxt(pair[0]).indexOf(raw) !== -1) terms.push(pvNormTxt(pair[1]));
+    });
+  }
+
+  var matches = pvAllProds().filter(function(p) {
+    var hay = [p.nombre, p.cod, p.cat, p.pres].map(pvNormTxt).join(' ');
+    var mQ = !raw || terms.some(function(t) { return hay.indexOf(t) !== -1; });
+    return mQ && (p.provs || []).indexOf(prov) !== -1;
+  }).slice(0, 80);
+
+  if (!matches.length) { res.innerHTML = '<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</div>'; return; }
+
+  res.innerHTML = matches.map(function(p) {
+    var precios = p.precios || {};
+    var myPrice = (precios[prov] && Number(precios[prov]) > 0) ? pvFmt(precios[prov]) : (p.precio ? pvFmt(p.precio) : '\u2014');
+    var rank = window.pvProvPriceRank ? pvProvPriceRank(p, prov) : '';
+    var allKeys = Object.keys(precios).filter(function(k) { return Number(precios[k]) > 0; }).sort(function(a,b){ return precios[a]-precios[b]; });
+    var allP = allKeys.length > 1 ? allKeys.map(function(k) { return k.charAt(0).toUpperCase()+k.slice(1)+': '+pvFmt(precios[k]); }).join(' \u00b7 ') : '';
+    var safeNombre = String(p.nombre || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var safePres = String(p.pres || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return '<div style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border)" '
+      + 'onmouseover="this.style.background=\'rgba(255,255,255,0.03)\'" onmouseout="this.style.background=\'\'" '
+      + 'onclick="pvAddItemToOC(\'' + p.cod + '\')">'
+      + '<div style="display:flex;align-items:center;gap:6px"><span style="font-size:12px;font-weight:500">' + safeNombre + '</span>' + rank + '</div>'
+      + '<div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">' + p.cod + ' \u00b7 ' + safePres + ' \u00b7 ' + myPrice + (allP ? ' \u00b7 ' + allP : '') + '</div>'
+      + '</div>';
+  }).join('');
+};
+
+// 9 · pvEditDraftOC: editar OC en borrador
+window.pvEditDraftOC = function(num) {
+  var oc = pvOCList.find(function(o) { return o.num === num; });
+  if (!oc) { showToast('OC no encontrada', true); return; }
+  if (oc.status !== 'borrador') { showToast('Solo se pueden editar OC en estado BORRADOR', true); return; }
+  pvOCItems = JSON.parse(JSON.stringify(oc.items || []));
+  pvNav(document.getElementById('pvnav-nueva-oc'), 'nueva-oc');
+  setTimeout(function() {
+    var ef = document.getElementById('oc-fecha');
+    var ep = document.getElementById('oc-prov-sel');
+    var en = document.getElementById('oc-notas');
+    if (ef) ef.value = oc.fecha || new Date().toISOString().slice(0, 10);
+    if (ep) ep.value = oc.provId || '';
+    if (en) en.value = oc.notas || '';
+    pvRenderOCItems();
+    var sec = document.getElementById('pvsec-nueva-oc');
+    if (sec) sec.dataset.editNum = num;
+    showToast('Editando borrador ' + num);
+  }, 100);
+};
+
+var _oldSaveOC = window.pvSaveOC;
+window.pvSaveOC = function(status) {
+  var sec = document.getElementById('pvsec-nueva-oc');
+  var editNum = sec && sec.dataset.editNum;
+  if (editNum) {
+    var idx = pvOCList.findIndex(function(o) { return o.num === editNum; });
+    if (idx >= 0) {
+      var provId = document.getElementById('oc-prov-sel') ? document.getElementById('oc-prov-sel').value : '';
+      if (!provId) { showToast('Selecciona proveedor', true); return; }
+      if (!pvOCItems.length) { showToast('Agrega productos', true); return; }
+      var prov = PV_DATA.PROVEEDORES.find(function(p) { return p.id === provId; });
+      pvOCList[idx] = Object.assign({}, pvOCList[idx], {
+        provId: provId,
+        provNombre: prov ? prov.nombre : provId,
+        provContacto: prov ? prov.contacto : '',
+        provTel: prov ? prov.tel : '',
+        fecha: document.getElementById('oc-fecha') ? document.getElementById('oc-fecha').value : pvOCList[idx].fecha,
+        notas: document.getElementById('oc-notas') ? document.getElementById('oc-notas').value : '',
+        items: JSON.parse(JSON.stringify(pvOCItems)),
+        status: status,
+        updatedAt: new Date().toISOString()
+      });
+      pvSaveLocal(); pvRenderOrdenes();
+      showToast('OC ' + editNum + ' actualizada \u2014 ' + status);
+      if (status === 'enviada') pvPrintOCObj(pvOCList[idx]);
+      delete sec.dataset.editNum;
+      pvNav(document.getElementById('pvnav-ordenes'), 'ordenes');
+      return;
+    }
+  }
+  if (sec) delete sec.dataset.editNum;
+  if (_oldSaveOC) _oldSaveOC(status);
+};
+
+var _oldReset = window.pvResetOCForm;
+window.pvResetOCForm = function() {
+  var sec = document.getElementById('pvsec-nueva-oc');
+  if (sec) delete sec.dataset.editNum;
+  if (_oldReset) _oldReset();
+};
+
+// 11 · Render OC items con precio por unidad ($/kg × kg/formato)
+window.pvRenderOCItems = function() {
+  var prov = document.getElementById('oc-prov-sel') ? document.getElementById('oc-prov-sel').value : '';
+  pvOCItems.forEach(function(it) {
+    var p = pvAllProds().find(function(x) { return x.cod === it.cod; });
+    if (p) { it.precios = p.precios || it.precios || {}; it.pesoUnit = Number(it.pesoUnit) || pvUnitWeight(p) || 0; }
+  });
+  var c = document.getElementById('oc-items-list');
+  if (!c) return;
+  if (!pvOCItems.length) {
+    c.innerHTML = '<div style="padding:16px;text-align:center;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin items. Busca productos arriba o haz clic en una fila del cat\u00e1logo.</div>';
+    document.getElementById('oc-items-count').textContent = '0 items';
+    document.getElementById('oc-total-neto').textContent = '$ 0';
+    document.getElementById('oc-total-civa').textContent = '$ 0';
+    var pw0 = document.getElementById('oc-total-peso'); if (pw0) pw0.textContent = '0 kg';
+    return;
+  }
+  c.innerHTML = pvOCItems.map(function(item, idx) {
+    var p = pvAllProds().find(function(x) { return x.cod === item.cod; }) || item;
+    var pesoUnit = Number(item.pesoUnit) || pvUnitWeight(item) || 1;
+    var precioKg = Number(item.precio) || 0;
+    var unitTotal = precioKg * pesoUnit;
+    var rank = (prov && window.pvProvPriceRank) ? pvProvPriceRank(p, prov) : '';
+    var safeNombre = String(item.nombre || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return '<div class="oc-item-row">'
+      + '<div>'
+      + '<div style="font-size:12px;font-weight:500">' + safeNombre + (rank ? ' ' + rank : '') + '</div>'
+      + '<div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">' + item.cod + ' \u00b7 ' + (item.pres || '') + '</div>'
+      + '</div>'
+      + '<input type="number" min="1" value="' + item.qty + '" onchange="pvUpdateQty(' + idx + ',this.value)">'
+      + '<div style="position:relative">'
+      + '<input type="number" min="0" value="' + (precioKg || '') + '" placeholder="$/kg" onchange="pvUpdatePrecio(' + idx + ',this.value)">'
+      + '<span style="position:absolute;right:6px;bottom:3px;font-family:var(--font-mono);font-size:8px;color:var(--text3);pointer-events:none">/kg</span>'
+      + '</div>'
+      + '<div style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--teal);text-align:right;white-space:nowrap">'
+      + (unitTotal > 0 ? pvFmt(unitTotal) : '<span style="color:var(--text3);font-size:10px">sin precio</span>')
+      + '</div>'
+      + '<div style="font-family:var(--font-mono);font-size:10px;color:var(--amber);text-align:right;white-space:nowrap">' + pvPesoTxt(item.qty * pesoUnit) + '</div>'
+      + '<button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px" onclick="pvRemoveOCItem(' + idx + ')">\u2715</button>'
+      + '</div>';
+  }).join('');
+  document.getElementById('oc-items-count').textContent = pvOCItems.length + ' items';
+  // NETO = qty × $/kg × kg/unidad
+  var neto = pvOCItems.reduce(function(s, i) {
+    var pu = Number(i.pesoUnit) || pvUnitWeight(i) || 1;
+    return s + (Number(i.qty) || 0) * (Number(i.precio) || 0) * pu;
+  }, 0);
+  document.getElementById('oc-total-neto').textContent = pvFmt(neto) || '$ 0';
+  document.getElementById('oc-total-civa').textContent = pvFmt(Math.round(neto * 1.19)) || '$ 0';
+  var pw = document.getElementById('oc-total-peso');
+  if (pw) pw.textContent = pvPesoTxt(pvTotalWeight(pvOCItems)).replace('—', '0 kg');
+};
+
+// 12 · pvBuildOCHTML con precio unitario y total correcto
+var _oldBuildOCHTML = window.pvBuildOCHTML;
+window.pvBuildOCHTML = function(oc, forPrint) {
+  var teal = '#00b894';
+  var rows = (oc.items || []).map(function(item, i) {
+    var pesoUnit = Number(item.pesoUnit) || pvUnitWeight(item) || 1;
+    var unitTotal = (Number(item.precio) || 0) * pesoUnit;
+    var lineTotal = unitTotal * (Number(item.qty) || 1);
+    return '<tr style="border-bottom:1px solid #e8ecf0">'
+      + '<td style="padding:8px 12px;font-size:12px;color:#888;font-family:monospace">' + (i+1) + '</td>'
+      + '<td style="padding:8px 12px;font-size:13px;font-weight:600;color:#111">' + (item.nombre || '') + '</td>'
+      + '<td style="padding:8px 12px;font-size:11px;color:#888;font-family:monospace">' + (item.pres || '\u2014') + '</td>'
+      + '<td style="padding:8px 12px;font-size:12px;text-align:center;font-family:monospace">' + (item.qty || 0) + '</td>'
+      + '<td style="padding:8px 12px;font-size:11px;text-align:right;color:#555;font-family:monospace">' + (item.precio ? ('$'+Math.round(item.precio).toLocaleString('es-CL')+'/kg') : '\u2014') + '</td>'
+      + '<td style="padding:8px 12px;font-size:12px;font-weight:700;text-align:right;color:#0d6e52;font-family:monospace">' + (unitTotal > 0 ? ('$ '+Math.round(unitTotal).toLocaleString('es-CL')) : '\u2014') + '</td>'
+      + '<td style="padding:8px 12px;font-size:13px;font-weight:700;text-align:right;color:#111;font-family:monospace">' + (lineTotal > 0 ? ('$ '+Math.round(lineTotal).toLocaleString('es-CL')) : '\u2014') + '</td>'
+      + '<td style="padding:8px 12px;font-size:11px;text-align:right;color:#888;font-family:monospace">' + pvPesoTxt(item.qty * pesoUnit) + '</td>'
+      + '</tr>';
+  });
+  var neto = (oc.items || []).reduce(function(s, i) {
+    var pu = Number(i.pesoUnit) || pvUnitWeight(i) || 1;
+    return s + (Number(i.qty) || 0) * (Number(i.precio) || 0) * pu;
+  }, 0);
+  var civa = Math.round(neto * 1.19);
+  var totalKg = pvTotalWeight(oc.items).replace('—', '0 kg');
+
+  return '<div style="background:#fff;color:#111;font-family:\'DM Sans\',Arial,sans-serif;max-width:860px;margin:0 auto">'
+    + '<div style="background:#0d1117;padding:20px 28px;display:flex;align-items:flex-start;justify-content:space-between">'
+    + '<div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:30px;letter-spacing:5px;color:' + teal + '">GBISNESS</div>'
+    + '<div style="font-family:monospace;font-size:9px;letter-spacing:2px;color:#555;margin-top:2px">CYBERNETIC SPA \u00b7 RUT 77.215.071-7</div>'
+    + '<div style="font-family:monospace;font-size:9px;color:#555">Antonio Bellet 143 Of. 310, Providencia</div></div>'
+    + '<div style="text-align:right"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;letter-spacing:3px;color:#fff;margin-bottom:4px">ORDEN DE COMPRA</div>'
+    + '<div style="font-family:monospace;font-size:16px;font-weight:700;color:' + teal + '">' + oc.num + '</div>'
+    + '<div style="font-family:monospace;font-size:10px;color:#555;margin-top:3px">' + oc.fecha + '</div></div></div>'
+    + '<div style="height:3px;background:linear-gradient(90deg,' + teal + ',#0078d4)"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #e8ecf0">'
+    + '<div style="padding:16px 24px;border-right:1px solid #e8ecf0">'
+    + '<div style="font-family:monospace;font-size:8px;letter-spacing:2px;color:#aaa;text-transform:uppercase;margin-bottom:6px">Proveedor</div>'
+    + '<div style="font-size:16px;font-weight:700;color:#111;margin-bottom:3px">' + (oc.provNombre || '') + '</div>'
+    + (oc.provContacto ? '<div style="font-size:12px;color:#555">' + oc.provContacto + '</div>' : '')
+    + (oc.provTel ? '<div style="font-family:monospace;font-size:11px;color:#888">' + oc.provTel + '</div>' : '')
+    + '</div>'
+    + '<div style="padding:16px 24px">'
+    + '<div style="font-family:monospace;font-size:8px;letter-spacing:2px;color:#aaa;text-transform:uppercase;margin-bottom:6px">Detalles</div>'
+    + '<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:#888">N\u00b0 Orden</span><span style="font-family:monospace;font-size:12px;font-weight:700;color:' + teal + '">' + oc.num + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:#888">Fecha</span><span style="font-family:monospace;font-size:11px">' + oc.fecha + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between"><span style="font-size:11px;color:#888">Estado</span><span style="font-family:monospace;font-size:11px;font-weight:600;text-transform:uppercase">' + oc.status + '</span></div>'
+    + '</div></div>'
+    + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'
+    + '<thead><tr style="background:#f4f6f9;border-bottom:2px solid #e0e4ea">'
+    + '<th style="padding:8px 10px;font-family:monospace;font-size:8px;color:#888;text-align:left;text-transform:uppercase">#</th>'
+    + '<th style="padding:8px 10px;font-family:monospace;font-size:8px;color:#888;text-align:left;text-transform:uppercase">Producto</th>'
+    + '<th style="padding:8px 10px;font-family:monospace;font-size:8px;color:#888;text-align:left;text-transform:uppercase">Formato</th>'
+    + '<th style="padding:8px 10px;font-family:monospace;font-size:8px;color:#888;text-align:center;text-transform:uppercase">Cant.</th>'
+    + '<th style="padding:8px 10px;font-family:monospace;font-size:8px;color:#888;text-align:right;text-transform:uppercase">$/kg</th>'
+    + '<th style="padding:8px 10px;font-family:monospace;font-size:8px;color:#0d6e52;text-align:right;text-transform:uppercase">$/unidad</th>'
+    + '<th style="padding:8px 10px;font-family:monospace;font-size:8px;color:#888;text-align:right;text-transform:uppercase">Subtotal</th>'
+    + '<th style="padding:8px 10px;font-family:monospace;font-size:8px;color:#888;text-align:right;text-transform:uppercase">Peso</th>'
+    + '</tr></thead>'
+    + '<tbody>' + rows.join('') + '</tbody>'
+    + '</table></div>'
+    + '<div style="background:#f4f6f9;border-top:2px solid #e0e4ea;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">'
+    + '<div style="font-family:monospace;font-size:10px;color:#888">' + (oc.items || []).length + ' PRODUCTOS \u00b7 PESO TOTAL: ' + totalKg + '</div>'
+    + '<div style="display:flex;gap:24px;align-items:center">'
+    + '<div><span style="font-family:monospace;font-size:9px;color:#888">NETO</span><span style="font-family:monospace;font-size:15px;font-weight:700;color:#111;margin-left:8px">$ ' + Math.round(neto).toLocaleString('es-CL') + '</span></div>'
+    + '<div><span style="font-family:monospace;font-size:9px;color:#888">C/IVA</span><span style="font-family:monospace;font-size:16px;font-weight:700;color:' + teal + ';margin-left:8px">$ ' + Math.round(civa).toLocaleString('es-CL') + '</span></div>'
+    + '</div></div>'
+    + (oc.notas ? '<div style="padding:12px 24px;border-top:1px solid #e8ecf0;background:#fffdf5"><div style="font-family:monospace;font-size:8px;color:#aaa;text-transform:uppercase;margin-bottom:4px">Notas</div><div style="font-size:12px;color:#444">' + oc.notas + '</div></div>' : '')
+    + '<div style="padding:12px 24px;text-align:center;border-top:1px solid #e8ecf0"><div style="font-family:monospace;font-size:9px;color:#bbb">Generado por GBisness \u00b7 Cybernetic SpA \u00b7 ' + new Date().toLocaleDateString('es-CL') + '</div></div>'
+    + '</div>';
+};
+
+// 13 · pvRenderCatalogo con precio por unidad visible
+(function() {
+  var _prevRenderCat = window.pvRenderCatalogo;
+  window.pvRenderCatalogo = function() {
+    var list = pvGetFiltered();
+    var tbody = document.getElementById('pv-cat-body');
+    if (!tbody) return;
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</td></tr>';
+      var ci = document.getElementById('pv-cat-info'); if (ci) ci.textContent = '0 productos';
+      return;
+    }
+    tbody.innerHTML = list.slice(0, 300).map(function(p) {
+      var provs = (p.provs || []).map(function(pr) {
+        var badge = (window.pvProvBadgeRich) ? pvProvBadgeRich(p, pr) : pvProvBadge(pr);
+        var pesoU = pvUnitWeight(p) || 1;
+        var prPrecioKg = (p.precios && p.precios[pr]) ? Number(p.precios[pr]) : 0;
+        var unitP = prPrecioKg * pesoU;
+        var rank = (window.pvProvPriceRank) ? pvProvPriceRank(p, pr) : '';
+        if (prPrecioKg > 0) {
+          return '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">'
+            + pvProvBadge(pr)
+            + '<span style="font-family:var(--font-mono);font-size:9px;color:var(--text2)">' + pvFmt(prPrecioKg) + '/kg</span>'
+            + '<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--teal)">\u2192 ' + pvFmt(unitP) + '</span>'
+            + rank
+            + '</div>';
+        }
+        return '<div style="margin-bottom:2px">' + pvProvBadge(pr) + ' <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">+ precio</span></div>';
+      }).join('');
+      var pesoUnit = pvUnitWeight(p) || 1;
+      var unitPrice = (p.precio || 0) * pesoUnit;
+      var prCell = unitPrice > 0
+        ? '<div><span style="font-size:13px;font-weight:700;color:var(--teal)">' + pvFmt(unitPrice) + '</span>'
+          + '<div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">' + pvFmt(p.precio) + '/kg</div></div>'
+        : '<span class="precio-vacio" onclick="event.stopPropagation();pvEditPrecio(\'' + p.cod + '\')" style="cursor:pointer">+ precio</span>';
+      var civa = unitPrice > 0 ? pvFmt(Math.round(unitPrice * 1.19)) : '\u2014';
+      return '<tr onclick="pvQuickAddOC(\'' + p.cod + '\')">'
+        + '<td><span style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">' + p.cod + '</span></td>'
+        + '<td style="font-weight:500;max-width:260px">' + (p.nombre || '') + '</td>'
+        + '<td style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">' + (p.cat || '') + '</td>'
+        + '<td style="font-family:var(--font-mono);font-size:9px;text-align:center">' + (p.um || '') + '</td>'
+        + '<td style="font-size:11px;color:var(--text2)">' + (p.pres || '') + '</td>'
+        + '<td>' + provs + '</td>'
+        + '<td>' + prCell + '</td>'
+        + '<td style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">' + civa + '</td>'
+        + '<td><button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px" onclick="event.stopPropagation();pvOpenEdit(\'' + p.cod + '\')">&#9998;</button></td>'
+        + '</tr>';
+    }).join('');
+    var info = document.getElementById('pv-cat-info');
+    if (info) info.textContent = list.length + ' productos \u00b7 ' + pvAllProds().filter(function(x) { return x.precio; }).length + ' con precio \u00b7 precios por unidad';
+  };
+})();
+
+// ── FIN PATCH FINAL ──
+setTimeout(function() {
+  try {
+    var sub = document.getElementById('pv-cat-sub');
+    if (sub && sub.textContent.trim() === 'CARGANDO...') {
+      if (typeof pvRenderKPIs === 'function') pvRenderKPIs();
+      if (typeof pvRenderCatalogo === 'function') pvRenderCatalogo();
+    }
+  } catch(e) { console.warn('Render retry:', e.message); }
+}, 400);
+
+})();
+</script>
+
 </body>
 </html>
+
+<script>
+/* ══ PATCH EDITAR PROVEEDORES · FILTRO MÁS BARATO ══ */
+(function(){
+
+var PROV_CONFIG = [
+  {id:'holchem',  label:'Holchem S.A.',  cls:'badge-hol', color:'#a090ff'},
+  {id:'navarro',  label:'Navarro & Cia', cls:'badge-nav', color:'#60b0ff'},
+  {id:'insuquim', label:'Insuquim',      cls:'badge-ins', color:'#34d399'},
+  {id:'pochteca', label:'Pochteca',      cls:'badge-poc', color:'#f09060'},
+];
+
+/* -- pvOpenEdit: muestra todos los precios por proveedor -- */
+window.pvOpenEdit = function(cod) {
+  var p = pvAllProds().find(function(x){ return x.cod === cod; }) || pvGetProd(cod);
+  if (!p) return;
+  document.getElementById('edit-cod').value = cod;
+  document.getElementById('edit-cod-label').textContent = cod + ' · ' + (p.provs||[]).map(function(x){ return x.toUpperCase(); }).join(' + ');
+  document.getElementById('edit-nombre').value = p.nombre || '';
+  document.getElementById('edit-uso').value = p.uso || 'Por Revisar';
+  document.getElementById('edit-pres').value = p.pres || '';
+
+  var precios = p.precios || {};
+  var pesoUnit = pvUnitWeight(p) || 1;
+
+  // Calcular min para badge
+  var priceEntries = PROV_CONFIG.map(function(pc){ return {id:pc.id, v:Number(precios[pc.id])||0}; })
+    .filter(function(e){ return e.v > 0; }).sort(function(a,b){ return a.v - b.v; });
+  var minId = priceEntries.length ? priceEntries[0].id : null;
+  var maxId = priceEntries.length > 1 ? priceEntries[priceEntries.length-1].id : null;
+
+  var html = PROV_CONFIG.map(function(pc) {
+    var val = Number(precios[pc.id]) || 0;
+    var unitVal = val ? Math.round(val * pesoUnit) : 0;
+    var rank = '';
+    if (val > 0) {
+      if (pc.id === minId) rank = ' <span style="font-family:var(--font-mono);font-size:8px;color:#00e5a0">↓ BARATO</span>';
+      else if (pc.id === maxId) rank = ' <span style="font-family:var(--font-mono);font-size:8px;color:#ff4757">↑ CARO</span>';
+    }
+    return '<div style="display:grid;grid-template-columns:140px 1fr 120px;gap:8px;align-items:center;margin-bottom:8px;opacity:' + (val > 0 ? '1' : '0.5') + '">'
+      + '<div style="display:flex;align-items:center;gap:5px">'
+      + '<span class="pv-badge ' + pc.cls + '">' + pc.id.toUpperCase() + '</span>'
+      + '<span style="font-size:11px;color:var(--text2)">' + pc.label + '</span>'
+      + rank
+      + '</div>'
+      + '<div style="position:relative">'
+      + '<span style="position:absolute;left:0;top:0;bottom:0;display:flex;align-items:center;padding:0 7px;font-family:var(--font-mono);font-size:9px;color:' + pc.color + ';background:rgba(128,128,128,0.08);border-right:1px solid var(--border);border-radius:2px 0 0 2px;pointer-events:none">$</span>'
+      + '<input class="pv-fi pv-prov-pi" data-prov="' + pc.id + '" data-cod="' + cod + '" type="number" min="0" value="' + (val || '') + '" placeholder="sin precio" style="width:100%;padding-left:30px;color:' + pc.color + '" oninput="pvEditUnit(this)">'
+      + '</div>'
+      + '<div id="eu-' + pc.id + '" style="font-family:var(--font-mono);font-size:10px;color:var(--text2);text-align:right">'
+      + (unitVal > 0 ? ('$ ' + unitVal.toLocaleString('es-CL') + '<div style="font-size:8px;color:var(--text3)">/ unidad</div>') : '<span style="color:var(--text3);font-size:9px">—</span>')
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  document.getElementById('edit-prov-prices').innerHTML = html;
+  document.getElementById('pv-edit-modal').classList.add('open');
+};
+
+window.pvEditUnit = function(inp) {
+  var cod = inp.dataset.cod;
+  var pr  = inp.dataset.prov;
+  var p   = pvAllProds().find(function(x){ return x.cod === cod; }) || pvGetProd(cod);
+  var pu  = p ? (pvUnitWeight(p) || 1) : 1;
+  var val = parseFloat(inp.value) || 0;
+  var el  = document.getElementById('eu-' + pr);
+  if (el) el.innerHTML = val > 0
+    ? ('$ ' + Math.round(val * pu).toLocaleString('es-CL') + '<div style="font-size:8px;color:var(--text3)">/ unidad</div>')
+    : '<span style="color:var(--text3);font-size:9px">—</span>';
+};
+
+window.pvSaveEdit = function() {
+  var cod    = document.getElementById('edit-cod').value;
+  var nombre = document.getElementById('edit-nombre').value.trim();
+  var uso    = document.getElementById('edit-uso').value;
+  var pres   = document.getElementById('edit-pres').value.trim();
+
+  var newPrecios = {}, newProvs = [];
+  document.querySelectorAll('.pv-prov-pi').forEach(function(inp) {
+    var pr  = inp.dataset.prov;
+    var val = parseFloat(inp.value) || 0;
+    if (val > 0) { newPrecios[pr] = val; newProvs.push(pr); }
+  });
+
+  if (!pvEdits[cod]) pvEdits[cod] = {};
+  if (nombre)  pvEdits[cod].nombre = nombre;
+  pvEdits[cod].uso = uso;
+  if (pres)    pvEdits[cod].pres = pres;
+
+  if (Object.keys(newPrecios).length) {
+    pvEdits[cod].precios = newPrecios;
+    pvEdits[cod].provs   = Array.from ? Array.from(new Set(newProvs)) : newProvs;
+    var minP = Math.min.apply(null, Object.keys(newPrecios).map(function(k){ return newPrecios[k]; }));
+    pvEdits[cod].precio  = minP;
+
+    // Actualizar base directamente para que pvAllProds lo refleje
+    var base = pvBaseProd ? pvBaseProd(cod) : null;
+    if (base) {
+      base.precios = Object.assign({}, base.precios || {}, newPrecios);
+      if (base.provs) base.provs = Array.from ? Array.from(new Set(base.provs.concat(newProvs))) : base.provs.concat(newProvs);
+      base.precio = minP;
+    }
+  }
+
+  pvSaveLocal();
+  document.getElementById('pv-edit-modal').classList.remove('open');
+  pvRenderKPIs(); pvRenderCatalogo();
+  showToast('Producto actualizado');
+};
+
+/* -- Filtro Más Barato -- */
+var pvMasBaratoActive = false;
+window.pvToggleMasBarato = function() {
+  pvMasBaratoActive = !pvMasBaratoActive;
+  var btn = document.getElementById('btn-mas-barato');
+  if (btn) {
+    btn.className = pvMasBaratoActive
+      ? 'pv-btn pv-btn-teal'
+      : 'pv-btn pv-btn-sec';
+    btn.textContent = pvMasBaratoActive ? '✓ MÁS BARATO' : '↓ MÁS BARATO';
+  }
+  pvRenderCatalogo();
+};
+
+var _prevGF3 = window.pvGetFiltered;
+window.pvGetFiltered = function() {
+  var base = _prevGF3 ? _prevGF3() : pvAllProds();
+  if (!pvMasBaratoActive) return base;
+  // Con precio, ordenado por precio unitario ASC
+  return base
+    .filter(function(p){ return p.precio && Number(p.precio) > 0; })
+    .sort(function(a, b){
+      return (a.precio * (pvUnitWeight(a)||1)) - (b.precio * (pvUnitWeight(b)||1));
+    });
+};
+
+})();
+</script>
