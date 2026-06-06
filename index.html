@@ -12263,3 +12263,110 @@ window.pvGetFiltered = function() {
 
 })();
 </script>
+
+<script>
+/* ══ PATCH CATALOG DISPLAY · muestra precios de todos los proveedores cargados ══ */
+(function(){
+
+// pvRenderCatalogo definitivo: muestra solo proveedores con precio real
+(function() {
+  window.pvRenderCatalogo = function() {
+    var list = pvGetFiltered ? pvGetFiltered() : pvAllProds();
+    var tbody = document.getElementById('pv-cat-body');
+    if (!tbody) return;
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</td></tr>';
+      var ci = document.getElementById('pv-cat-info'); if(ci) ci.textContent = '0 productos';
+      return;
+    }
+
+    var PBADGE = {
+      holchem:  {cls:'badge-hol', label:'HOLCHEM'},
+      navarro:  {cls:'badge-nav', label:'NAVARRO'},
+      insuquim: {cls:'badge-ins', label:'INSUQUIM'},
+      pochteca: {cls:'badge-poc', label:'POCHTECA'},
+    };
+
+    tbody.innerHTML = list.slice(0, 400).map(function(p) {
+      var pesoUnit = pvUnitWeight(p) || 1;
+      var precios  = p.precios || {};
+
+      // Construir lista de proveedores con precio
+      var provCells = '';
+      var hasPrecio = false;
+      var allVals   = [];
+
+      // Colectar valores para badge min/max
+      (p.provs || []).forEach(function(pr) {
+        var v = Number(precios[pr]) || 0;
+        if (v > 0) allVals.push({pr:pr, v:v});
+      });
+      allVals.sort(function(a,b){return a.v - b.v;});
+      var minPr = allVals.length ? allVals[0].pr : null;
+      var maxPr = allVals.length > 1 ? allVals[allVals.length-1].pr : null;
+
+      (p.provs || []).forEach(function(pr) {
+        var cfg = PBADGE[pr] || {cls:'', label:pr.toUpperCase()};
+        var v   = Number(precios[pr]) || 0;
+        var unitV = v * pesoUnit;
+
+        if (v > 0) {
+          hasPrecio = true;
+          var rank = '';
+          if (allVals.length > 1) {
+            if (pr === minPr) rank = '<span class="pv-rank pv-rank-low" style="font-size:8px;padding:1px 4px">\u2193 BARATO</span>';
+            else if (pr === maxPr) rank = '<span class="pv-rank pv-rank-high" style="font-size:8px;padding:1px 4px">\u2191 CARO</span>';
+          }
+          provCells += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">'
+            + '<span class="pv-badge ' + cfg.cls + '">' + cfg.label + '</span>'
+            + '<span style="font-family:var(--font-mono);font-size:9px;color:var(--text2)">' + pvFmt(v) + '/kg</span>'
+            + '<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--teal)">\u2192 ' + pvFmt(unitV) + '</span>'
+            + rank
+            + '</div>';
+        } else {
+          // Sin precio: mostrar badge muted sin ocupar espacio
+          provCells += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;opacity:0.35">'
+            + '<span class="pv-badge ' + cfg.cls + '">' + cfg.label + '</span>'
+            + '<span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">+ precio</span>'
+            + '</div>';
+        }
+      });
+
+      // Columnas de precio (mínimo entre proveedores)
+      var minV     = hasPrecio ? Math.min.apply(null, allVals.map(function(e){return e.v;})) : 0;
+      var unitMin  = minV ? minV * pesoUnit : 0;
+      var civaMin  = unitMin ? Math.round(unitMin * 1.19) : 0;
+      var prCell   = unitMin > 0
+        ? '<div style="font-size:13px;font-weight:700;color:var(--teal)">' + pvFmt(unitMin) + '</div>'
+          + '<div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">' + pvFmt(minV) + '/kg</div>'
+        : '<span class="precio-vacio" style="cursor:pointer" onclick="event.stopPropagation();pvOpenEdit(\'' + p.cod + '\')">+ precio</span>';
+      var civaCell = civaMin > 0 ? pvFmt(civaMin) : '\u2014';
+
+      return '<tr style="cursor:pointer" onclick="pvQuickAddOC(\'' + p.cod + '\')">'
+        + '<td><span style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">' + (p.cod||'') + '</span></td>'
+        + '<td style="font-weight:500;max-width:240px">' + (p.nombre||'') + '</td>'
+        + '<td style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">' + (p.cat||'') + '</td>'
+        + '<td style="font-family:var(--font-mono);font-size:9px;text-align:center">' + (p.um||'') + '</td>'
+        + '<td style="font-size:11px;color:var(--text2)">' + (p.pres||'') + '</td>'
+        + '<td>' + provCells + '</td>'
+        + '<td>' + prCell + '</td>'
+        + '<td style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">' + civaCell + '</td>'
+        + '<td><button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px" onclick="event.stopPropagation();pvOpenEdit(\'' + p.cod + '\')">&#9998;</button></td>'
+        + '</tr>';
+    }).join('');
+
+    var info = document.getElementById('pv-cat-info');
+    if (info) {
+      var withPrice = list.filter(function(p){ return p.precio && Number(p.precio) > 0; }).length;
+      info.textContent = list.length + ' productos \u00b7 ' + withPrice + ' con precio';
+    }
+  };
+})();
+
+// Re-render al cargarse
+setTimeout(function(){
+  try { pvRenderCatalogo(); } catch(e){}
+}, 200);
+
+})();
+</script>
