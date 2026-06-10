@@ -11873,20 +11873,25 @@ window.pvEditDraftOC = function(num) {
   var oc = pvOCList.find(function(o) { return o.num === num; });
   if (!oc) { showToast('OC no encontrada', true); return; }
   if (oc.status !== 'borrador') { showToast('Solo se pueden editar OC en estado BORRADOR', true); return; }
-  pvOCItems = JSON.parse(JSON.stringify(oc.items || []));
+  // Guardar copia de items ANTES de navegar (pvNav llama pvResetOCForm que limpia pvOCItems)
+  var savedItems = JSON.parse(JSON.stringify(oc.items || []));
+  var savedNum   = num;
+  var savedOC    = oc;
   pvNav(document.getElementById('pvnav-nueva-oc'), 'nueva-oc');
+  // Re-asignar DESPUÉS del reset que hace pvNav
   setTimeout(function() {
+    pvOCItems = savedItems;  // restaurar items
     var ef = document.getElementById('oc-fecha');
     var ep = document.getElementById('oc-prov-sel');
     var en = document.getElementById('oc-notas');
-    if (ef) ef.value = oc.fecha || new Date().toISOString().slice(0, 10);
-    if (ep) ep.value = oc.provId || '';
-    if (en) en.value = oc.notas || '';
+    if (ef) ef.value = savedOC.fecha || new Date().toISOString().slice(0, 10);
+    if (ep) ep.value = savedOC.provId || '';
+    if (en) en.value = savedOC.notas || '';
     pvRenderOCItems();
     var sec = document.getElementById('pvsec-nueva-oc');
-    if (sec) sec.dataset.editNum = num;
-    showToast('Editando borrador ' + num);
-  }, 100);
+    if (sec) sec.dataset.editNum = savedNum;
+    showToast('Editando borrador ' + savedNum);
+  }, 150);
 };
 
 var _oldSaveOC = window.pvSaveOC;
