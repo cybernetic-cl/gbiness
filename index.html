@@ -11460,7 +11460,6 @@ function pvExportCatalogo() {
     XLSX.writeFile(wb,'catalogo_quimicos_insuquim_'+new Date().toISOString().slice(0,10)+'.xlsx');
   };
   document.addEventListener('DOMContentLoaded',()=>{ insApply(); insRefreshUI(); });
-  try{ insApply(); }catch(e){ console.warn('Insuquim patch pendiente:',e); }
 })();
 </script>
 <style>
@@ -12008,7 +12007,7 @@ window.pvBuildOCHTML = function(oc, forPrint) {
     return s + (Number(i.qty) || 0) * (Number(i.precio) || 0) * pu;
   }, 0);
   var civa = Math.round(neto * 1.19);
-  var totalKg = pvTotalWeight(oc.items).replace('—', '0 kg');
+  var totalKg = pvPesoTxt(pvTotalWeight(oc.items)) || '0 kg';
 
   return '<div style="background:#fff;color:#111;font-family:\'DM Sans\',Arial,sans-serif;max-width:860px;margin:0 auto">'
     + '<div style="background:#0d1117;padding:20px 28px;display:flex;align-items:flex-start;justify-content:space-between">'
@@ -12117,7 +12116,7 @@ setTimeout(function() {
       if (typeof pvRenderKPIs === 'function') pvRenderKPIs();
       if (typeof pvRenderCatalogo === 'function') pvRenderCatalogo();
     }
-  } catch(e) { console.warn('Render retry:', e.message); }
+  } catch(e) { /* silent */ }
 }, 400);
 
 })();
@@ -12777,7 +12776,7 @@ setTimeout(function(){ try{ pvRenderCatalogo(); }catch(e){}}, 150);
         }
       }
     });
-    console.log('[Insuquim PDF] '+linked+' vinculados, '+added+' nuevos');
+    // ok;
   }
 
   // Ejecutar ahora y en cada pvAllProds
@@ -12915,7 +12914,7 @@ setTimeout(function(){ try{ pvRenderCatalogo(); }catch(e){}}, 150);
   function init() {
     ensureInsuquim();
     var n = PV_DATA.PRODUCTOS.filter(function(p){ return (p.provs||[]).indexOf('insuquim')!==-1; }).length;
-    console.log('[Insuquim] ' + n + ' productos con insuquim en provs');
+    // ok;
     setTimeout(function(){ try{ pvRenderKPIs(); pvRenderCatalogo(); }catch(e){} }, 100);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -12946,7 +12945,7 @@ setTimeout(function(){ try{ pvRenderCatalogo(); }catch(e){}}, 150);
 (function(){
   if (typeof PV_DATA !== 'undefined' && !window.PV_DATA) {
     window.PV_DATA = PV_DATA;
-    console.log('[Fix] PV_DATA expuesto en window:', PV_DATA.PRODUCTOS.length, 'productos');
+    // ok;
   }
   // Re-ejecutar toda la cadena de inicialización de Insuquim
   setTimeout(function(){
@@ -12955,11 +12954,10 @@ setTimeout(function(){ try{ pvRenderCatalogo(); }catch(e){}}, 150);
         applyInsuquimFull();
         var n = PV_DATA.PRODUTOS ? PV_DATA.PRODUTOS.filter(function(p){ return (p.provs||[]).indexOf('insuquim')!==-1; }).length
                : PV_DATA.PRODUCTOS.filter(function(p){ return (p.provs||[]).indexOf('insuquim')!==-1; }).length;
-        console.log('[Insuquim] tras fix:', n, 'productos');
       }
       if (typeof ensureInsuquim === 'function') ensureInsuquim();
       pvRenderKPIs(); pvRenderCatalogo();
-    } catch(e) { console.warn('Re-init:', e.message); }
+    } catch(e) { /* silent */ }
   }, 100);
 })();
 
