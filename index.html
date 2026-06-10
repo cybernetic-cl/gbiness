@@ -757,47 +757,40 @@ input.fi-money{padding-left:58px!important;width:100%}
 
 <!-- LOGIN -->
 <div id="loginScreen">
-  <div class="login-wrap" style="max-width:420px">
-    <div class="login-logo" style="font-size:42px">📊 GBISNESS</div>
-    <div class="login-sub">// Cybernetic SpA · Selecciona el módulo</div>
+  <div class="login-wrap" style="max-width:360px">
+    <div class="login-logo" style="font-size:36px;letter-spacing:6px">⚡ AUTOMATIK</div>
+    <div class="login-sub">// Cybernetic SpA</div>
 
-    <!-- Module cards -->
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px">
-      <div id="mod-cierre" class="module-card active" onclick="selectModule('cierre')">
-        <div class="module-icon">💰</div>
-        <div class="module-name">Cierre Mensual</div>
-        <div class="module-sub">Saldos y gastos</div>
-      </div>
-      <div id="mod-presupuesto" class="module-card" onclick="selectModule('presupuesto')">
-        <div class="module-icon">🎯</div>
-        <div class="module-name">Presupuesto</div>
-        <div class="module-sub">Compras y gastos</div>
-      </div>
-      <div id="mod-anual" class="module-card" onclick="selectModule('anual')">
-        <div class="module-icon">📆</div>
-        <div class="module-name">Cierre Anual</div>
-        <div class="module-sub">Año y resumen</div>
-      </div>
-      <div id="mod-rrhh" class="module-card" onclick="selectModule('rrhh')">
-        <div class="module-icon">👤</div>
-        <div class="module-name">Gestión RRHH</div>
-        <div class="module-sub">Trabajadores y vacaciones</div>
-      </div>
-      <div id="mod-analyzer" class="module-card" onclick="selectModule('analyzer')" style="border-color:rgba(52,131,250,0.3)">
-        <div class="module-icon">📊</div>
-        <div class="module-name" style="font-size:13px"><span style="background:#2d3277;color:#ffe600;padding:1px 5px;border-radius:2px">Mercado</span><span style="background:#fff200;color:#3483fa;padding:1px 5px;border-radius:2px;margin-left:1px">Libre</span></div>
-        <div class="module-sub" style="color:#3483fa;font-weight:600;margin-top:4px">Analyzer</div>
-      </div>
-      <div id="mod-calc" class="module-card" onclick="selectModule('calc')" style="border-color:rgba(10,102,64,0.3)">
-        <div class="module-icon">💰</div>
-        <div class="module-name">Calculadora</div>
-        <div class="module-sub" style="color:#0a6640;font-weight:600;margin-top:2px">Ganancias</div>
-      </div>
-      <div id="mod-proveedores" class="module-card" onclick="selectModule('proveedores')" style="border-color:rgba(0,229,160,0.3)">
-        <div class="module-icon">🧪</div>
-        <div class="module-name">Proveedores</div>
-        <div class="module-sub" style="color:var(--teal);font-weight:600;margin-top:2px">Catálogo &amp; OC</div>
-      </div>
+    <!-- Módulos como lista compacta -->
+    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px" id="mod-list">
+      <button onclick="selectModule('cierre')" id="mod-cierre"
+        style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1.5px solid var(--teal);border-radius:4px;text-align:left;width:100%;cursor:pointer;font-size:13px;color:var(--teal);font-family:var(--font-display);letter-spacing:1px">
+        <span style="font-size:16px">💰</span> Cierre Mensual
+      </button>
+      <button onclick="selectModule('presupuesto')" id="mod-presupuesto"
+        style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:4px;text-align:left;width:100%;cursor:pointer;font-size:13px;color:var(--text);font-family:var(--font-display);letter-spacing:1px">
+        <span style="font-size:16px">🎯</span> Presupuesto
+      </button>
+      <button onclick="selectModule('anual')" id="mod-anual"
+        style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:4px;text-align:left;width:100%;cursor:pointer;font-size:13px;color:var(--text);font-family:var(--font-display);letter-spacing:1px">
+        <span style="font-size:16px">📆</span> Cierre Anual
+      </button>
+      <button onclick="selectModule('rrhh')" id="mod-rrhh"
+        style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:4px;text-align:left;width:100%;cursor:pointer;font-size:13px;color:var(--text);font-family:var(--font-display);letter-spacing:1px">
+        <span style="font-size:16px">👤</span> RRHH
+      </button>
+      <button onclick="selectModule('analyzer')" id="mod-analyzer"
+        style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:4px;text-align:left;width:100%;cursor:pointer;font-size:13px;color:var(--text);font-family:var(--font-display);letter-spacing:1px">
+        <span style="font-size:16px">📊</span> MercadoLibre
+      </button>
+      <button onclick="selectModule('calc')" id="mod-calc"
+        style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:4px;text-align:left;width:100%;cursor:pointer;font-size:13px;color:var(--text);font-family:var(--font-display);letter-spacing:1px">
+        <span style="font-size:16px">📐</span> Calculadora
+      </button>
+      <button onclick="selectModule('proveedores')" id="mod-proveedores"
+        style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:4px;text-align:left;width:100%;cursor:pointer;font-size:13px;color:var(--text);font-family:var(--font-display);letter-spacing:1px">
+        <span style="font-size:16px">🧪</span> Proveedores
+      </button>
     </div>
 
     <div class="login-card">
@@ -2563,12 +2556,24 @@ let activeModule = 'cierre';
 
 function selectModule(mod) {
   activeModule = mod;
-  document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
-  document.getElementById('mod-'+mod).classList.add('active');
-  const labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual', rrhh:'// Gestión RRHH', analyzer:'// MercadoLibre Analyzer', calc:'// Calculadora de Ganancias', proveedores:'// Catálogo & Órdenes de Compra' };
-  document.getElementById('login-module-label').textContent = labels[mod];
-  document.getElementById('loginError').style.display = 'none';
-  document.getElementById('loginPass').value = '';
+  // Highlight active button in mod-list
+  document.querySelectorAll('#mod-list button').forEach(function(b) {
+    b.style.borderColor = 'var(--border)';
+    b.style.color = 'var(--text)';
+  });
+  var active = document.getElementById('mod-' + mod);
+  if (active) { active.style.borderColor = 'var(--teal)'; active.style.color = 'var(--teal)'; }
+  // Legacy: also update .module-card if present
+  document.querySelectorAll('.module-card').forEach(function(c) { c.classList.remove('active'); });
+  var card = document.getElementById('mod-' + mod);
+  if (card && card.classList.contains('module-card')) card.classList.add('active');
+  var labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual', rrhh:'// Gestión RRHH', analyzer:'// MercadoLibre Analyzer', calc:'// Calculadora de Ganancias', proveedores:'// Catálogo & Órdenes de Compra' };
+  var lbl = document.getElementById('login-module-label');
+  if (lbl) lbl.textContent = labels[mod] || '// ' + mod;
+  var err = document.getElementById('loginError');
+  if (err) err.style.display = 'none';
+  var pass = document.getElementById('loginPass');
+  if (pass) pass.value = '';
 }
 const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const EMPS   = ['Cybernetic','Mascokits','Mini Mall','Personal'];
@@ -12526,64 +12531,6 @@ function rebrand() {
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', rebrand);
 else rebrand();
-
-/* 2 · LOGIN SIMPLIFICADO */
-function simplifyLogin() {
-  var wrap = document.querySelector('.login-wrap');
-  if (!wrap) return;
-  wrap.style.maxWidth = '360px';
-
-  var logo = wrap.querySelector('.login-logo');
-  if (logo) {
-    logo.style.fontSize = '36px';
-    logo.style.letterSpacing = '6px';
-    logo.style.marginBottom = '4px';
-  }
-
-  var sub = wrap.querySelector('.login-sub');
-  if (sub) sub.textContent = '// Cybernetic SpA';
-
-  // Reemplazar grid de módulos por lista compacta
-  var grid = wrap.querySelector('[style*="grid-template-columns"]');
-  if (grid) {
-    var modules = [
-      {id:'cierre',      icon:'💰', name:'Cierre Mensual'},
-      {id:'presupuesto', icon:'🎯', name:'Presupuesto'},
-      {id:'anual',       icon:'📆', name:'Cierre Anual'},
-      {id:'rrhh',        icon:'👤', name:'RRHH'},
-      {id:'analyzer',    icon:'📊', name:'MercadoLibre'},
-      {id:'calc',        icon:'📐', name:'Calculadora'},
-      {id:'proveedores', icon:'🧪', name:'Proveedores'},
-    ];
-    var html = '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px" id="mod-list">';
-    modules.forEach(function(m) {
-      html += '<button class="pv-btn" onclick="selectModule(\''+m.id+'\')" id="mod-'+m.id+'" '
-        + 'style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1px solid var(--border);'
-        + 'border-radius:4px;text-align:left;width:100%;cursor:pointer;transition:border-color .15s;font-size:13px;color:var(--text)">'
-        + '<span style="font-size:16px">'+m.icon+'</span>'
-        + '<span style="font-family:var(--font-display);letter-spacing:1px">'+m.name+'</span>'
-        + '</button>';
-    });
-    html += '</div>';
-    grid.outerHTML = html;
-    // Mark first as active
-    var first = document.getElementById('mod-cierre');
-    if (first) first.style.borderColor = 'var(--teal)';
-    // Update selectModule to highlight active
-    var _oldSelect = window.selectModule;
-    window.selectModule = function(mod) {
-      document.querySelectorAll('#mod-list button').forEach(function(b) {
-        b.style.borderColor = 'var(--border)';
-        b.style.color = 'var(--text)';
-      });
-      var active = document.getElementById('mod-'+mod);
-      if (active) { active.style.borderColor = 'var(--teal)'; active.style.color = 'var(--teal)'; }
-      if (_oldSelect) _oldSelect(mod);
-    };
-  }
-}
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', simplifyLogin);
-else simplifyLogin();
 
 /* 3 · CATÁLOGO: siempre mostrar todos los proveedores del producto */
 window.pvRenderCatalogo = function() {
