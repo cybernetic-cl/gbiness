@@ -13244,3 +13244,141 @@ window.pvExportOCXLS = function(sinPrecios) {
   XLSX.writeFile(wb, 'OC_' + num + '_' + (oc.provNombre||'').replace(/[^a-zA-Z0-9]/g,'_') + '_' + (oc.fecha||'').replace(/-/g,'') + suffix + '.xlsx');
 };
 </script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   PARCHE MAESTRO · unifica pvGetProd/pvAllProds (misma data en
+   buscador y al agregar), cachea resultado (arregla lentitud) y
+   hace determinística la edición de OC en borrador (arregla items
+   que no aparecían al editar).
+   Se carga al final a propósito: en HTML, funciones con el mismo
+   nombre declaradas después ganan siempre.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+
+  // ── 1) CACHE ÚNICA DE PRODUCTOS ──────────────────────────────────
+  // pvAllProds() real (con TODOS los parches de formato/precio ya
+  // aplicados) se ejecuta UNA vez y se reutiliza durante 800ms en
+  // vez de recorrer todo el catálogo en cada llamada (antes se
+  // llamaba decenas de veces por render → lentitud).
+  var _cache = null, _cacheAt = 0, _byCod = null;
+  var TTL = 800; // ms
+
+  function rawGetProd(cod){
+    // Versión mínima base+edits, SIN pasar por pvAllProds, para poder
+    // reconstruir la cache sin recursión (pvAllProds original llama
+    // pvGetProd por producto).
+    var base = (typeof pvBaseProd === 'function') ? pvBaseProd(cod) : null;
+    if(!base) return null;
+    var e = (typeof pvEdits !== 'undefined' && pvEdits && pvEdits[cod]) ? pvEdits[cod] : {};
+    var r = Object.assign({}, base, e);
+    r.precios = Object.assign({}, base.precios||{}, e.precios||{});
+    var allProvs = (base.provs||[]).concat(e.provs||[]);
+    r.provs = allProvs.filter(function(v,i){ return allProvs.indexOf(v)===i; });
+    return r;
+  }
+
+  function buildCache(){
+    var savedGetProd = window.pvGetProd;
+    window.pvGetProd = rawGetProd; // evita recursión mientras se arma la cache
+    var list;
+    try { list = _realAllProds ? _realAllProds() : []; }
+    finally { window.pvGetProd = savedGetProd; }
+    _byCod = {};
+    (list||[]).forEach(function(p){ _byCod[p.cod] = p; });
+    _cache = list || [];
+    _cacheAt = Date.now();
+    return _cache;
+  }
+
+  window.pvInvalidateProdCache = function(){ _cache = null; _cacheAt = 0; };
+
+  // Guardamos referencia al pvAllProds "real" (con todos los parches
+  // de formato/normalización acumulados hasta este punto del archivo).
+  var _realAllProds = window.pvAllProds;
+
+  window.pvAllProds = function(){
+    if(!_cache || (Date.now()-_cacheAt) > TTL) buildCache();
+    return _cache;
+  };
+
+  // pvGetProd ahora SIEMPRE devuelve el mismo objeto (mismo nombre,
+  // mismo formato/presentación, mismo precio) que ve el buscador.
+  window.pvGetProd = function(cod){
+    if(!_cache || (Date.now()-_cacheAt) > TTL) buildCache();
+    return (_byCod && _byCod[cod]) || rawGetProd(cod);
+  };
+
+  // Invalidar cache cada vez que se guardan cambios (precios, custom
+  // products, edits) para que no quede data vieja más de lo esperado.
+  var _oldSaveLocal = window.pvSaveLocal;
+  window.pvSaveLocal = function(){
+    if(_oldSaveLocal) _oldSaveLocal.apply(this, arguments);
+    pvInvalidateProdCache();
+  };
+
+  // ── 2) EDITAR BORRADOR SIN RACE CONDITION ────────────────────────
+  // Antes: pvNav() limpiaba pvOCItems de inmediato y 150ms después un
+  // setTimeout intentaba restaurarlos. Si el render fallaba en esos
+  // 150ms (o pvAllProds() tardaba), los items quedaban vacíos.
+  // Ahora: se marca una bandera ANTES de navegar y pvResetOCForm la
+  // respeta, sin timeouts ni condiciones de carrera.
+  var _skipReset = false;
+
+  var _oldResetOCForm = window.pvResetOCForm;
+  window.pvResetOCForm = function(){
+    if(_skipReset){ _skipReset = false; return; } // no borrar items durante edición
+    if(_oldResetOCForm) _oldResetOCForm();
+  };
+
+  window.pvEditDraftOC = function(num){
+    var oc = pvOCList.find(function(o){ return o.num === num; });
+    if(!oc){ showToast('OC no encontrada', true); return; }
+    if(oc.status !== 'borrador'){ showToast('Solo se pueden editar OC en estado BORRADOR', true); return; }
+
+    var savedItems = JSON.parse(JSON.stringify(oc.items || []));
+
+    _skipReset = true;
+    pvNav(document.getElementById('pvnav-nueva-oc'), 'nueva-oc');
+
+    pvOCItems = savedItems;
+    var ef = document.getElementById('oc-fecha');
+    var ep = document.getElementById('oc-prov-sel');
+    var en = document.getElementById('oc-notas');
+    if(ef) ef.value = oc.fecha || new Date().toISOString().slice(0,10);
+    if(ep) ep.value = oc.provId || '';
+    if(en) en.value = oc.notas || '';
+
+    var sec = document.getElementById('pvsec-nueva-oc');
+    if(sec) sec.dataset.editNum = num;
+
+    try { pvRenderOCItems(); }
+    catch(err){
+      console.error('pvRenderOCItems falló al editar OC', err);
+      showToast('Hubo un problema mostrando los items, reintentando…', true);
+      setTimeout(function(){ try{ pvRenderOCItems(); }catch(e2){ console.error(e2); } }, 300);
+    }
+    showToast('Editando borrador ' + num);
+  };
+
+  // ── 3) RENDER DE ITEMS: 1 sola llamada a pvAllProds() por render ─
+  // (antes se llamaba dentro de cada iteración del forEach/map)
+  var _oldRenderOCItems = window.pvRenderOCItems;
+  window.pvRenderOCItems = function(){
+    try {
+      var all = pvAllProds();
+      var byCod = {};
+      all.forEach(function(p){ byCod[p.cod] = p; });
+      pvOCItems.forEach(function(it){
+        var p = byCod[it.cod];
+        if(p){
+          it.precios = p.precios || it.precios || {};
+          it.pesoUnit = Number(it.pesoUnit) || pvUnitWeight(p) || 0;
+        }
+      });
+    } catch(err){ console.error('Error precargando items OC', err); }
+    if(_oldRenderOCItems) _oldRenderOCItems();
+  };
+
+})();
+</script>
