@@ -13262,7 +13262,14 @@ window.pvExportOCXLS = function(sinPrecios) {
   // vez de recorrer todo el catálogo en cada llamada (antes se
   // llamaba decenas de veces por render → lentitud).
   var _cache = null, _cacheAt = 0, _byCod = null;
-  var TTL = 800; // ms
+  // TTL alto a propósito: pvAllProds() real hace matching difuso de ~140
+  // productos Insuquim contra TODO el catálogo (cientos de comparaciones
+  // de texto por producto) más normalización de formatos y merge de
+  // duplicados — es la parte más pesada del login a "Proveedores".
+  // Como los datos base del catálogo casi no cambian durante una sesión
+  // (y invalidamos la cache manualmente al guardar/editar), es seguro
+  // reutilizarla varios minutos en vez de recalcular todo constantemente.
+  var TTL = 180000; // 3 min
 
   function rawGetProd(cod){
     // Versión mínima base+edits, SIN pasar por pvAllProds, para poder
@@ -13379,6 +13386,30 @@ window.pvExportOCXLS = function(sinPrecios) {
     } catch(err){ console.error('Error precargando items OC', err); }
     if(_oldRenderOCItems) _oldRenderOCItems();
   };
+
+  // ── 4) COALESCER RENDERS DUPLICADOS ──────────────────────────────
+  // El login a Proveedores dispara ~7 renders completos de la tabla de
+  // catálogo (varias capas de "bootProveedores" + varios setTimeout de
+  // 100-400ms que quedaron de parches anteriores), cada uno reconstruye
+  // cientos de filas de HTML. Acá los agrupamos: si varias funciones
+  // piden renderizar casi al mismo tiempo, solo se ejecuta el render
+  // real UNA vez (en el próximo frame), no una vez por cada llamada.
+  function debounceRender(fn){
+    var scheduled = false;
+    return function(){
+      if(scheduled) return;
+      scheduled = true;
+      var args = arguments, self = this;
+      requestAnimationFrame(function(){
+        scheduled = false;
+        try { fn.apply(self, args); } catch(e){ console.error(e); }
+      });
+    };
+  }
+  ['pvRenderCatalogo','pvRenderKPIs','pvRenderOrdenes'].forEach(function(name){
+    var real = window[name];
+    if(typeof real === 'function') window[name] = debounceRender(real);
+  });
 
 })();
 </script>
