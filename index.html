@@ -9577,6 +9577,11 @@ function cgAddProduct() {
               <option value="ambos">Holchem + Navarro</option>
             </select>
             <select class="pv-fi" id="pv-cat-cat" onchange="pvRenderCatalogo()"><option value="">Todas las categorías</option></select>
+            <select class="pv-fi" id="pv-cat-estado" onchange="pvRenderCatalogo()">
+              <option value="">Todos los estados</option>
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+            </select>
             <div style="display:flex;gap:5px;flex-wrap:wrap" id="pv-uso-pills">
               <button class="uso-pill on on-all" data-u="all" onclick="pvUsoPill(this,'all')">Todos</button>
               <button class="uso-pill" data-u="Comercialización" onclick="pvUsoPill(this,'Comercialización')">Comerc.</button>
@@ -9588,6 +9593,7 @@ function cgAddProduct() {
               <button class="pv-btn pv-btn-teal" onclick="pvExportCatalogo()">↓ XLS</button>
               <button class="pv-btn pv-btn-sec" onclick="pvOpenProductAdd('catalogo')">＋ Químico</button>
               <button class="pv-btn pv-btn-sec" onclick="pvDownloadProductTemplate()">Plantilla</button>
+              <button class="pv-btn pv-btn-sec" onclick="pvDownloadEditableCatalog()" title="Descarga TODO el catálogo actual en Excel para editar campos y volver a subirlo">↓ Editar Catálogo</button>
               <button class="pv-btn pv-btn-amber" onclick="pvTriggerBulkImport('catalogo')">Importar XLS</button>
               <button class="pv-btn pv-btn-sec" id="btn-mas-barato" onclick="pvToggleMasBarato()" title="Mostrar solo quimicos con mejor precio por proveedor">↓ MÁS BARATO</button>
               <button class="pv-btn pv-btn-sec" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">＋ Nueva OC</button>
@@ -9598,7 +9604,7 @@ function cgAddProduct() {
               <thead><tr>
                 <th>Código</th><th>Nombre</th><th>Categoría</th>
                 <th>UM</th><th>Presentación</th><th>Proveedores</th>
-                <th>P. S/IVA</th><th>P. C/IVA</th><th></th>
+                <th>P. S/IVA</th><th>P. C/IVA</th><th>Estado</th><th></th>
               </tr></thead>
               <tbody id="pv-cat-body"></tbody>
             </table>
@@ -9786,6 +9792,14 @@ function cgAddProduct() {
             <option value="Infactible">Infactible</option>
           </select>
         </div>
+      </div>
+      <!-- Estado -->
+      <div style="margin-bottom:14px">
+        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px">Estado</div>
+        <select class="pv-fi" id="edit-estado" style="width:100%">
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
       </div>
       <!-- Precios por proveedor (dinámico) -->
       <div style="margin-bottom:14px">
@@ -10896,7 +10910,7 @@ function pvCollectManualProduct(){
   const provs = ['holchem','navarro','pochteca'].filter(pr=>document.getElementById('pv-add-prov-'+pr)?.checked);
   if(!provs.length){ showToast('Marca al menos un proveedor', true); return null; }
   const cod = (document.getElementById('pv-add-cod')?.value||'').trim() || pvSlugCode(nombre);
-  return {cod, nombre, cat:(document.getElementById('pv-add-cat')?.value||'Manual').trim() || 'Manual', um:(document.getElementById('pv-add-um')?.value||'KG').trim() || 'KG', pres:(document.getElementById('pv-add-pres')?.value||'').trim(), provs, precio:parseFloat(document.getElementById('pv-add-precio')?.value)||0, uso:document.getElementById('pv-add-uso')?.value || 'Por Revisar', fuente:(document.getElementById('pv-add-fuente')?.value||'Manual').trim() || 'Manual'};
+  return {cod, nombre, cat:(document.getElementById('pv-add-cat')?.value||'Manual').trim() || 'Manual', um:(document.getElementById('pv-add-um')?.value||'KG').trim() || 'KG', pres:(document.getElementById('pv-add-pres')?.value||'').trim(), provs, precio:parseFloat(document.getElementById('pv-add-precio')?.value)||0, uso:document.getElementById('pv-add-uso')?.value || 'Por Revisar', estado:'Activo', fuente:(document.getElementById('pv-add-fuente')?.value||'Manual').trim() || 'Manual'};
 }
 function pvUpsertCustomProduct(prod){
   const base = PV_DATA.PRODUCTOS.find(p=>p.cod===prod.cod);
@@ -10926,12 +10940,36 @@ function pvRefreshCategoryOptions(){
 function pvDownloadProductTemplate(){
   if(typeof XLSX==='undefined'){ showToast('XLSX no disponible',true); return; }
   const rows = [
-    {'Código':'', 'Nombre':'Ácido Cítrico Anhidro', 'Categoría':'Ácidos', 'UM':'KG', 'Presentación':'25 KG', 'Proveedores':'Pochteca', 'Precio S/IVA':0, 'Uso':'Por Revisar', 'Fuente':'Carga masiva', 'Cantidad OC':1},
-    {'Código':'', 'Nombre':'Betaína 20/200 LT', 'Categoría':'Tensoactivos', 'UM':'LT', 'Presentación':'200 LT', 'Proveedores':'Holchem; Navarro', 'Precio S/IVA':0, 'Uso':'Fabricación', 'Fuente':'Carga masiva', 'Cantidad OC':1}
+    {'Código':'', 'Nombre':'Ácido Cítrico Anhidro', 'Categoría':'Ácidos', 'UM':'KG', 'Presentación':'25 KG', 'Proveedores':'Pochteca', 'Precio S/IVA':0, 'Uso':'Por Revisar', 'Estado':'Activo', 'Fuente':'Carga masiva', 'Cantidad OC':1},
+    {'Código':'', 'Nombre':'Betaína 20/200 LT', 'Categoría':'Tensoactivos', 'UM':'LT', 'Presentación':'200 LT', 'Proveedores':'Holchem; Navarro', 'Precio S/IVA':0, 'Uso':'Fabricación', 'Estado':'Activo', 'Fuente':'Carga masiva', 'Cantidad OC':1}
   ];
-  const ws = XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:16},{wch:38},{wch:18},{wch:8},{wch:18},{wch:24},{wch:14},{wch:18},{wch:18},{wch:10}];
+  const ws = XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:16},{wch:38},{wch:18},{wch:8},{wch:18},{wch:24},{wch:14},{wch:18},{wch:10},{wch:18},{wch:10}];
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Plantilla Catálogo');
   XLSX.writeFile(wb, 'plantilla_quimicos_catalogo_oc.xlsx'); showToast('Plantilla descargada');
+}
+
+// ── Descarga TODO el catálogo actual (con Código real) para editar y volver a subir ──
+function pvDownloadEditableCatalog(){
+  if(typeof XLSX==='undefined'){ showToast('XLSX no disponible',true); return; }
+  const list = pvAllProds();
+  const rows = list.map(p=>({
+    'Código': p.cod,
+    'Nombre': p.nombre,
+    'Categoría': p.cat,
+    'UM': p.um,
+    'Presentación': p.pres,
+    'Proveedores': (p.provs||[]).map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join('; '),
+    'Precio S/IVA': p.precio || 0,
+    'Uso': p.uso || 'Por Revisar',
+    'Estado': p.estado || 'Activo',
+    'Fuente': p.fuente || '',
+    'Cantidad OC': 1
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:16},{wch:38},{wch:18},{wch:8},{wch:18},{wch:24},{wch:14},{wch:18},{wch:10},{wch:18},{wch:10}];
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Catálogo Editable');
+  XLSX.writeFile(wb, 'catalogo_quimicos_editable_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  showToast(list.length+' productos exportados. Edita y súbelo con "Importar XLS".');
 }
 function pvTriggerBulkImport(target){ pvBulkTarget = target || 'catalogo'; const inp = document.getElementById('pv-bulk-file'); if(inp){ inp.value=''; inp.click(); } }
 function pvVal(row, names){ for(const n of names){ const key = Object.keys(row).find(k=>String(k).trim().toLowerCase()===n.toLowerCase()); if(key!=null && row[key]!==undefined && row[key]!==null && String(row[key]).trim()!=='') return row[key]; } return ''; }
@@ -10939,7 +10977,9 @@ function pvRowToProduct(row){
   const nombre = String(pvVal(row,['Nombre','Producto','Químico','Quimico','Descripcion','Descripción'])).trim(); if(!nombre) return null;
   const cod = String(pvVal(row,['Código','Codigo','COD','SKU'])).trim() || pvSlugCode(nombre);
   const provs = pvNormalizeProvList(pvVal(row,['Proveedores','Proveedor','Prov'])); const ocProv = document.getElementById('oc-prov-sel')?.value || ''; if(!provs.length && ocProv) provs.push(ocProv);
-  return {cod, nombre, cat:String(pvVal(row,['Categoría','Categoria','Cat']) || 'Manual').trim() || 'Manual', um:String(pvVal(row,['UM','Unidad','Unidad Medida']) || 'KG').trim() || 'KG', pres:String(pvVal(row,['Presentación','Presentacion','Formato','Envase']) || '').trim(), provs:[...new Set(provs)], precio:parseFloat(String(pvVal(row,['Precio S/IVA','Precio SIVA','Precio','P. S/IVA'])).replace(/\./g,'').replace(',','.')) || 0, uso:String(pvVal(row,['Uso']) || 'Por Revisar').trim() || 'Por Revisar', fuente:String(pvVal(row,['Fuente']) || 'Carga masiva').trim() || 'Carga masiva', cantidad:parseFloat(String(pvVal(row,['Cantidad OC','Cantidad','Qty'])).replace(',','.')) || 1};
+  const estadoRaw = String(pvVal(row,['Estado']) || 'Activo').trim().toLowerCase();
+  const estado = estadoRaw === 'inactivo' ? 'Inactivo' : 'Activo';
+  return {cod, nombre, cat:String(pvVal(row,['Categoría','Categoria','Cat']) || 'Manual').trim() || 'Manual', um:String(pvVal(row,['UM','Unidad','Unidad Medida']) || 'KG').trim() || 'KG', pres:String(pvVal(row,['Presentación','Presentacion','Formato','Envase']) || '').trim(), provs:[...new Set(provs)], precio:parseFloat(String(pvVal(row,['Precio S/IVA','Precio SIVA','Precio','P. S/IVA'])).replace(/\./g,'').replace(',','.')) || 0, uso:String(pvVal(row,['Uso']) || 'Por Revisar').trim() || 'Por Revisar', estado, fuente:String(pvVal(row,['Fuente']) || 'Carga masiva').trim() || 'Carga masiva', cantidad:parseFloat(String(pvVal(row,['Cantidad OC','Cantidad','Qty'])).replace(',','.')) || 1};
 }
 function pvHandleBulkImport(ev){
   const file = ev.target.files && ev.target.files[0]; if(!file) return; if(typeof XLSX==='undefined'){ showToast('XLSX no disponible',true); return; }
@@ -11473,9 +11513,9 @@ function pvExportCatalogo() {
       'Precio más bajo S/IVA':p.precio||'',
       'Proveedor más bajo':Object.entries(p.precios||{}).filter(([k,v])=>Number(v)>0).sort((a,b)=>a[1]-b[1])[0]?.[0]||'',
       'Holchem S/IVA':p.precios?.holchem||'','Navarro S/IVA':p.precios?.navarro||'','Pochteca S/IVA':p.precios?.pochteca||'','Insuquim S/IVA':p.precios?.insuquim||'',
-      'Uso':p.uso,'Fuente':p.fuente||''
+      'Uso':p.uso,'Estado':p.estado||'Activo','Fuente':p.fuente||''
     }));
-    const ws=XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:12},{wch:42},{wch:22},{wch:8},{wch:22},{wch:16},{wch:18},{wch:14},{wch:14},{wch:14},{wch:14},{wch:16},{wch:28}];
+    const ws=XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:12},{wch:42},{wch:22},{wch:8},{wch:22},{wch:16},{wch:18},{wch:14},{wch:14},{wch:14},{wch:14},{wch:16},{wch:10},{wch:28}];
     const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Catálogo Químicos');
     XLSX.writeFile(wb,'catalogo_quimicos_insuquim_'+new Date().toISOString().slice(0,10)+'.xlsx');
   };
@@ -12187,6 +12227,7 @@ window.pvOpenEdit = function(cod) {
   document.getElementById('edit-nombre').value = p.nombre || '';
   document.getElementById('edit-uso').value = p.uso || 'Por Revisar';
   document.getElementById('edit-pres').value = p.pres || '';
+  var edSel = document.getElementById('edit-estado'); if (edSel) edSel.value = p.estado || 'Activo';
 
   var precios = p.precios || {};
   var pesoUnit = pvUnitWeight(p) || 1;
@@ -12242,6 +12283,7 @@ window.pvSaveEdit = function() {
   var nombre = document.getElementById('edit-nombre').value.trim();
   var uso    = document.getElementById('edit-uso').value;
   var pres   = document.getElementById('edit-pres').value.trim();
+  var estado = document.getElementById('edit-estado') ? document.getElementById('edit-estado').value : 'Activo';
 
   var newPrecios = {}, newProvs = [];
   document.querySelectorAll('.pv-prov-pi').forEach(function(inp) {
@@ -12253,6 +12295,7 @@ window.pvSaveEdit = function() {
   if (!pvEdits[cod]) pvEdits[cod] = {};
   if (nombre)  pvEdits[cod].nombre = nombre;
   pvEdits[cod].uso = uso;
+  pvEdits[cod].estado = estado;
   if (pres)    pvEdits[cod].pres = pres;
 
   if (Object.keys(newPrecios).length) {
@@ -12538,7 +12581,7 @@ window.pvRenderCatalogo = function() {
   var tbody = document.getElementById('pv-cat-body');
   if (!tbody) return;
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</td></tr>';
     var ci = document.getElementById('pv-cat-info'); if(ci) ci.textContent = '0 productos';
     return;
   }
@@ -12596,6 +12639,11 @@ window.pvRenderCatalogo = function() {
       : '<span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);cursor:pointer" onclick="event.stopPropagation();pvOpenEdit(\''+p.cod+'\')">+ precio</span>';
     var civaCell = unitMin ? pvFmt(Math.round(unitMin*1.19)) : '\u2014';
 
+    var estado = p.estado || 'Activo';
+    var estadoCell = estado === 'Activo'
+      ? '<span class="pv-badge" style="background:rgba(0,200,122,0.18);color:#00c87a;cursor:pointer" onclick="event.stopPropagation();pvToggleEstado(\''+p.cod+'\')" title="Clic para marcar Inactivo">ACTIVO</span>'
+      : '<span class="pv-badge" style="background:rgba(255,71,87,0.18);color:#ff4757;cursor:pointer" onclick="event.stopPropagation();pvToggleEstado(\''+p.cod+'\')" title="Clic para marcar Activo">INACTIVO</span>';
+
     return '<tr style="cursor:pointer" onclick="pvQuickAddOC(\''+p.cod+'\')"> '
       +'<td><span style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">'+(p.cod||'')+'</span></td>'
       +'<td style="font-weight:500;max-width:240px">'+(p.nombre||'')+'</td>'
@@ -12605,6 +12653,7 @@ window.pvRenderCatalogo = function() {
       +'<td>'+provCells+'</td>'
       +'<td>'+prCell+'</td>'
       +'<td style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">'+civaCell+'</td>'
+      +'<td>'+estadoCell+'</td>'
       +'<td><button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px" onclick="event.stopPropagation();pvOpenEdit(\''+p.cod+'\')">&#9998;</button></td>'
       +'</tr>';
   }).join('');
@@ -13411,5 +13460,29 @@ window.pvExportOCXLS = function(sinPrecios) {
     if(typeof real === 'function') window[name] = debounceRender(real);
   });
 
+})();
+</script>
+
+<script>
+/* ── Campo Estado (Activo/Inactivo) para el catálogo de químicos ── */
+(function(){
+  window.pvToggleEstado = function(cod){
+    var p = (typeof pvGetProd === 'function') ? pvGetProd(cod) : null;
+    var cur = (p && p.estado) || 'Activo';
+    var next = cur === 'Activo' ? 'Inactivo' : 'Activo';
+    if(!pvEdits[cod]) pvEdits[cod] = {};
+    pvEdits[cod].estado = next;
+    pvSaveLocal();
+    pvRenderCatalogo();
+    if (typeof showToast === 'function') showToast('Producto marcado como ' + next);
+  };
+
+  var _prevGF_estado = window.pvGetFiltered;
+  window.pvGetFiltered = function(){
+    var base = _prevGF_estado ? _prevGF_estado() : pvAllProds();
+    var ef = document.getElementById('pv-cat-estado') ? document.getElementById('pv-cat-estado').value : '';
+    if(!ef) return base;
+    return base.filter(function(p){ return (p.estado || 'Activo') === ef; });
+  };
 })();
 </script>
