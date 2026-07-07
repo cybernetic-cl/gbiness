@@ -801,7 +801,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <div id="login-module-label" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--teal);margin-bottom:14px;text-transform:uppercase">// Cierre Mensual</div>
       <div class="login-field">
         <label>Correo</label>
-        <input type="email" id="loginEmail" placeholder="tu@correo.cl" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+        <input type="text" id="loginEmail" placeholder="cyber, kari o tu correo" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
       </div>
       <div class="login-field">
         <label>Contraseña</label>
@@ -2658,8 +2658,13 @@ async function usrCargarRolActual(email){
   return { isAdmin, modulos, nombre };
 }
 
+const USER_ALIASES = {
+  'cyber': 'cyberneticspa@gmail.com',
+  'kari':  'kari@cybernetic.cl'
+};
 function doLogin(){
-  const email = (document.getElementById('loginEmail').value||'').trim().toLowerCase();
+  let email = (document.getElementById('loginEmail').value||'').trim().toLowerCase();
+  email = USER_ALIASES[email] || email;
   const pass  = document.getElementById('loginPass').value;
   if(!email || !pass){
     document.getElementById('loginError').textContent = 'Ingresa correo y contraseña';
