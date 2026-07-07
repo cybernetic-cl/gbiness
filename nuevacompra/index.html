@@ -146,6 +146,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, doc, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyCR7m2wPjI_5EScEDB4FuGag634PaLjR58",
@@ -156,13 +157,23 @@ const app = initializeApp({
   appId: "1:988324916233:web:57eec60ea54992063f9cd8"
 });
 const db = getFirestore(app);
+const auth = getAuth(app);
 window.db = db;
 window.collection = collection;
 window.doc = doc;
 window.getDocs = getDocs;
 window.addDoc = addDoc;
-window.ncFirebaseReady = true;
-if (typeof window.ncOnFirebaseReady === 'function') window.ncOnFirebaseReady();
+
+// Autenticación anónima automática (invisible para el usuario): permite que
+// las reglas de Firestore exijan "usuario autenticado" sin pedir contraseña
+// a los solicitantes de campo.
+signInAnonymously(auth).then(function(){
+  window.ncFirebaseReady = true;
+  if (typeof window.ncOnFirebaseReady === 'function') window.ncOnFirebaseReady();
+}).catch(function(err){
+  console.error('Error de autenticación anónima:', err);
+  window.ncFirebaseAuthError = err;
+});
 </script>
 
 <script>
@@ -238,7 +249,19 @@ function ncCargarProveedores(){
         '<div class="empty"><div class="big">⚠️</div><p>No se pudo conectar.<br>Revisa tu conexión a internet.</p></div>';
     });
   }
-  if(window.ncFirebaseReady) run(); else window.ncOnFirebaseReady = run;
+  if(window.ncFirebaseReady) run();
+  else if(window.ncFirebaseAuthError) ncShowAuthError('provList');
+  else{
+    window.ncOnFirebaseReady = run;
+    setTimeout(function(){
+      if(!window.ncFirebaseReady) ncShowAuthError('provList');
+    }, 8000);
+  }
+}
+
+function ncShowAuthError(elId){
+  document.getElementById(elId).innerHTML =
+    '<div class="empty"><div class="big">⚠️</div><p>No se pudo conectar de forma segura.<br>Avisa al administrador (puede que falte activar el acceso anónimo en Firebase).</p></div>';
 }
 
 function ncRenderProveedores(){
@@ -285,7 +308,14 @@ function ncCargarProductos(){
         '<div class="empty"><div class="big">⚠️</div><p>No se pudo cargar el catálogo.</p></div>';
     });
   }
-  if(window.ncFirebaseReady) run(); else window.ncOnFirebaseReady = run;
+  if(window.ncFirebaseReady) run();
+  else if(window.ncFirebaseAuthError) ncShowAuthError('prodList');
+  else{
+    window.ncOnFirebaseReady = run;
+    setTimeout(function(){
+      if(!window.ncFirebaseReady) ncShowAuthError('prodList');
+    }, 8000);
+  }
 }
 
 function ncFiltrarProductos(){
