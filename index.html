@@ -791,16 +791,24 @@ input.fi-money{padding-left:58px!important;width:100%}
         style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:4px;text-align:left;width:100%;cursor:pointer;font-size:13px;color:var(--text);font-family:var(--font-display);letter-spacing:1px">
         <span style="font-size:16px">🧪</span> Proveedores
       </button>
+      <button onclick="selectModule('usuarios')" id="mod-usuarios"
+        style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:4px;text-align:left;width:100%;cursor:pointer;font-size:13px;color:var(--text);font-family:var(--font-display);letter-spacing:1px">
+        <span style="font-size:16px">👥</span> Usuarios y Roles
+      </button>
     </div>
 
     <div class="login-card">
       <div id="login-module-label" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--teal);margin-bottom:14px;text-transform:uppercase">// Cierre Mensual</div>
       <div class="login-field">
-        <label>Contraseña</label>
-        <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+        <label>Correo</label>
+        <input type="email" id="loginEmail" placeholder="tu@correo.cl" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
       </div>
-      <div id="loginError" class="pass-error">Contraseña incorrecta</div>
-      <button class="btn-login" onclick="doLogin()">ENTRAR</button>
+      <div class="login-field">
+        <label>Contraseña</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="loginError" class="pass-error">Correo o contraseña incorrectos</div>
+      <button class="btn-login" id="btnDoLogin" onclick="doLogin()">ENTRAR</button>
     </div>
   </div>
 </div>
@@ -2399,6 +2407,7 @@ input.fi-money{padding-left:58px!important;width:100%}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, getDoc, updateDoc, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyCR7m2wPjI_5EScEDB4FuGag634PaLjR58",
@@ -2409,6 +2418,13 @@ const app = initializeApp({
   appId: "1:988324916233:web:57eec60ea54992063f9cd8"
 });
 const db = getFirestore(app);
+const auth = getAuth(app);
+window.auth = auth;
+window.fbSignIn  = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
+window.fbSignOut = () => signOut(auth);
+window.fbAuthReady = new Promise(resolve => {
+  const unsub = onAuthStateChanged(auth, user => { unsub(); resolve(user); });
+});
 // Expose Firebase to global scope for non-module scripts
 window.db   = db;
 window.doc  = doc;
@@ -2553,11 +2569,11 @@ document.addEventListener('DOMContentLoaded', () => { /* espera login */ });
 
 <!-- APP JS -->
 <script>
-const HASH_CIERRE = 'cf270c49b23a2dbc737575b4e7b8d447eb5d10fc9b0309b4fd9e7da0fa559d0e'; // Cy207980
-const HASH_PRES   = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f';   // Cy1234
-const HASH_ANUAL = 'cf270c49b23a2dbc737575b4e7b8d447eb5d10fc9b0309b4fd9e7da0fa559d0e'; // misma clave de cierre mensual
-const HASH_ANALYZER = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f'; // Cy1234
-const HASH_CALC = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f'; // Cy1234
+const HASH_CIERRE = 'cf270c49b23a2dbc737575b4e7b8d447eb5d10fc9b0309b4fd9e7da0fa559d0e';
+const HASH_PRES   = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f';
+const HASH_ANUAL = 'cf270c49b23a2dbc737575b4e7b8d447eb5d10fc9b0309b4fd9e7da0fa559d0e';
+const HASH_ANALYZER = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f';
+const HASH_CALC = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f';
 let activeModule = 'cierre';
 
 function selectModule(mod) {
@@ -2573,7 +2589,7 @@ function selectModule(mod) {
   document.querySelectorAll('.module-card').forEach(function(c) { c.classList.remove('active'); });
   var card = document.getElementById('mod-' + mod);
   if (card && card.classList.contains('module-card')) card.classList.add('active');
-  var labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual', rrhh:'// Gestión RRHH', analyzer:'// MercadoLibre Analyzer', calc:'// Calculadora de Ganancias', proveedores:'// Catálogo & Órdenes de Compra' };
+  var labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual', rrhh:'// Gestión RRHH', analyzer:'// MercadoLibre Analyzer', calc:'// Calculadora de Ganancias', proveedores:'// Catálogo & Órdenes de Compra', usuarios:'// Usuarios y Roles' };
   var lbl = document.getElementById('login-module-label');
   if (lbl) lbl.textContent = labels[mod] || '// ' + mod;
   var err = document.getElementById('loginError');
@@ -2619,44 +2635,95 @@ const COLORS = {
 const S = { mes:null, data:{}, cur:'resumen', ctx:null };
 
 // ── AUTH ──
+const ADMIN_EMAIL_FALLBACK = 'cyberneticspa@gmail.com'; // permite el primer ingreso antes de crear su documento en /usuarios
 async function sha(s){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
-function doLogin(){
-  sha(document.getElementById('loginPass').value).then(h=>{
-    const expectedHash = activeModule==='cierre' ? HASH_CIERRE : activeModule==='presupuesto' ? HASH_PRES : activeModule==='rrhh' ? HASH_CIERRE : activeModule==='analyzer' ? HASH_ANALYZER : activeModule==='calc' ? HASH_CALC : activeModule==='proveedores' ? HASH_CALC : HASH_ANUAL;
-    if(h===expectedHash){
-      document.getElementById('loginScreen').style.display='none';
-      document.getElementById('app').style.display='none';
-      document.getElementById('app-presupuesto').style.display='none';
-      if(document.getElementById('app-anual')) document.getElementById('app-anual').style.display='none';
-      if(activeModule==='cierre'){
-        document.getElementById('app').style.display='block';
-        boot();
-      } else if(activeModule==='presupuesto'){
-        document.getElementById('app-presupuesto').style.display='block';
-        bootPresupuesto();
-      } else if(activeModule==='rrhh'){
-        document.getElementById('app-rrhh').style.display='block';
-        bootRRHH();
-      } else if(activeModule==='calc') {
-        document.getElementById('app-calc').style.display='block';
-        bootCalc();
-      } else if(activeModule==='analyzer') {
-        document.getElementById('app-analyzer').style.display='block';
-        bootAnalyzer();
-      } else if(activeModule==='proveedores') {
-        document.getElementById('app-proveedores').style.display='block';
-        bootProveedores();
-      } else {
-        document.getElementById('app-anual').style.display='block';
-        bootAnnual();
-      }
-    } else {
-      document.getElementById('loginError').style.display='block';
-      document.getElementById('loginPass').value='';
+
+async function usrCargarRolActual(email){
+  let isAdmin = false, modulos = [], nombre = '';
+  try{
+    const snap = await window.getDoc(window.doc(window.db,'usuarios', email));
+    if(snap.exists()){
+      const u = snap.data();
+      isAdmin = !!u.isAdmin;
+      modulos = u.modulos || [];
+      nombre  = u.nombre || '';
+    } else if(email === ADMIN_EMAIL_FALLBACK){
+      isAdmin = true; // bootstrap: aún no existe su documento en /usuarios
     }
+  }catch(e){ console.error('Error leyendo rol de usuario:', e); }
+  window.currentUserEmail   = email;
+  window.currentUserIsAdmin = isAdmin;
+  window.currentUserModulos = modulos;
+  window.currentUserNombre  = nombre;
+  return { isAdmin, modulos, nombre };
+}
+
+function doLogin(){
+  const email = (document.getElementById('loginEmail').value||'').trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  if(!email || !pass){
+    document.getElementById('loginError').textContent = 'Ingresa correo y contraseña';
+    document.getElementById('loginError').style.display='block';
+    return;
+  }
+  const btn = document.getElementById('btnDoLogin');
+  btn.disabled = true; btn.textContent = 'Verificando…';
+  document.getElementById('loginError').style.display='none';
+
+  window.fbSignIn(email, pass).then(async ()=>{
+    const rol = await usrCargarRolActual(email);
+    let tieneModulo;
+    if(activeModule==='usuarios')      tieneModulo = rol.isAdmin;               // solo admin gestiona usuarios
+    else if(rol.isAdmin)               tieneModulo = true;                       // admin entra a todo
+    else                                tieneModulo = rol.modulos.includes(activeModule);
+
+    if(!tieneModulo){
+      btn.disabled = false; btn.textContent = 'ENTRAR';
+      document.getElementById('loginError').textContent = 'No tienes acceso a este módulo. Contacta al administrador.';
+      document.getElementById('loginError').style.display='block';
+      window.fbSignOut().catch(()=>{});
+      return;
+    }
+
+    btn.disabled = false; btn.textContent = 'ENTRAR';
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').style.display='none';
+    document.getElementById('app-presupuesto').style.display='none';
+    if(document.getElementById('app-anual')) document.getElementById('app-anual').style.display='none';
+    if(activeModule==='cierre'){
+      document.getElementById('app').style.display='block';
+      boot();
+    } else if(activeModule==='presupuesto'){
+      document.getElementById('app-presupuesto').style.display='block';
+      bootPresupuesto();
+    } else if(activeModule==='rrhh'){
+      document.getElementById('app-rrhh').style.display='block';
+      bootRRHH();
+    } else if(activeModule==='calc') {
+      document.getElementById('app-calc').style.display='block';
+      bootCalc();
+    } else if(activeModule==='analyzer') {
+      document.getElementById('app-analyzer').style.display='block';
+      bootAnalyzer();
+    } else if(activeModule==='proveedores') {
+      document.getElementById('app-proveedores').style.display='block';
+      bootProveedores();
+    } else if(activeModule==='usuarios') {
+      document.getElementById('app-usuarios').style.display='block';
+      if(typeof bootUsuarios==='function') bootUsuarios();
+    } else {
+      document.getElementById('app-anual').style.display='block';
+      bootAnnual();
+    }
+  }).catch(()=>{
+    btn.disabled = false; btn.textContent = 'ENTRAR';
+    document.getElementById('loginError').textContent = 'Correo o contraseña incorrectos';
+    document.getElementById('loginError').style.display='block';
+    document.getElementById('loginPass').value='';
   });
 }
 function doLogout(){
+  if(window.fbSignOut) window.fbSignOut().catch(()=>{});
   document.getElementById('app').style.display='none';
   document.getElementById('app-presupuesto').style.display='none';
   if(document.getElementById('app-anual')) document.getElementById('app-anual').style.display='none';
@@ -10450,6 +10517,7 @@ function pvNav(el, sec) {
   if(sec==='solicitudes' && typeof pvLoadSolicitudes==='function') pvLoadSolicitudes();
 }
 function pvLogout() {
+  if(window.fbSignOut) window.fbSignOut().catch(()=>{});
   document.getElementById('app-proveedores').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
 }
@@ -12227,6 +12295,67 @@ setTimeout(function() {
 })();
 </script>
 
+<!-- ══════════════════════════════════════════════════════════════
+     USUARIOS Y ROLES (panel de administración de accesos)
+     ══════════════════════════════════════════════════════════════ -->
+<div id="app-usuarios" style="display:none;min-height:100vh;background:#f5f6f8;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif">
+  <div style="background:#0f172a;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px">
+    <div style="font-weight:800;letter-spacing:.5px">👥 USUARIOS Y ROLES</div>
+    <button onclick="usrLogout()" style="margin-left:auto;background:rgba(255,255,255,.1);border:none;color:#fff;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:12px">SALIR</button>
+  </div>
+  <div style="max-width:720px;margin:0 auto;padding:20px">
+    <div id="usr-denied" style="display:none;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:8px;padding:16px;color:#991b1b;font-size:13px">
+      No tienes permisos de administrador para ver esta sección.
+    </div>
+    <div id="usr-panel">
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:14px;margin-bottom:12px" id="usr-form-title">➕ Agregar / editar usuario</div>
+        <input type="hidden" id="usr-edit-original-email">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">Correo</label>
+            <input type="email" id="usr-email" placeholder="nombre@correo.cl" style="width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px">Nombre</label>
+            <input type="text" id="usr-nombre" placeholder="Ej: Kari" style="width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;box-sizing:border-box">
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600">
+            <input type="checkbox" id="usr-isadmin" onchange="usrToggleAdminUI()"> Administrador (acceso total a todos los módulos)
+          </label>
+          <div id="usr-modulos-wrap">
+            <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:6px">Módulos permitidos</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="usr-modulos-grid">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px"><input type="checkbox" class="usr-mod-cb" value="cierre"> 💰 Cierre Mensual</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px"><input type="checkbox" class="usr-mod-cb" value="presupuesto"> 🎯 Presupuesto</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px"><input type="checkbox" class="usr-mod-cb" value="anual"> 📆 Cierre Anual</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px"><input type="checkbox" class="usr-mod-cb" value="rrhh"> 👤 RRHH</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px"><input type="checkbox" class="usr-mod-cb" value="analyzer"> 📊 MercadoLibre</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px"><input type="checkbox" class="usr-mod-cb" value="calc"> 📐 Calculadora</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px"><input type="checkbox" class="usr-mod-cb" value="proveedores"> 🧪 Proveedores</label>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button onclick="usrGuardar()" style="flex:1;background:#0d9488;color:#fff;border:none;padding:11px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">💾 Guardar</button>
+            <button onclick="usrLimpiarForm()" style="background:#fff;border:1px solid #cbd5e1;padding:11px 16px;border-radius:8px;font-size:13px;cursor:pointer">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px">
+        <div style="display:flex;align-items:center;margin-bottom:12px">
+          <div style="font-weight:700;font-size:14px">Cuentas existentes</div>
+          <button onclick="usrCargarLista()" style="margin-left:auto;background:#f1f5f9;border:1px solid #e2e8f0;padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer">↻ Actualizar</button>
+        </div>
+        <div id="usr-seed-hint" style="display:none;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12.5px;color:#92400e">
+          Aún no hay cuentas creadas. <button onclick="usrSeedInicial()" style="background:#0d9488;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;margin-left:6px">Crear cuentas iniciales (admin + Kari)</button>
+        </div>
+        <div id="usr-lista" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
 
@@ -13669,4 +13798,147 @@ window.pvExportOCXLS = function(sinPrecios) {
   };
 
 })();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   PANEL DE USUARIOS Y ROLES (solo administradores)
+   ══════════════════════════════════════════════════════════════════ */
+var usrLista = [];
+var MODULOS_DISPONIBLES = ['cierre','presupuesto','anual','rrhh','analyzer','calc','proveedores'];
+
+function bootUsuarios(){
+  var denied = document.getElementById('usr-denied');
+  var panel  = document.getElementById('usr-panel');
+  if(!window.currentUserIsAdmin){
+    denied.style.display = 'block';
+    panel.style.display  = 'none';
+    return;
+  }
+  denied.style.display = 'none';
+  panel.style.display  = 'block';
+  usrLimpiarForm();
+  usrCargarLista();
+}
+
+function usrLogout(){
+  if(window.fbSignOut) window.fbSignOut().catch(function(){});
+  document.getElementById('app-usuarios').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+}
+
+function usrToggleAdminUI(){
+  var isAdmin = document.getElementById('usr-isadmin').checked;
+  document.getElementById('usr-modulos-wrap').style.display = isAdmin ? 'none' : 'block';
+}
+
+function usrLimpiarForm(){
+  document.getElementById('usr-edit-original-email').value = '';
+  document.getElementById('usr-email').value = '';
+  document.getElementById('usr-email').disabled = false;
+  document.getElementById('usr-nombre').value = '';
+  document.getElementById('usr-isadmin').checked = false;
+  document.querySelectorAll('.usr-mod-cb').forEach(function(cb){ cb.checked = false; });
+  usrToggleAdminUI();
+  document.getElementById('usr-form-title').textContent = '➕ Agregar / editar usuario';
+}
+
+async function usrGuardar(){
+  var email = (document.getElementById('usr-email').value||'').trim().toLowerCase();
+  var nombre = (document.getElementById('usr-nombre').value||'').trim();
+  var isAdmin = document.getElementById('usr-isadmin').checked;
+  var modulos = [];
+  document.querySelectorAll('.usr-mod-cb').forEach(function(cb){ if(cb.checked) modulos.push(cb.value); });
+
+  if(!email || !/^\S+@\S+\.\S+$/.test(email)){ showToast('Ingresa un correo válido', true); return; }
+  if(!isAdmin && !modulos.length){ showToast('Selecciona al menos un módulo, o marca Administrador', true); return; }
+
+  try{
+    await window.setDoc(window.doc(window.db,'usuarios', email), {
+      email: email, nombre: nombre, isAdmin: isAdmin, modulos: isAdmin ? [] : modulos
+    });
+    showToast('✅ Usuario guardado');
+    usrLimpiarForm();
+    usrCargarLista();
+  }catch(err){
+    console.error(err);
+    showToast('Error al guardar: '+(err.message||err), true);
+  }
+}
+
+function usrEditarUsuario(email){
+  var u = usrLista.find(function(x){ return x.email===email; });
+  if(!u) return;
+  document.getElementById('usr-edit-original-email').value = u.email;
+  document.getElementById('usr-email').value = u.email;
+  document.getElementById('usr-email').disabled = true; // el correo es el ID, no se renombra
+  document.getElementById('usr-nombre').value = u.nombre||'';
+  document.getElementById('usr-isadmin').checked = !!u.isAdmin;
+  document.querySelectorAll('.usr-mod-cb').forEach(function(cb){ cb.checked = (u.modulos||[]).indexOf(cb.value) !== -1; });
+  usrToggleAdminUI();
+  document.getElementById('usr-form-title').textContent = '✏️ Editando: '+u.email;
+  document.getElementById('usr-form-title').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+async function usrEliminarUsuario(email){
+  if(!confirm('¿Eliminar el acceso de '+email+'?')) return;
+  try{
+    await window.deleteDoc(window.doc(window.db,'usuarios', email));
+    showToast('Usuario eliminado');
+    usrCargarLista();
+  }catch(err){ showToast('Error: '+(err.message||err), true); }
+}
+
+async function usrSeedInicial(){
+  try{
+    await window.setDoc(window.doc(window.db,'usuarios','cyberneticspa@gmail.com'), {
+      email:'cyberneticspa@gmail.com', nombre:'Admin', isAdmin:true, modulos:[]
+    });
+    await window.setDoc(window.doc(window.db,'usuarios','kari@cybernetic.cl'), {
+      email:'kari@cybernetic.cl', nombre:'Kari', isAdmin:false,
+      modulos:['presupuesto','analyzer','calc','proveedores']
+    });
+    showToast('✅ Cuentas iniciales creadas');
+    usrCargarLista();
+  }catch(err){ showToast('Error: '+(err.message||err), true); }
+}
+
+var MOD_LABELS = { cierre:'💰 Cierre', presupuesto:'🎯 Presupuesto', anual:'📆 Cierre Anual', rrhh:'👤 RRHH', analyzer:'📊 MercadoLibre', calc:'📐 Calculadora', proveedores:'🧪 Proveedores' };
+
+async function usrCargarLista(){
+  var wrap = document.getElementById('usr-lista');
+  var hint = document.getElementById('usr-seed-hint');
+  try{
+    var snap = await window.getDocs(window.collection(window.db,'usuarios'));
+    usrLista = [];
+    snap.forEach(function(d){ usrLista.push(Object.assign({email:d.id}, d.data())); });
+    usrLista.sort(function(a,b){ return (a.email||'').localeCompare(b.email||''); });
+
+    hint.style.display = usrLista.length ? 'none' : 'block';
+
+    if(!usrLista.length){
+      wrap.innerHTML = '';
+      return;
+    }
+    wrap.innerHTML = usrLista.map(function(u){
+      var chips = u.isAdmin
+        ? '<span style="background:rgba(13,148,136,.12);color:#0d9488;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px">ADMIN · TODOS LOS MÓDULOS</span>'
+        : (u.modulos||[]).map(function(m){
+            return '<span style="background:#f1f5f9;color:#334155;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px">'+(MOD_LABELS[m]||m)+'</span>';
+          }).join(' ');
+      return '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">'
+        +'<div><b style="font-size:13.5px">'+(u.nombre||u.email)+'</b><div style="font-size:11.5px;color:#94a3b8">'+u.email+'</div></div>'
+        +'<div style="display:flex;gap:6px">'
+        +'<button onclick="usrEditarUsuario(\''+u.email+'\')" style="background:#f1f5f9;border:1px solid #e2e8f0;padding:6px 12px;border-radius:6px;font-size:11.5px;cursor:pointer">Editar</button>'
+        +'<button onclick="usrEliminarUsuario(\''+u.email+'\')" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:6px 12px;border-radius:6px;font-size:11.5px;cursor:pointer">Eliminar</button>'
+        +'</div></div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+chips+'</div>'
+        +'</div>';
+    }).join('');
+  }catch(err){
+    console.error(err);
+    wrap.innerHTML = '<div style="color:#dc2626;font-size:12px;text-align:center;padding:16px">Error al cargar usuarios: '+(err.message||err)+'</div>';
+  }
+}
 </script>
