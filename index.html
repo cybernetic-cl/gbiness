@@ -2398,7 +2398,7 @@ input.fi-money{padding-left:58px!important;width:100%}
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, getDoc, updateDoc, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyCR7m2wPjI_5EScEDB4FuGag634PaLjR58",
@@ -2415,6 +2415,12 @@ window.doc  = doc;
 window.getDoc  = getDoc;
 window.setDoc  = setDoc;
 window.getDocs = getDocs;
+window.collection = collection;
+window.updateDoc  = updateDoc;
+window.deleteDoc  = deleteDoc;
+window.query   = query;
+window.orderBy = orderBy;
+window.writeBatch = writeBatch;
 
 // Test write/read access and expose status
 window.fbTestConnection = async () => {
@@ -9553,6 +9559,7 @@ function cgAddProduct() {
       <div class="pv-nav-group">// GESTIÓN</div>
       <div class="pv-nav-item"        id="pvnav-proveedores" onclick="pvNav(this,'proveedores')">🏢 Proveedores</div>
       <div class="pv-nav-item"        id="pvnav-ordenes"    onclick="pvNav(this,'ordenes')">📋 Órdenes de Compra</div>
+      <div class="pv-nav-item"        id="pvnav-solicitudes" onclick="pvNav(this,'solicitudes')">📥 Solicitudes <span id="pv-sol-badge" style="display:none;background:#ff4757;color:#fff;border-radius:10px;font-size:9px;padding:1px 6px;margin-left:4px"></span></div>
       <div class="pv-nav-item"        id="pvnav-nueva-oc"   onclick="pvNav(this,'nueva-oc')">＋ Nueva OC</div>
     </div>
 
@@ -9595,6 +9602,7 @@ function cgAddProduct() {
               <button class="pv-btn pv-btn-sec" onclick="pvDownloadProductTemplate()">Plantilla</button>
               <button class="pv-btn pv-btn-sec" onclick="pvDownloadEditableCatalog()" title="Descarga TODO el catálogo actual en Excel para editar campos y volver a subirlo">↓ Editar Catálogo</button>
               <button class="pv-btn pv-btn-amber" onclick="pvTriggerBulkImport('catalogo')">Importar XLS</button>
+              <button class="pv-btn pv-btn-sec" onclick="pvSyncCatalogoNube()" title="Sube el catálogo y proveedores a la nube para la app móvil Nueva Compra">☁ Sincronizar</button>
               <button class="pv-btn pv-btn-sec" id="btn-mas-barato" onclick="pvToggleMasBarato()" title="Mostrar solo quimicos con mejor precio por proveedor">↓ MÁS BARATO</button>
               <button class="pv-btn pv-btn-sec" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">＋ Nueva OC</button>
             </div>
@@ -9651,6 +9659,22 @@ function cgAddProduct() {
               <tbody id="pv-oc-body"></tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- ── SOLICITUDES DE COMPRA (recibidas desde la app móvil Nueva Compra) ── -->
+      <div id="pvsec-solicitudes" style="display:none">
+        <div class="pv-page-title">Solicitudes <span>De Compra</span></div>
+        <div class="pv-page-sub">RECIBIDAS DESDE LA APP MÓVIL "NUEVA COMPRA"</div>
+        <div class="pv-kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+          <div class="pv-kpi ct"><div class="pv-kpi-lbl">Pendientes</div><div class="pv-kpi-val" id="kpi-sol-pend">0</div></div>
+          <div class="pv-kpi cg"><div class="pv-kpi-lbl">Convertidas</div><div class="pv-kpi-val" id="kpi-sol-conv">0</div></div>
+        </div>
+        <div class="pv-section">
+          <div class="pv-filters">
+            <button class="pv-btn pv-btn-sec" onclick="pvLoadSolicitudes()">↻ Actualizar</button>
+          </div>
+          <div id="pv-sol-list" style="display:flex;flex-direction:column;gap:10px"></div>
         </div>
       </div>
 
@@ -10418,11 +10442,12 @@ function bootProveedores() {
 function pvNav(el, sec) {
   document.querySelectorAll('#app-proveedores .pv-nav-item').forEach(n=>n.classList.remove('active'));
   el.classList.add('active');
-  ['catalogo','proveedores','ordenes','nueva-oc'].forEach(s=>{
+  ['catalogo','proveedores','ordenes','solicitudes','nueva-oc'].forEach(s=>{
     const d = document.getElementById('pvsec-'+s);
     if(d) d.style.display = s===sec ? '' : 'none';
   });
   if(sec==='nueva-oc') pvResetOCForm();
+  if(sec==='solicitudes' && typeof pvLoadSolicitudes==='function') pvLoadSolicitudes();
 }
 function pvLogout() {
   document.getElementById('app-proveedores').style.display='none';
@@ -13484,5 +13509,164 @@ window.pvExportOCXLS = function(sinPrecios) {
     if(!ef) return base;
     return base.filter(function(p){ return (p.estado || 'Activo') === ef; });
   };
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   SINCRONIZACIÓN A LA NUBE + SOLICITUDES DE COMPRA
+   (para la app móvil "Nueva Compra" — nuevacompra/index.html)
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+
+  // ── Sincroniza proveedores + productos activos a Firestore ──
+  window.pvSyncCatalogoNube = async function(){
+    if(!window.db || !window.writeBatch || !window.doc){
+      showToast('Firebase no disponible en esta página', true); return;
+    }
+    showToast('Sincronizando catálogo a la nube…');
+    try{
+      const provs = PV_DATA.PROVEEDORES || [];
+      const prods = pvAllProds().filter(function(p){ return (p.estado||'Activo') === 'Activo'; });
+
+      let batch = window.writeBatch(window.db);
+      let ops = 0;
+      for(const p of provs){
+        batch.set(window.doc(window.db,'catalogo_proveedores',p.id), {
+          id:p.id, nombre:p.nombre||p.id, contacto:p.contacto||'', tel:p.tel||'', email:p.email||''
+        });
+        ops++;
+      }
+      for(const p of prods){
+        // Solo precios > 0, sin importar decimales/strings raros que puedan venir de imports
+        const preciosLimpios = {};
+        Object.entries(p.precios||{}).forEach(function(kv){
+          const v = Number(kv[1]);
+          if(v>0) preciosLimpios[kv[0]] = v;
+        });
+        batch.set(window.doc(window.db,'catalogo_productos',p.cod), {
+          cod:p.cod, nombre:p.nombre||'', cat:p.cat||'', um:p.um||'', pres:p.pres||'',
+          provs:p.provs||[], estado:p.estado||'Activo', precios:preciosLimpios
+        });
+        ops++;
+        if(ops>=450){ await batch.commit(); batch = window.writeBatch(window.db); ops=0; }
+      }
+      if(ops>0) await batch.commit();
+      showToast('✅ Sincronizado: '+provs.length+' proveedores, '+prods.length+' productos');
+    }catch(err){
+      console.error(err);
+      showToast('Error al sincronizar: '+(err.message||err), true);
+    }
+  };
+
+  // ── Solicitudes de compra recibidas desde la app móvil ──
+  var pvSolicitudes = [];
+  var pvSolicitudEnCurso = null;
+
+  window.pvLoadSolicitudes = async function(){
+    if(!window.db || !window.collection || !window.getDocs){
+      showToast('Firebase no disponible en esta página', true); return;
+    }
+    try{
+      const snap = await window.getDocs(window.collection(window.db,'solicitudes_compra'));
+      pvSolicitudes = [];
+      snap.forEach(function(d){ pvSolicitudes.push(Object.assign({id:d.id}, d.data())); });
+      pvSolicitudes.sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+      pvRenderSolicitudes();
+    }catch(err){
+      console.error(err);
+      showToast('Error al cargar solicitudes: '+(err.message||err), true);
+    }
+  };
+
+  function pvRenderSolicitudes(){
+    const list = document.getElementById('pv-sol-list');
+    if(!list) return;
+    const pend = pvSolicitudes.filter(function(s){ return s.status==='pendiente'; });
+    const conv = pvSolicitudes.filter(function(s){ return s.status!=='pendiente'; });
+    var kp = document.getElementById('kpi-sol-pend'); if(kp) kp.textContent = pend.length;
+    var kc = document.getElementById('kpi-sol-conv'); if(kc) kc.textContent = conv.length;
+    var badge = document.getElementById('pv-sol-badge');
+    if(badge){
+      if(pend.length>0){ badge.textContent = pend.length; badge.style.display='inline-block'; }
+      else badge.style.display='none';
+    }
+    if(!pvSolicitudes.length){
+      list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin solicitudes todavía. Presiona "Actualizar".</div>';
+      return;
+    }
+    list.innerHTML = pvSolicitudes.map(function(s){
+      const itemsHtml = (s.items||[]).map(function(i){
+        return '<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px dashed var(--border)">'
+          +'<span><b>'+(i.cod||'')+'</b> — '+(i.nombre||'')+' <span style="color:var(--text3)">('+(i.pres||'')+')</span></span>'
+          +'<span style="font-family:var(--font-mono)">x'+(i.qty||0)+'</span></div>';
+      }).join('');
+      const isPend = s.status==='pendiente';
+      const fecha = s.createdAt ? new Date(s.createdAt).toLocaleString('es-CL') : '';
+      return '<div style="padding:14px;border:1px solid var(--border);border-radius:8px'+(isPend?';border-left:3px solid #ff4757':'')+'">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:10px;flex-wrap:wrap">'
+        +'<div><b>'+(s.provNombre||s.provId||'')+'</b><div style="color:var(--text3);font-size:10px;margin-top:2px">Solicitado por '+(s.solicitante||'—')+' · '+fecha+'</div></div>'
+        +'<span class="pv-badge" style="'+(isPend?'background:rgba(255,71,87,.15);color:#ff4757':'background:rgba(0,200,122,.15);color:#00c87a')+'">'+(isPend?'PENDIENTE':(s.status||'').toUpperCase())+'</span>'
+        +'</div>'
+        +itemsHtml
+        +'<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'
+        +(isPend
+          ? '<button class="pv-btn pv-btn-teal" onclick="pvConvertirSolicitud(\''+s.id+'\')">→ Convertir en OC</button>'
+            +'<button class="pv-btn pv-btn-sec" onclick="pvDescartarSolicitud(\''+s.id+'\')">Descartar</button>'
+          : (s.ocNum ? '<span style="font-size:11px;color:var(--text3)">Convertida en '+s.ocNum+'</span>' : ''))
+        +'</div></div>';
+    }).join('');
+  }
+  window.pvRenderSolicitudes = pvRenderSolicitudes;
+
+  window.pvConvertirSolicitud = function(id){
+    const s = pvSolicitudes.find(function(x){ return x.id===id; });
+    if(!s){ showToast('Solicitud no encontrada', true); return; }
+    pvSolicitudEnCurso = id;
+    // pvNav→'nueva-oc' ejecuta pvResetOCForm() (limpia pvOCItems y el form),
+    // por eso los items se cargan DESPUÉS, en el setTimeout.
+    pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc');
+    setTimeout(function(){
+      const sel = document.getElementById('oc-prov-sel');
+      if(sel){ sel.value = s.provId; if(typeof pvOCProvChange==='function') pvOCProvChange(); }
+      const notas = document.getElementById('oc-notas');
+      if(notas) notas.value = 'Solicitud móvil de '+(s.solicitante||'—');
+      pvOCItems.length = 0;
+      (s.items||[]).forEach(function(i){
+        const p = (typeof pvGetProd==='function') ? pvGetProd(i.cod) : null;
+        pvOCItems.push({
+          cod: i.cod, nombre: i.nombre || (p?p.nombre:''), um: (p?p.um:i.um) || '',
+          pres: i.pres || (p?p.pres:''), qty: Number(i.qty)||1, precio: (p?p.precio:0) || 0,
+          pesoUnit: (typeof pvUnitWeight==='function' && p) ? pvUnitWeight(p) : 0
+        });
+      });
+      if(typeof pvRenderOCItems==='function') pvRenderOCItems();
+    }, 150);
+    showToast('Revisa, completa y guarda la OC para confirmar la conversión');
+  };
+
+  window.pvDescartarSolicitud = async function(id){
+    if(!confirm('¿Descartar esta solicitud?')) return;
+    try{
+      await window.updateDoc(window.doc(window.db,'solicitudes_compra',id), {status:'descartada'});
+      showToast('Solicitud descartada');
+      pvLoadSolicitudes();
+    }catch(err){ showToast('Error: '+(err.message||err), true); }
+  };
+
+  // Al guardar la OC, si venía de una solicitud, la marca como convertida
+  var _origSaveOC = window.pvSaveOC;
+  window.pvSaveOC = function(status){
+    var solId = pvSolicitudEnCurso;
+    var beforeLen = pvOCList.length;
+    _origSaveOC(status);
+    if(solId && pvOCList.length > beforeLen){
+      var oc = pvOCList[0]; // pvSaveOC hace unshift()
+      window.updateDoc(window.doc(window.db,'solicitudes_compra',solId), {status:'convertida', ocNum:oc.num})
+        .catch(function(e){ console.error(e); });
+      pvSolicitudEnCurso = null;
+    }
+  };
+
 })();
 </script>
