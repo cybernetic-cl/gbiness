@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Nueva Compra · DMP</title>
+<style>
+  :root{
+    --navy:#0f172a; --navy2:#1e293b; --teal:#0d9488; --teal-d:#0f766e;
+    --bg:#f4f6f8; --card:#ffffff; --border:#e2e8f0; --text:#0f172a; --text2:#64748b; --text3:#94a3b8;
+    --danger:#ef4444;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  header{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  header .logo{width:32px;height:32px;border-radius:8px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+  header h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px}
+  header .sub{font-size:10px;color:#94a3b8;margin-top:1px}
+  header .back{margin-left:auto;background:rgba(255,255,255,.08);border:none;color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;cursor:pointer}
+
+  main{max-width:520px;margin:0 auto;padding:16px 16px 100px}
+  .step{display:none}
+  .step.active{display:block}
+
+  .field-label{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--text2);text-transform:uppercase;margin:0 0 8px}
+  input[type=text]{width:100%;padding:14px;font-size:16px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--text)}
+  input[type=text]:focus{outline:none;border-color:var(--teal)}
+
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;font-size:15px;font-weight:700;border-radius:12px;border:none;cursor:pointer;letter-spacing:.2px}
+  .btn-primary{background:var(--teal);color:#fff}
+  .btn-primary:disabled{background:#cbd5e1;color:#94a3b8}
+  .btn-primary:active{background:var(--teal-d)}
+  .btn-ghost{background:#fff;color:var(--text);border:1.5px solid var(--border)}
+
+  .prov-card{display:flex;align-items:center;gap:12px;padding:16px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;margin-bottom:10px;cursor:pointer;transition:border-color .1s, transform .1s}
+  .prov-card:active{transform:scale(.98)}
+  .prov-card .ico{width:44px;height:44px;border-radius:10px;background:rgba(13,148,136,.1);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .prov-card .info b{display:block;font-size:15px}
+  .prov-card .info span{font-size:12px;color:var(--text3)}
+  .prov-card .arrow{margin-left:auto;color:var(--text3);font-size:18px}
+
+  .search-wrap{position:relative;margin-bottom:12px}
+  .search-wrap input{padding-left:38px}
+  .search-wrap .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px}
+
+  .prod-row{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--border)}
+  .prod-row .prod-info{flex:1;min-width:0}
+  .prod-row .cod{font-family:'SF Mono',Consolas,monospace;font-size:10px;color:var(--teal);font-weight:700;letter-spacing:.3px}
+  .prod-row .nombre{font-size:13.5px;font-weight:600;line-height:1.25;margin-top:1px}
+  .prod-row .pres{font-size:11.5px;color:var(--text3);margin-top:1px}
+  .prod-row .qty-input{width:64px;flex-shrink:0;padding:10px 4px;text-align:center;font-size:16px;font-weight:700;border:1.5px solid var(--border);border-radius:8px}
+  .prod-row .qty-input:focus{outline:none;border-color:var(--teal)}
+  .prod-row.has-qty{background:rgba(13,148,136,.05)}
+  .price-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px;margin-top:3px;letter-spacing:.2px}
+  .price-badge.low{background:rgba(16,185,129,.14);color:#059669}
+  .price-badge.high{background:rgba(239,68,68,.14);color:#dc2626}
+
+  .footer-bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.06);z-index:20}
+  .footer-bar .count{text-align:center;font-size:11px;color:var(--text2);margin-bottom:8px}
+
+  .empty{text-align:center;padding:50px 20px;color:var(--text3)}
+  .empty .big{font-size:38px;margin-bottom:10px}
+  .empty p{font-size:13px;line-height:1.5}
+
+  .spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .success-wrap{text-align:center;padding:60px 20px}
+  .success-wrap .check{width:72px;height:72px;border-radius:50%;background:rgba(13,148,136,.1);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px}
+  .success-wrap h2{font-size:19px;margin:0 0 8px}
+  .success-wrap p{font-size:13.5px;color:var(--text2);line-height:1.5;margin:0 0 28px}
+
+  .summary-item{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px dashed var(--border)}
+  .summary-item b{font-weight:600}
+  .summary-item .q{font-family:'SF Mono',Consolas,monospace;color:var(--teal);font-weight:700}
+
+  .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;z-index:40;box-shadow:0 4px 16px rgba(0,0,0,.2);max-width:85%;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">DMP</div>
+  <div>
+    <h1>Nueva Compra</h1>
+    <div class="sub" id="headerSub">Distribuidora de Materias Primas</div>
+  </div>
+  <button class="back" id="btnBack" style="display:none">← Volver</button>
+</header>
+
+<main>
+
+  <!-- PASO 0: Nombre -->
+  <div class="step active" id="step-nombre">
+    <div style="margin-top:10px">
+      <div class="field-label">¿Quién solicita?</div>
+      <input type="text" id="inputNombre" placeholder="Tu nombre" autocomplete="name">
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn btn-primary" onclick="ncGuardarNombre()">Continuar</button>
+    </div>
+  </div>
+
+  <!-- PASO 1: Selección de proveedor -->
+  <div class="step" id="step-proveedor">
+    <div class="field-label">Selecciona proveedor</div>
+    <div id="provList"><div class="spinner"></div></div>
+  </div>
+
+  <!-- PASO 2: Lista de químicos -->
+  <div class="step" id="step-productos">
+    <div class="search-wrap">
+      <span class="ico">⌕</span>
+      <input type="text" id="inputBuscar" placeholder="Buscar código o nombre…" oninput="ncFiltrarProductos()">
+    </div>
+    <div id="prodList"><div class="spinner"></div></div>
+  </div>
+
+  <!-- PASO 3: Confirmación -->
+  <div class="step" id="step-confirmar">
+    <div class="field-label">Confirma tu solicitud</div>
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:10px"><b id="confProv"></b> · solicita <b id="confNombre"></b></div>
+      <div id="confItems"></div>
+    </div>
+    <button class="btn btn-primary" id="btnEnviar" onclick="ncEnviarSolicitud()">Solicitar</button>
+  </div>
+
+  <!-- PASO 4: Éxito -->
+  <div class="step" id="step-exito">
+    <div class="success-wrap">
+      <div class="check">✓</div>
+      <h2>Solicitud enviada</h2>
+      <p>Tu solicitud fue enviada y quedará pendiente de aprobación en el sistema.</p>
+      <button class="btn btn-primary" onclick="ncNuevaSolicitud()">Hacer otra solicitud</button>
+    </div>
+  </div>
+
+</main>
+
+<div class="footer-bar" id="footerBar" style="display:none">
+  <div class="count" id="footerCount">0 productos seleccionados</div>
+  <button class="btn btn-primary" id="btnContinuarProd" onclick="ncIrAConfirmar()" disabled>Continuar</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyCR7m2wPjI_5EScEDB4FuGag634PaLjR58",
+  authDomain: "gbisness-73098.firebaseapp.com",
+  projectId: "gbisness-73098",
+  storageBucket: "gbisness-73098.firebasestorage.app",
+  messagingSenderId: "988324916233",
+  appId: "1:988324916233:web:57eec60ea54992063f9cd8"
+});
+const db = getFirestore(app);
+window.db = db;
+window.collection = collection;
+window.doc = doc;
+window.getDocs = getDocs;
+window.addDoc = addDoc;
+window.ncFirebaseReady = true;
+if (typeof window.ncOnFirebaseReady === 'function') window.ncOnFirebaseReady();
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// Estado de la app
+// ══════════════════════════════════════════════════════════════════
+var ncSolicitante = localStorage.getItem('nc_solicitante') || '';
+var ncProveedores = [];
+var ncProductos   = [];
+var ncProvSel     = null;
+var ncCantidades  = {}; // cod -> qty
+
+function ncShowStep(id){
+  document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  var back = document.getElementById('btnBack');
+  var footer = document.getElementById('footerBar');
+  var sub = document.getElementById('headerSub');
+
+  if(id === 'step-nombre'){ back.style.display='none'; footer.style.display='none'; sub.textContent='Distribuidora de Materias Primas'; }
+  if(id === 'step-proveedor'){ back.style.display='none'; footer.style.display='none'; sub.textContent='Hola '+ncSolicitante+' · Selecciona proveedor'; }
+  if(id === 'step-productos'){ back.style.display='inline-block'; footer.style.display='block'; sub.textContent = ncProvSel ? ncProvSel.nombre : ''; }
+  if(id === 'step-confirmar'){ back.style.display='inline-block'; footer.style.display='none'; sub.textContent='Revisa tu solicitud'; }
+  if(id === 'step-exito'){ back.style.display='none'; footer.style.display='none'; sub.textContent='Distribuidora de Materias Primas'; }
+}
+
+function ncToast(msg, isError){
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.style.background = isError ? '#ef4444' : 'var(--navy)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 2600);
+}
+
+// ── Botón "Volver" según el paso actual ──
+document.getElementById('btnBack').addEventListener('click', function(){
+  var activeId = document.querySelector('.step.active').id;
+  if(activeId === 'step-productos') ncShowStep('step-proveedor');
+  else if(activeId === 'step-confirmar') ncShowStep('step-productos');
+});
+
+// ══════════════════════════════════════════════════════════════════
+// PASO 0: Nombre
+// ══════════════════════════════════════════════════════════════════
+if(ncSolicitante){ document.getElementById('inputNombre').value = ncSolicitante; }
+
+function ncGuardarNombre(){
+  var v = document.getElementById('inputNombre').value.trim();
+  if(!v){ ncToast('Ingresa tu nombre', true); return; }
+  ncSolicitante = v;
+  localStorage.setItem('nc_solicitante', v);
+  ncShowStep('step-proveedor');
+  ncCargarProveedores();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PASO 1: Proveedores (leídos desde Firestore, sincronizados por el admin)
+// ══════════════════════════════════════════════════════════════════
+var ncProvCargados = false;
+function ncCargarProveedores(){
+  if(ncProvCargados) return;
+  function run(){
+    window.getDocs(window.collection(window.db,'catalogo_proveedores')).then(function(snap){
+      ncProveedores = [];
+      snap.forEach(function(d){ ncProveedores.push(Object.assign({id:d.id}, d.data())); });
+      ncProveedores.sort(function(a,b){ return (a.nombre||'').localeCompare(b.nombre||''); });
+      ncProvCargados = true;
+      ncRenderProveedores();
+    }).catch(function(err){
+      console.error(err);
+      document.getElementById('provList').innerHTML =
+        '<div class="empty"><div class="big">⚠️</div><p>No se pudo conectar.<br>Revisa tu conexión a internet.</p></div>';
+    });
+  }
+  if(window.ncFirebaseReady) run(); else window.ncOnFirebaseReady = run;
+}
+
+function ncRenderProveedores(){
+  var wrap = document.getElementById('provList');
+  if(!ncProveedores.length){
+    wrap.innerHTML = '<div class="empty"><div class="big">📭</div><p>Aún no hay catálogo disponible.<br>Pide al administrador que sincronice el catálogo desde el panel.</p></div>';
+    return;
+  }
+  wrap.innerHTML = ncProveedores.map(function(p){
+    return '<div class="prov-card" onclick="ncSeleccionarProveedor(\''+p.id+'\')">'
+      + '<div class="ico">🏢</div>'
+      + '<div class="info"><b>'+(p.nombre||p.id)+'</b><span>'+(p.contacto||'')+'</span></div>'
+      + '<div class="arrow">›</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PASO 2: Lista de químicos del proveedor seleccionado
+// ══════════════════════════════════════════════════════════════════
+var ncProdCargados = false;
+function ncSeleccionarProveedor(id){
+  ncProvSel = ncProveedores.find(function(p){ return p.id===id; }) || {id:id, nombre:id};
+  ncCantidades = {};
+  ncShowStep('step-productos');
+  document.getElementById('inputBuscar').value = '';
+  ncCargarProductos();
+}
+
+function ncCargarProductos(){
+  function run(){
+    if(ncProdCargados){ ncFiltrarProductos(); return; }
+    window.getDocs(window.collection(window.db,'catalogo_productos')).then(function(snap){
+      ncProductos = [];
+      snap.forEach(function(d){
+        var data = Object.assign({id:d.id}, d.data());
+        if((data.estado||'Activo') === 'Activo') ncProductos.push(data); // solo activos
+      });
+      ncProdCargados = true;
+      ncFiltrarProductos();
+    }).catch(function(err){
+      console.error(err);
+      document.getElementById('prodList').innerHTML =
+        '<div class="empty"><div class="big">⚠️</div><p>No se pudo cargar el catálogo.</p></div>';
+    });
+  }
+  if(window.ncFirebaseReady) run(); else window.ncOnFirebaseReady = run;
+}
+
+function ncFiltrarProductos(){
+  var q = (document.getElementById('inputBuscar').value||'').toLowerCase().trim();
+  var list = ncProductos.filter(function(p){
+    return (p.provs||[]).indexOf(ncProvSel.id) !== -1;
+  });
+  if(q){
+    list = list.filter(function(p){
+      return (p.nombre||'').toLowerCase().indexOf(q)!==-1 || (p.cod||'').toLowerCase().indexOf(q)!==-1;
+    });
+  }
+  ncRenderProductos(list);
+}
+
+function ncPriceBadge(p){
+  var precios = p.precios || {};
+  var entries = Object.entries(precios).filter(function(kv){ return Number(kv[1])>0; });
+  if(entries.length < 2) return ''; // solo se compara si hay 2+ proveedores con precio
+  var myPrice = Number(precios[ncProvSel.id]);
+  if(!myPrice) return '';
+  var vals = entries.map(function(kv){ return Number(kv[1]); });
+  var min = Math.min.apply(null, vals);
+  var max = Math.max.apply(null, vals);
+  if(min === max) return ''; // todos iguales, no hay diferencia que destacar
+  if(myPrice === min) return '<span class="price-badge low">↓ Más bajo</span>';
+  if(myPrice === max) return '<span class="price-badge high">↑ Más alto</span>';
+  return '';
+}
+
+function ncRenderProductos(list){
+  var wrap = document.getElementById('prodList');
+  if(!list.length){
+    wrap.innerHTML = '<div class="empty"><div class="big">🔍</div><p>Sin resultados para este proveedor.</p></div>';
+    return;
+  }
+  wrap.innerHTML = list.map(function(p){
+    var qty = ncCantidades[p.cod] || '';
+    var hasQty = qty ? ' has-qty' : '';
+    var badge = ncPriceBadge(p);
+    return '<div class="prod-row'+hasQty+'" id="row-'+p.cod+'">'
+      + '<div class="prod-info"><div class="cod">'+p.cod+'</div><div class="nombre">'+p.nombre+'</div><div class="pres">'+(p.pres||'')+' · '+(p.um||'')+'</div>'+badge+'</div>'
+      + '<input class="qty-input" type="number" inputmode="numeric" min="0" placeholder="0" value="'+qty+'" onchange="ncSetCantidad(\''+p.cod+'\', this.value)">'
+      + '</div>';
+  }).join('');
+  ncActualizarFooter();
+}
+
+function ncSetCantidad(cod, val){
+  var n = parseFloat(val);
+  if(!n || n<=0){ delete ncCantidades[cod]; }
+  else{ ncCantidades[cod] = n; }
+  var row = document.getElementById('row-'+cod);
+  if(row){ row.classList.toggle('has-qty', !!ncCantidades[cod]); }
+  ncActualizarFooter();
+}
+
+function ncActualizarFooter(){
+  var codigos = Object.keys(ncCantidades);
+  document.getElementById('footerCount').textContent = codigos.length + (codigos.length===1?' producto seleccionado':' productos seleccionados');
+  document.getElementById('btnContinuarProd').disabled = codigos.length===0;
+}
+
+function ncIrAConfirmar(){
+  var codigos = Object.keys(ncCantidades);
+  if(!codigos.length){ ncToast('Ingresa al menos una cantidad', true); return; }
+  document.getElementById('confProv').textContent = ncProvSel.nombre;
+  document.getElementById('confNombre').textContent = ncSolicitante;
+  document.getElementById('confItems').innerHTML = codigos.map(function(cod){
+    var p = ncProductos.find(function(x){ return x.cod===cod; });
+    return '<div class="summary-item"><span><b>'+cod+'</b> — '+(p?p.nombre:'')+'</span><span class="q">x'+ncCantidades[cod]+'</span></div>';
+  }).join('');
+  ncShowStep('step-confirmar');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PASO 3 → Envío de la solicitud a Firestore
+// ══════════════════════════════════════════════════════════════════
+function ncEnviarSolicitud(){
+  var codigos = Object.keys(ncCantidades);
+  if(!codigos.length){ ncToast('No hay productos en la solicitud', true); return; }
+
+  var btn = document.getElementById('btnEnviar');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+
+  var items = codigos.map(function(cod){
+    var p = ncProductos.find(function(x){ return x.cod===cod; }) || {};
+    return { cod:cod, nombre:p.nombre||'', pres:p.pres||'', um:p.um||'', qty:ncCantidades[cod] };
+  });
+
+  var solicitud = {
+    solicitante: ncSolicitante,
+    provId: ncProvSel.id,
+    provNombre: ncProvSel.nombre,
+    items: items,
+    status: 'pendiente',
+    createdAt: new Date().toISOString()
+  };
+
+  window.addDoc(window.collection(window.db,'solicitudes_compra'), solicitud).then(function(){
+    ncShowStep('step-exito');
+  }).catch(function(err){
+    console.error(err);
+    ncToast('Error al enviar: '+(err.message||err), true);
+    btn.disabled = false; btn.textContent = 'Solicitar';
+  });
+}
+
+function ncNuevaSolicitud(){
+  ncProvSel = null;
+  ncCantidades = {};
+  ncProdCargados = false; // fuerza refrescar el catálogo por si cambió
+  ncShowStep('step-proveedor');
+  ncRenderProveedores();
+}
+
+// ── Inicio ──
+ncShowStep('step-nombre');
+</script>
+
+</body>
+</html>
