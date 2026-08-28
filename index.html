@@ -2077,14 +2077,30 @@ input.fi-money{padding-left:58px!important;width:100%}
         <input type="hidden" id="c_estado_val" value="pagado">
       </div>
       <div class="fw" style="grid-column:1/-1">
-        <label class="fl">Foto / Comprobante (opcional)</label>
-        <div id="c_foto_wrap" style="border:1px dashed rgba(0,212,170,0.3);border-radius:2px;padding:10px;text-align:center;cursor:pointer;transition:background .2s;background:rgba(0,212,170,0.03)" onclick="document.getElementById('c_foto_input').click()" ondragover="event.preventDefault();this.style.background='rgba(0,212,170,0.08)'" ondragleave="this.style.background='rgba(0,212,170,0.03)'" ondrop="handleFotoDrop(event)">
-          <input type="file" id="c_foto_input" accept="image/*,application/pdf" style="display:none" onchange="handleFotoSelect(this)">
+        <label class="fl">Presupuesto / Cotización (opcional)</label>
+        <div id="c_pres_wrap" style="border:1px dashed rgba(0,212,170,0.3);border-radius:2px;padding:10px;text-align:center;cursor:pointer;transition:background .2s;background:rgba(0,212,170,0.03)" onclick="document.getElementById('c_pres_input').click()" ondragover="event.preventDefault();this.style.background='rgba(0,212,170,0.08)'" ondragleave="this.style.background='rgba(0,212,170,0.03)'" ondrop="handleAdjuntoDrop(event,'pres')">
+          <input type="file" id="c_pres_input" accept="image/*,application/pdf" style="display:none" onchange="handleAdjuntoSelect(this,'pres')">
+          <div id="c_pres_preview" style="display:none">
+            <img id="c_pres_img" style="max-width:100%;max-height:140px;border-radius:2px;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto">
+            <div id="c_pres_pdficon" style="display:none;font-size:34px;margin-bottom:6px">📄</div>
+            <div id="c_pres_name" style="font-family:var(--font-mono);font-size:9px;color:var(--teal);letter-spacing:1px"></div>
+            <button type="button" onclick="event.stopPropagation();clearAdjunto('pres')" style="margin-top:6px;background:none;border:1px solid rgba(255,71,87,0.4);color:var(--red);font-family:var(--font-mono);font-size:9px;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:1px">✕ QUITAR</button>
+          </div>
+          <div id="c_pres_placeholder">
+            <div style="font-size:22px;margin-bottom:4px">🧾</div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px">CLIC O ARRASTRA UNA IMAGEN O PDF</div>
+          </div>
+        </div>
+      </div>
+      <div class="fw" style="grid-column:1/-1">
+        <label class="fl">Comprobante de Pago (opcional)</label>
+        <div id="c_foto_wrap" style="border:1px dashed rgba(0,212,170,0.3);border-radius:2px;padding:10px;text-align:center;cursor:pointer;transition:background .2s;background:rgba(0,212,170,0.03)" onclick="document.getElementById('c_foto_input').click()" ondragover="event.preventDefault();this.style.background='rgba(0,212,170,0.08)'" ondragleave="this.style.background='rgba(0,212,170,0.03)'" ondrop="handleAdjuntoDrop(event,'foto')">
+          <input type="file" id="c_foto_input" accept="image/*,application/pdf" style="display:none" onchange="handleAdjuntoSelect(this,'foto')">
           <div id="c_foto_preview" style="display:none">
             <img id="c_foto_img" style="max-width:100%;max-height:140px;border-radius:2px;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto">
             <div id="c_foto_pdficon" style="display:none;font-size:34px;margin-bottom:6px">📄</div>
             <div id="c_foto_name" style="font-family:var(--font-mono);font-size:9px;color:var(--teal);letter-spacing:1px"></div>
-            <button type="button" onclick="event.stopPropagation();clearFoto()" style="margin-top:6px;background:none;border:1px solid rgba(255,71,87,0.4);color:var(--red);font-family:var(--font-mono);font-size:9px;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:1px">✕ QUITAR</button>
+            <button type="button" onclick="event.stopPropagation();clearAdjunto('foto')" style="margin-top:6px;background:none;border:1px solid rgba(255,71,87,0.4);color:var(--red);font-family:var(--font-mono);font-size:9px;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:1px">✕ QUITAR</button>
           </div>
           <div id="c_foto_placeholder">
             <div style="font-size:22px;margin-bottom:4px">📎</div>
@@ -3892,7 +3908,8 @@ function renderCompras() {
     <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt(c.monto)}</td>
     <td style="display:flex;gap:4px;align-items:center">
       <button class="btn-del btn-detail1" title="Ver detalle" data-cid="${c.id}" style="color:var(--blue);font-size:13px">👁</button>
-      ${c.foto ? `<button class="btn-del btn-foto1" title="Ver foto" data-cid="${c.id}" style="color:var(--teal);font-size:13px">🖼</button>` : ''}
+      ${c.presupuesto ? `<button class="btn-del btn-pres1" title="Ver presupuesto" data-cid="${c.id}" style="color:var(--amber);font-size:13px">🧾</button>` : ''}
+      ${c.foto ? `<button class="btn-del btn-foto1" title="Ver comprobante" data-cid="${c.id}" style="color:var(--teal);font-size:13px">🖼</button>` : ''}
       <button class="btn-del" onclick="delCompra(${getMesCompras().indexOf(c)})">✕</button>
     </td>
   </tr>`).join('');
@@ -3902,6 +3919,14 @@ function renderCompras() {
       const cid=btn.dataset.cid;
       const cx=(getMesCompras()||[]).find(x=>x.id===cid);
       if(cx&&cx.foto) openFotoViewer(cx.foto, cx.fotoName||'comprobante.jpg');
+    });
+  });
+  // attach presupuesto handlers for table 1
+  body.querySelectorAll('.btn-pres1').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cid=btn.dataset.cid;
+      const cx=(getMesCompras()||[]).find(x=>x.id===cid);
+      if(cx&&cx.presupuesto) openFotoViewer(cx.presupuesto, cx.presupuestoName||'presupuesto.jpg');
     });
   });
   // attach detail handlers for table 1
@@ -4112,7 +4137,8 @@ function openAddCompra() {
   setEstadoModal('pagado');
   populateCompraSelects();
   toggleBanco();
-  clearFoto();
+  clearAdjunto('pres');
+  clearAdjunto('foto');
   $('compraOverlay').classList.add('open');
 }
 
@@ -4404,7 +4430,8 @@ function renderCompras2() {
     <td style="text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt(c.monto)}</td>
     <td style="display:flex;gap:4px;align-items:center">
       <button class="btn-del btn-detail2" title="Ver detalle" data-cid="${c.id}" style="color:var(--blue);font-size:13px">👁</button>
-      ${c.foto ? `<button class="btn-del btn-foto" title="Ver foto" data-cid="${c.id}" style="color:var(--teal);font-size:13px">🖼</button>` : ''}
+      ${c.presupuesto ? `<button class="btn-del btn-pres2" title="Ver presupuesto" data-cid="${c.id}" style="color:var(--amber);font-size:13px">🧾</button>` : ''}
+      ${c.foto ? `<button class="btn-del btn-foto" title="Ver comprobante" data-cid="${c.id}" style="color:var(--teal);font-size:13px">🖼</button>` : ''}
       <button class="btn-del" onclick="delCompra2('${c.id}')">✕</button>
     </td>
   </tr>`;}).join('');
@@ -4414,6 +4441,14 @@ function renderCompras2() {
       const cid=btn.dataset.cid;
       const cx=(getMesCompras()||[]).find(x=>x.id===cid);
       if(cx&&cx.foto) openFotoViewer(cx.foto, cx.fotoName||'comprobante.jpg');
+    });
+  });
+  // attach presupuesto viewer handlers
+  body.querySelectorAll('.btn-pres2').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cid=btn.dataset.cid;
+      const cx=(getMesCompras()||[]).find(x=>x.id===cid);
+      if(cx&&cx.presupuesto) openFotoViewer(cx.presupuesto, cx.presupuestoName||'presupuesto.jpg');
     });
   });
   // attach detail handlers
@@ -6002,7 +6037,10 @@ async function saveCompra() {
     desc:($('c_desc')||{value:''}).value,
     foto: window._compraFotoB64 || null,
     fotoName: window._compraFotoName || null,
-    fotoIsPdf: !!window._compraFotoIsPdf
+    fotoIsPdf: !!window._compraFotoIsPdf,
+    presupuesto: window._compraPresB64 || null,
+    presupuestoName: window._compraPresName || null,
+    presupuestoIsPdf: !!window._compraPresIsPdf
   };
   if(!presState.compras[S.mes]) presState.compras[S.mes]=[];
   presState.compras[S.mes].unshift(compra);
@@ -6012,8 +6050,13 @@ async function saveCompra() {
   showToast('Compra registrada');
 }
 
-// ── FOTO / PDF HELPERS ──
-function handleFotoSelect(input){
+// ── ADJUNTOS (PRESUPUESTO / COMPROBANTE) — helpers genéricos ──
+// kind: 'foto' (comprobante de pago) o 'pres' (presupuesto/cotización)
+function _adjWinKey(kind, suf){
+  const base = kind==='pres' ? '_compraPres' : '_compraFoto';
+  return base + suf;
+}
+function handleAdjuntoSelect(input, kind){
   const file = input.files[0];
   if(!file) return;
   const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
@@ -6021,19 +6064,20 @@ function handleFotoSelect(input){
   if(!isPdf && !isImg){ showToast('Solo se permiten imágenes o PDF',true); input.value=''; return; }
   const maxMB = isPdf ? 12 : 8;
   if(file.size > maxMB*1024*1024){ showToast('El archivo no debe superar ' + maxMB + ' MB',true); input.value=''; return; }
+  const p = 'c_' + kind + '_';
 
   if(isPdf){
     const reader = new FileReader();
     reader.onload = e => {
-      window._compraFotoB64 = e.target.result;
-      window._compraFotoName = file.name;
-      window._compraFotoIsPdf = true;
-      $('c_foto_img').style.display = 'none';
-      $('c_foto_img').src = '';
-      $('c_foto_pdficon').style.display = 'block';
-      $('c_foto_name').textContent = window._compraFotoName + ' (' + Math.round(file.size/1024) + ' KB)';
-      $('c_foto_preview').style.display = 'block';
-      $('c_foto_placeholder').style.display = 'none';
+      window[_adjWinKey(kind,'B64')] = e.target.result;
+      window[_adjWinKey(kind,'Name')] = file.name;
+      window[_adjWinKey(kind,'IsPdf')] = true;
+      $(p+'img').style.display = 'none';
+      $(p+'img').src = '';
+      $(p+'pdficon').style.display = 'block';
+      $(p+'name').textContent = file.name + ' (' + Math.round(file.size/1024) + ' KB)';
+      $(p+'preview').style.display = 'block';
+      $(p+'placeholder').style.display = 'none';
     };
     reader.readAsDataURL(file);
     return;
@@ -6053,41 +6097,49 @@ function handleFotoSelect(input){
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
       const compressed = canvas.toDataURL('image/jpeg', 0.72);
-      window._compraFotoB64 = compressed;
-      window._compraFotoName = file.name.replace(/\.[^.]+$/, '.jpg');
-      window._compraFotoIsPdf = false;
-      $('c_foto_pdficon').style.display = 'none';
-      $('c_foto_img').style.display = 'block';
-      $('c_foto_img').src = compressed;
-      $('c_foto_name').textContent = window._compraFotoName + ' (' + Math.round(compressed.length/1024) + ' KB)';
-      $('c_foto_preview').style.display = 'block';
-      $('c_foto_placeholder').style.display = 'none';
+      const name = file.name.replace(/\.[^.]+$/, '.jpg');
+      window[_adjWinKey(kind,'B64')] = compressed;
+      window[_adjWinKey(kind,'Name')] = name;
+      window[_adjWinKey(kind,'IsPdf')] = false;
+      $(p+'pdficon').style.display = 'none';
+      $(p+'img').style.display = 'block';
+      $(p+'img').src = compressed;
+      $(p+'name').textContent = name + ' (' + Math.round(compressed.length/1024) + ' KB)';
+      $(p+'preview').style.display = 'block';
+      $(p+'placeholder').style.display = 'none';
     };
     imgEl.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
-function handleFotoDrop(e){
+function handleAdjuntoDrop(e, kind){
   e.preventDefault();
-  $('c_foto_wrap').style.background='rgba(0,212,170,0.03)';
+  $('c_'+kind+'_wrap').style.background='rgba(0,212,170,0.03)';
   const file = e.dataTransfer.files[0];
   if(!file) return;
   const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
   if(!file.type.startsWith('image/') && !isPdf) return;
   const dt = new DataTransfer(); dt.items.add(file);
-  const inp = $('c_foto_input'); inp.files = dt.files;
-  handleFotoSelect(inp);
+  const inp = $('c_'+kind+'_input'); inp.files = dt.files;
+  handleAdjuntoSelect(inp, kind);
 }
-function clearFoto(){
-  window._compraFotoB64 = null; window._compraFotoName = null; window._compraFotoIsPdf = false;
-  $('c_foto_input').value = '';
-  $('c_foto_img').src = '';
-  $('c_foto_img').style.display = 'block';
-  $('c_foto_pdficon').style.display = 'none';
-  $('c_foto_name').textContent = '';
-  $('c_foto_preview').style.display = 'none';
-  $('c_foto_placeholder').style.display = 'block';
+function clearAdjunto(kind){
+  const p = 'c_' + kind + '_';
+  window[_adjWinKey(kind,'B64')] = null;
+  window[_adjWinKey(kind,'Name')] = null;
+  window[_adjWinKey(kind,'IsPdf')] = false;
+  $(p+'input').value = '';
+  $(p+'img').src = '';
+  $(p+'img').style.display = 'block';
+  $(p+'pdficon').style.display = 'none';
+  $(p+'name').textContent = '';
+  $(p+'preview').style.display = 'none';
+  $(p+'placeholder').style.display = 'block';
 }
+// Alias de compatibilidad (por si quedan referencias antiguas)
+function handleFotoSelect(input){ handleAdjuntoSelect(input,'foto'); }
+function handleFotoDrop(e){ handleAdjuntoDrop(e,'foto'); }
+function clearFoto(){ clearAdjunto('foto'); }
 function openFotoViewer(b64, name){
   const isPdf = (typeof b64==='string' && b64.indexOf('data:application/pdf')===0) || /\.pdf$/i.test(name||'');
   const ov = document.createElement('div');
@@ -8208,6 +8260,14 @@ function openCompraDetail(cx) {
   html += row('Tipo de pago', cx.tipoPago || '—');
   if (cx.banco) html += row('Banco', cx.banco);
   if (cx.desc) html += row('Descripción', cx.desc);
+  const presIsPdf = cx.presupuestoIsPdf || (typeof cx.presupuesto==='string' && cx.presupuesto.indexOf('data:application/pdf')===0) || /\.pdf$/i.test(cx.presupuestoName||'');
+  if (cx.presupuesto) {
+    if (presIsPdf) {
+      html += '<div style="margin-top:14px"><div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Presupuesto</div><div id="detailPresImg" style="display:flex;align-items:center;gap:10px;padding:14px;border:1px solid var(--border);border-radius:6px;cursor:pointer"><span style="font-size:26px">📄</span><span style="font-size:12px;color:var(--text2);word-break:break-all">' + (cx.presupuestoName || 'presupuesto.pdf') + '</span></div></div>';
+    } else {
+      html += '<div style="margin-top:14px"><div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Presupuesto</div><img src="' + cx.presupuesto + '" style="max-width:100%;border-radius:6px;cursor:pointer" id="detailPresImg"></div>';
+    }
+  }
   const cxIsPdf = cx.fotoIsPdf || (typeof cx.foto==='string' && cx.foto.indexOf('data:application/pdf')===0) || /\.pdf$/i.test(cx.fotoName||'');
   if (cx.foto) {
     if (cxIsPdf) {
@@ -8217,6 +8277,11 @@ function openCompraDetail(cx) {
     }
   }
   $('compraDetailBody').innerHTML = html;
+  if (cx.presupuesto) {
+    const presName = cx.presupuestoName || (presIsPdf ? 'presupuesto.pdf' : 'presupuesto.jpg');
+    const pimg = document.getElementById('detailPresImg');
+    if (pimg) pimg.addEventListener('click', () => openFotoViewer(cx.presupuesto, presName));
+  }
   if (cx.foto) {
     const fotoName = cx.fotoName || (cxIsPdf ? 'comprobante.pdf' : 'comprobante.jpg');
     const img = document.getElementById('detailFotoImg');
