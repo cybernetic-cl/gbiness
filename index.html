@@ -1657,6 +1657,7 @@ input.fi-money{padding-left:58px!important;width:100%}
             <input type="text" id="pres-search2" class="fi" placeholder="🔍 Buscar..." style="width:200px" oninput="renderCompras2()">
           </div>
           <button class="btn-secondary" onclick="exportarExcel()" style="border-color:rgba(0,229,160,0.3);color:var(--teal)">⬇ Excel</button>
+          <button class="btn-secondary" onclick="imprimirReportePresupuesto()" style="border-color:rgba(0,229,160,0.3);color:var(--teal)">🖨 Imprimir PDF</button>
           <button class="btn-primary" onclick="openAddCompra()">+ Nueva Compra</button>
         </div>
         <div class="section-card">
@@ -1674,8 +1675,9 @@ input.fi-money{padding-left:58px!important;width:100%}
       <div id="pview-reporte" style="display:none">
         <div class="page-title">REPORTE DE <span style="color:var(--teal)">GASTOS</span></div>
         <div class="page-sub">// Resumen del mes · exportable a Excel</div>
-        <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px">
           <button class="btn-secondary" onclick="exportarExcel()" style="border-color:rgba(0,229,160,0.3);color:var(--teal)">⬇ Exportar Excel</button>
+          <button class="btn-secondary" onclick="imprimirReportePresupuesto()" style="border-color:rgba(0,229,160,0.3);color:var(--teal)">🖨 Imprimir PDF</button>
         </div>
         <div id="reporte-content2"></div>
       </div>
@@ -5838,6 +5840,140 @@ function exportarExcel() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast(`Exportado: ${compras.length} registros`);
+}
+
+// ── REPORTE DE GASTOS EN PDF (imprimible) ──
+function imprimirReportePresupuesto() {
+  const q=($('pres-search2')||{value:''}).value.toLowerCase();
+  const fEmp=($('pres-filter-emp2')||{value:''}).value;
+  const allCompras = getMesCompras();
+  let compras = [...allCompras].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  if(q) compras=compras.filter(c=>(c.proveedor||'').toLowerCase().includes(q)||(c.responsable||'').toLowerCase().includes(q));
+  if(fEmp) compras=compras.filter(c=>c.empresa===fEmp);
+
+  const cfg=presState.config;
+  const [y,m]=S.mes.split('-');
+  const mesNombre=`${MESES[+m-1]} ${y}`;
+  const gPres=cfg.presupuesto_global||0;
+  const tGast=allCompras.reduce((s,c)=>s+(c.monto||0),0);
+  const disponible=gPres-tGast;
+  const excede=gPres>0 && tGast>gPres;
+  const fmt2=v=>'$ '+Number(v||0).toLocaleString('es-CL');
+
+  const empRows = EMPS_PRES.map(emp=>{
+    const gast=allCompras.filter(c=>c.empresa===emp).reduce((s,c)=>s+(c.monto||0),0);
+    const pct = gPres>0 ? Math.min(100,(gast/gPres)*100) : 0;
+    const pctLabel = gPres>0 ? ((gast/gPres)*100).toFixed(1)+'%' : '—';
+    return `<tr>
+      <td style="font-weight:600">${emp}</td>
+      <td style="text-align:right">${fmt2(gast)}</td>
+      <td style="width:180px">
+        <div style="background:#e8eaf0;border-radius:4px;height:9px;overflow:hidden">
+          <div style="background:${pct>100?'#dc2626':'#0891b2'};height:100%;width:${pct}%"></div>
+        </div>
+      </td>
+      <td style="text-align:right;color:#606888">${pctLabel}</td>
+    </tr>`;
+  }).join('');
+
+  const filterLabel = fEmp ? `Empresa: ${fEmp}` : 'Todas las empresas';
+  const detalleRows = compras.map((c,i)=>`<tr>
+      <td>${i+1}</td>
+      <td>${c.fecha ? new Date(c.fecha+'T00:00:00').toLocaleDateString('es-CL') : '—'}</td>
+      <td>${c.proveedor||'—'}</td>
+      <td>${c.responsable||'—'}</td>
+      <td>${c.empresa||'—'}</td>
+      <td>${c.tipoPago||'—'}${c.banco?' · '+c.banco:''}</td>
+      <td style="max-width:180px">${c.desc||''}</td>
+      <td style="text-align:right;font-weight:600">${fmt2(c.monto)}</td>
+    </tr>`).join('');
+
+  const totalFiltrado = compras.reduce((s,c)=>s+(c.monto||0),0);
+
+  const html = `
+  <div style="font-family:'DM Sans',Arial,sans-serif;color:#1a1d2e;max-width:900px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #0891b2;padding-bottom:14px;margin-bottom:22px">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;color:#0891b2">CYBERNETIC SPA</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;color:#606888;margin-top:2px">REPORTE DE PRESUPUESTO Y GASTOS</div>
+      </div>
+      <div style="text-align:right;font-family:'Space Mono',monospace;font-size:10px;color:#8890aa">
+        <div style="font-size:15px;font-weight:700;color:#1a1d2e;text-transform:uppercase">${mesNombre}</div>
+        <div>Generado: ${new Date().toLocaleDateString('es-CL')} ${new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:26px">
+      <div style="border:1px solid #dde1ec;border-radius:8px;padding:14px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#8890aa;text-transform:uppercase">Presupuesto Global</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#1a1d2e;margin-top:4px">${gPres?fmt2(gPres):'Sin configurar'}</div>
+      </div>
+      <div style="border:1px solid #dde1ec;border-radius:8px;padding:14px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#8890aa;text-transform:uppercase">Gastado Total</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#dc2626;margin-top:4px">${fmt2(tGast)}</div>
+      </div>
+      <div style="border:1px solid #dde1ec;border-radius:8px;padding:14px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#8890aa;text-transform:uppercase">Disponible</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${disponible>=0?'#00a372':'#dc2626'};margin-top:4px">${gPres?fmt2(disponible):'—'}</div>
+      </div>
+    </div>
+
+    ${gPres>0 ? `<div style="margin-bottom:26px;padding:10px 14px;border-radius:6px;background:${excede?'rgba(220,38,38,0.08)':'rgba(0,163,114,0.08)'};border:1px solid ${excede?'rgba(220,38,38,0.3)':'rgba(0,163,114,0.3)'};font-family:'Space Mono',monospace;font-size:11px;color:${excede?'#dc2626':'#00a372'}">
+      ${excede?'⚠ EXCEDE EL PRESUPUESTO EN '+fmt2(tGast-gPres):'✓ DENTRO DEL PRESUPUESTO — DISPONIBLE '+fmt2(disponible)}
+    </div>` : ''}
+
+    <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;color:#1a1d2e;text-transform:uppercase;margin-bottom:8px;border-bottom:1px solid #dde1ec;padding-bottom:6px">Resumen por Empresa</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:28px;font-size:12px">
+      <thead>
+        <tr style="border-bottom:2px solid #1a1d2e">
+          <th style="text-align:left;padding:6px 4px">Empresa</th>
+          <th style="text-align:right;padding:6px 4px">Gastado</th>
+          <th style="text-align:left;padding:6px 4px">% del Presupuesto</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>${empRows}</tbody>
+    </table>
+
+    <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;color:#1a1d2e;text-transform:uppercase;margin-bottom:8px;border-bottom:1px solid #dde1ec;padding-bottom:6px">
+      Detalle de Compras — ${filterLabel}${q?' — Búsqueda: "'+q+'"':''}
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead>
+        <tr style="border-bottom:2px solid #1a1d2e">
+          <th style="text-align:left;padding:6px 4px">N°</th>
+          <th style="text-align:left;padding:6px 4px">Fecha</th>
+          <th style="text-align:left;padding:6px 4px">Proveedor</th>
+          <th style="text-align:left;padding:6px 4px">Responsable</th>
+          <th style="text-align:left;padding:6px 4px">Empresa</th>
+          <th style="text-align:left;padding:6px 4px">Pago</th>
+          <th style="text-align:left;padding:6px 4px">Descripción</th>
+          <th style="text-align:right;padding:6px 4px">Monto</th>
+        </tr>
+      </thead>
+      <tbody>${detalleRows || '<tr><td colspan="8" style="text-align:center;padding:16px;color:#8890aa">Sin compras registradas</td></tr>'}</tbody>
+      <tfoot>
+        <tr style="border-top:2px solid #1a1d2e">
+          <td colspan="7" style="padding:8px 4px;text-align:right;font-weight:700;font-family:'Space Mono',monospace;letter-spacing:1px">TOTAL${fEmp||q?' (FILTRADO)':''}</td>
+          <td style="padding:8px 4px;text-align:right;font-weight:700;font-family:'Bebas Neue',sans-serif;font-size:16px;color:#0891b2">${fmt2(totalFiltrado)}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div style="margin-top:34px;padding-top:12px;border-top:1px solid #dde1ec;font-family:'Space Mono',monospace;font-size:9px;color:#8890aa;text-align:center;letter-spacing:1px">
+      Generado por GBISNESS · Cybernetic SpA
+    </div>
+  </div>`;
+
+  const win = window.open('', '_blank', 'width=1000,height=800');
+  if (!win) { showToast('Habilita las ventanas emergentes para imprimir', true); return; }
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reporte Presupuesto — ' + mesNombre + '</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">'
+    + '<style>*{box-sizing:border-box}body{margin:24px;background:#fff}table{page-break-inside:auto}tr{page-break-inside:avoid;page-break-after:auto}'
+    + 'thead{display:table-header-group}@media print{@page{margin:1.2cm;size:A4}body{margin:0}}</style></head><body>'
+    + html
+    + '<scr' + 'ipt>window.onload=function(){setTimeout(function(){window.print();},250);}</scr' + 'ipt></body></html>');
+  win.document.close();
 }
 
 // ── UPDATE populateCompraSelects to include responsable ──
