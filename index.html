@@ -2077,15 +2077,16 @@ input.fi-money{padding-left:58px!important;width:100%}
       <div class="fw" style="grid-column:1/-1">
         <label class="fl">Foto / Comprobante (opcional)</label>
         <div id="c_foto_wrap" style="border:1px dashed rgba(0,212,170,0.3);border-radius:2px;padding:10px;text-align:center;cursor:pointer;transition:background .2s;background:rgba(0,212,170,0.03)" onclick="document.getElementById('c_foto_input').click()" ondragover="event.preventDefault();this.style.background='rgba(0,212,170,0.08)'" ondragleave="this.style.background='rgba(0,212,170,0.03)'" ondrop="handleFotoDrop(event)">
-          <input type="file" id="c_foto_input" accept="image/*" style="display:none" onchange="handleFotoSelect(this)">
+          <input type="file" id="c_foto_input" accept="image/*,application/pdf" style="display:none" onchange="handleFotoSelect(this)">
           <div id="c_foto_preview" style="display:none">
             <img id="c_foto_img" style="max-width:100%;max-height:140px;border-radius:2px;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto">
+            <div id="c_foto_pdficon" style="display:none;font-size:34px;margin-bottom:6px">📄</div>
             <div id="c_foto_name" style="font-family:var(--font-mono);font-size:9px;color:var(--teal);letter-spacing:1px"></div>
             <button type="button" onclick="event.stopPropagation();clearFoto()" style="margin-top:6px;background:none;border:1px solid rgba(255,71,87,0.4);color:var(--red);font-family:var(--font-mono);font-size:9px;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:1px">✕ QUITAR</button>
           </div>
           <div id="c_foto_placeholder">
             <div style="font-size:22px;margin-bottom:4px">📎</div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px">CLIC O ARRASTRA UNA IMAGEN</div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px">CLIC O ARRASTRA UNA IMAGEN O PDF</div>
           </div>
         </div>
       </div>
@@ -5864,7 +5865,8 @@ async function saveCompra() {
     banco:tipoPago==='Transferencia'?($('c_banco')||{value:''}).value:'',
     desc:($('c_desc')||{value:''}).value,
     foto: window._compraFotoB64 || null,
-    fotoName: window._compraFotoName || null
+    fotoName: window._compraFotoName || null,
+    fotoIsPdf: !!window._compraFotoIsPdf
   };
   if(!presState.compras[S.mes]) presState.compras[S.mes]=[];
   presState.compras[S.mes].unshift(compra);
@@ -5874,11 +5876,33 @@ async function saveCompra() {
   showToast('Compra registrada');
 }
 
-// ── FOTO HELPERS ──
+// ── FOTO / PDF HELPERS ──
 function handleFotoSelect(input){
   const file = input.files[0];
   if(!file) return;
-  if(file.size > 8*1024*1024){ showToast('La imagen no debe superar 8 MB',true); input.value=''; return; }
+  const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+  const isImg = file.type.startsWith('image/');
+  if(!isPdf && !isImg){ showToast('Solo se permiten imágenes o PDF',true); input.value=''; return; }
+  const maxMB = isPdf ? 12 : 8;
+  if(file.size > maxMB*1024*1024){ showToast('El archivo no debe superar ' + maxMB + ' MB',true); input.value=''; return; }
+
+  if(isPdf){
+    const reader = new FileReader();
+    reader.onload = e => {
+      window._compraFotoB64 = e.target.result;
+      window._compraFotoName = file.name;
+      window._compraFotoIsPdf = true;
+      $('c_foto_img').style.display = 'none';
+      $('c_foto_img').src = '';
+      $('c_foto_pdficon').style.display = 'block';
+      $('c_foto_name').textContent = window._compraFotoName + ' (' + Math.round(file.size/1024) + ' KB)';
+      $('c_foto_preview').style.display = 'block';
+      $('c_foto_placeholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = e => {
     const imgEl = new Image();
@@ -5895,6 +5919,9 @@ function handleFotoSelect(input){
       const compressed = canvas.toDataURL('image/jpeg', 0.72);
       window._compraFotoB64 = compressed;
       window._compraFotoName = file.name.replace(/\.[^.]+$/, '.jpg');
+      window._compraFotoIsPdf = false;
+      $('c_foto_pdficon').style.display = 'none';
+      $('c_foto_img').style.display = 'block';
       $('c_foto_img').src = compressed;
       $('c_foto_name').textContent = window._compraFotoName + ' (' + Math.round(compressed.length/1024) + ' KB)';
       $('c_foto_preview').style.display = 'block';
@@ -5908,39 +5935,51 @@ function handleFotoDrop(e){
   e.preventDefault();
   $('c_foto_wrap').style.background='rgba(0,212,170,0.03)';
   const file = e.dataTransfer.files[0];
-  if(!file || !file.type.startsWith('image/')) return;
+  if(!file) return;
+  const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+  if(!file.type.startsWith('image/') && !isPdf) return;
   const dt = new DataTransfer(); dt.items.add(file);
   const inp = $('c_foto_input'); inp.files = dt.files;
   handleFotoSelect(inp);
 }
 function clearFoto(){
-  window._compraFotoB64 = null; window._compraFotoName = null;
+  window._compraFotoB64 = null; window._compraFotoName = null; window._compraFotoIsPdf = false;
   $('c_foto_input').value = '';
   $('c_foto_img').src = '';
+  $('c_foto_img').style.display = 'block';
+  $('c_foto_pdficon').style.display = 'none';
   $('c_foto_name').textContent = '';
   $('c_foto_preview').style.display = 'none';
   $('c_foto_placeholder').style.display = 'block';
 }
 function openFotoViewer(b64, name){
+  const isPdf = (typeof b64==='string' && b64.indexOf('data:application/pdf')===0) || /\.pdf$/i.test(name||'');
   const ov = document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
   ov.onclick = e => { if(e.target===ov) ov.remove(); };
-  const img = document.createElement('img');
-  img.src = b64; img.style.cssText='max-width:90vw;max-height:80vh;border-radius:3px;box-shadow:0 0 40px rgba(0,0,0,0.8)';
+  let mediaEl;
+  if(isPdf){
+    mediaEl = document.createElement('iframe');
+    mediaEl.src = b64;
+    mediaEl.style.cssText='width:90vw;height:80vh;border:none;border-radius:3px;background:#fff;box-shadow:0 0 40px rgba(0,0,0,0.8)';
+  } else {
+    mediaEl = document.createElement('img');
+    mediaEl.src = b64; mediaEl.style.cssText='max-width:90vw;max-height:80vh;border-radius:3px;box-shadow:0 0 40px rgba(0,0,0,0.8)';
+  }
   const bar = document.createElement('div');
   bar.style.cssText='display:flex;gap:10px;margin-top:14px;align-items:center';
   const lbl = document.createElement('span');
   lbl.style.cssText='font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:1px';
   lbl.textContent = name || 'comprobante';
   const dl = document.createElement('a');
-  dl.href=b64; dl.download=name||'comprobante.jpg';
+  dl.href=b64; dl.download=name||(isPdf?'comprobante.pdf':'comprobante.jpg');
   dl.style.cssText='background:var(--teal);color:#000;font-family:var(--font-display);font-size:14px;letter-spacing:1px;padding:7px 16px;border-radius:2px;text-decoration:none';
   dl.textContent='⬇ DESCARGAR';
   const cls = document.createElement('button');
   cls.textContent='✕ CERRAR'; cls.style.cssText='background:none;border:1px solid var(--border2);color:var(--text2);font-family:var(--font-mono);font-size:10px;padding:7px 14px;border-radius:2px;cursor:pointer;letter-spacing:1px';
   cls.onclick = ()=>ov.remove();
   bar.append(lbl,dl,cls);
-  ov.append(img,bar);
+  ov.append(mediaEl,bar);
   document.body.appendChild(ov);
 }
 
@@ -8033,13 +8072,17 @@ function openCompraDetail(cx) {
   html += row('Tipo de pago', cx.tipoPago || '—');
   if (cx.banco) html += row('Banco', cx.banco);
   if (cx.desc) html += row('Descripción', cx.desc);
+  const cxIsPdf = cx.fotoIsPdf || (typeof cx.foto==='string' && cx.foto.indexOf('data:application/pdf')===0) || /\.pdf$/i.test(cx.fotoName||'');
   if (cx.foto) {
-    const fotoName = cx.fotoName || 'comprobante.jpg';
-    html += '<div style="margin-top:14px"><div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Comprobante</div><img src="' + cx.foto + '" style="max-width:100%;border-radius:6px;cursor:pointer" id="detailFotoImg"></div>';
+    if (cxIsPdf) {
+      html += '<div style="margin-top:14px"><div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Comprobante</div><div id="detailFotoImg" style="display:flex;align-items:center;gap:10px;padding:14px;border:1px solid var(--border);border-radius:6px;cursor:pointer"><span style="font-size:26px">📄</span><span style="font-size:12px;color:var(--text2);word-break:break-all">' + (cx.fotoName || 'comprobante.pdf') + '</span></div></div>';
+    } else {
+      html += '<div style="margin-top:14px"><div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Comprobante</div><img src="' + cx.foto + '" style="max-width:100%;border-radius:6px;cursor:pointer" id="detailFotoImg"></div>';
+    }
   }
   $('compraDetailBody').innerHTML = html;
   if (cx.foto) {
-    const fotoName = cx.fotoName || 'comprobante.jpg';
+    const fotoName = cx.fotoName || (cxIsPdf ? 'comprobante.pdf' : 'comprobante.jpg');
     const img = document.getElementById('detailFotoImg');
     if (img) img.addEventListener('click', () => openFotoViewer(cx.foto, fotoName));
   }
