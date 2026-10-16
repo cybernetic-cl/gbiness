@@ -1431,7 +1431,7 @@ body > *{flex-shrink:0}
               <table class="tbl">
                 <thead><tr>
                   <th>Trabajador</th><th>RUT</th><th>Cargo</th><th>Empresa</th>
-                  <th>Ingreso</th><th>Contrato</th><th style="text-align:right">Sueldo Líquido</th><th>Estado</th>
+                  <th>Ingreso</th><th>Contrato</th><th style="text-align:right">Sueldo Líquido</th><th style="text-align:right">Total a pagar</th><th>Estado</th>
                   <th style="text-align:right">Días Vacc.</th><th></th>
                 </tr></thead>
                 <tbody id="rrhh-tbody"></tbody>
@@ -2298,7 +2298,7 @@ body > *{flex-shrink:0}
             <table class="tbl">
               <thead><tr>
                 <th>Trabajador</th><th>RUT</th><th>Cargo</th><th>Empresa</th>
-                <th>Ingreso</th><th>Contrato</th><th style="text-align:right">Sueldo Líquido</th><th>Estado</th>
+                <th>Ingreso</th><th>Contrato</th><th style="text-align:right">Sueldo Líquido</th><th style="text-align:right">Total a pagar</th><th>Estado</th>
                 <th style="text-align:right">Días Vacc.</th><th></th>
               </tr></thead>
               <tbody id="rrhh-sa-tbody"></tbody>
@@ -7070,7 +7070,7 @@ function renderTrabajadores() {
   list.sort((a,b)=>((a.apellidos||'')+(a.nombres||'')).localeCompare((b.apellidos||'')+(b.nombres||'')));
   const tbody=$('rrhh-tbody'); if(!tbody) return;
   rrhhRenderTotales(list, tbody);
-  if(!list.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin trabajadores registrados</td></tr>';return;}
+  if(!list.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin trabajadores registrados</td></tr>';return;}
   const estadoColor={activo:'var(--green)',inactivo:'var(--red)',licencia:'var(--amber)'};
   const estadoLabel={activo:'Activo',inactivo:'Inactivo',licencia:'Licencia'};
   tbody.innerHTML=list.map(t=>{
@@ -7080,15 +7080,16 @@ function renderTrabajadores() {
     const col=pendientes>15?'var(--red)':pendientes>7?'var(--amber)':'var(--green)';
     return `<tr style="cursor:pointer" onclick="openFichaTrabajador('${t._id}')">
       <td><span style="font-weight:500;color:var(--text)">${t.nombres||''} ${t.apellidos||''}</span></td>
-      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${t.rut||'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3);white-space:nowrap">${t.rut||'—'}</td>
       <td style="color:var(--text2);font-size:12px">${t.cargo||'—'}</td>
       <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${t.empresa||'—'}</span></td>
       <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${fmtFecha(t.ingreso)}</td>
       <td style="font-size:12px;color:var(--text2)">${t.tipo_contrato||'—'}</td>
       <td style="text-align:right">${rrhhLiquidoCell(t)}</td>
+      <td style="text-align:right;white-space:nowrap">${rrhhTotalPagarCell(t)}</td>
       <td><span class="cbadge" style="background:${estadoColor[t.estado]||'var(--text3)'}22;color:${estadoColor[t.estado]||'var(--text3)'};border:1px solid ${estadoColor[t.estado]||'var(--text3)'}44">${estadoLabel[t.estado]||t.estado||'—'}</span></td>
       <td style="text-align:right;font-family:var(--font-mono);color:${col};font-weight:700">${pendientes}</td>
-      <td onclick="event.stopPropagation()" style="display:flex;gap:4px">
+      <td onclick="event.stopPropagation()" style="white-space:nowrap">
         <button class="btn-del" onclick="openFichaTrabajador('${t._id}')" title="Editar" style="color:var(--teal)">✎</button>
         <button class="btn-del" onclick="confirmDelTrabajador('${t._id}')" title="Eliminar">✕</button>
       </td>
@@ -7108,7 +7109,14 @@ function rrhhEstimarLiquido(t){
   return Math.round(base * (1 - (afp + salud + cesantia)/100));
 }
 function rrhhLiquidoCell(t){
-  return rrhhLiquidoCellBase(t) + rrhhHxBadge(t);
+  return rrhhLiquidoCellBase(t);
+}
+function rrhhTotalPagarCell(t){
+  const liq=rrhhLiquidoDe(t), hx=hxTotalMes(t, hxMesActual()).monto, tot=liq+hx;
+  if(!tot) return '<span style="color:var(--text3)">—</span>';
+  const estimado=!(Number(t.liquido)>0);
+  return `<span style="font-size:13px;font-weight:700;color:var(--teal)"${estimado?' title="Incluye sueldo líquido estimado"':''}>${estimado?'~':''}${fmt(tot)}</span>`
+    + (hx ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${fmt(liq)} + ${fmt(hx)} HH.EE.</div>` : '');
 }
 function rrhhHxBadge(t){
   const m=hxTotalMes(t, hxMesActual());
@@ -7239,7 +7247,8 @@ function rrhhRenderTotales(list, tbody){
   tf.innerHTML = `<tr style="background:var(--bg3)">
     <td colspan="6" style="padding:12px;font-weight:700;color:var(--text)">Total remuneraciones
       <div style="font-weight:400;font-size:11.5px;color:var(--text3);margin-top:2px">Sueldo base: ${fmt(base)} · ${vig.length} trabajador${vig.length!==1?'es':''}${excl?` · ${excl} inactivo${excl!==1?'s':''} excluido${excl!==1?'s':''}`:''}${est?' · incluye montos estimados (~)':''}${hx?` · Horas extra del mes: ${fmt(hx)}`:''}</div></td>
-    <td style="padding:12px;text-align:right;font-weight:700;font-size:15px;color:var(--teal);white-space:nowrap">${fmt(liq+hx)}${hx?`<div style="font-weight:400;font-size:11px;color:var(--text3)">incl. HH.EE.</div>`:''}</td>
+    <td style="padding:12px;text-align:right;font-weight:700;color:var(--green);white-space:nowrap">${fmt(liq)}<div style="font-weight:400;font-size:11px;color:var(--text3)">líquido</div></td>
+    <td style="padding:12px;text-align:right;font-weight:700;font-size:15px;color:var(--teal);white-space:nowrap">${fmt(liq+hx)}<div style="font-weight:400;font-size:11px;color:var(--text3)">${hx?'incl. '+fmt(hx)+' HH.EE.':'total a pagar'}</div></td>
     <td colspan="3"></td></tr>`;
 }
 function calcVaccLegal(fechaIngreso) {
@@ -7882,7 +7891,7 @@ function renderTrabajadoresSA() {
   list.sort((a,b)=>((a.apellidos||'')+(a.nombres||'')).localeCompare((b.apellidos||'')+(b.nombres||'')));
   const tbody=$('rrhh-sa-tbody'); if(!tbody) return;
   rrhhRenderTotales(list, tbody);
-  if(!list.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin trabajadores registrados</td></tr>';return;}
+  if(!list.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-mono);font-size:11px">Sin trabajadores registrados</td></tr>';return;}
   const estadoColor={activo:'var(--green)',inactivo:'var(--red)',licencia:'var(--amber)'};
   const estadoLabel={activo:'Activo',inactivo:'Inactivo',licencia:'Licencia'};
   tbody.innerHTML=list.map(t=>{
@@ -7892,15 +7901,16 @@ function renderTrabajadoresSA() {
     const col=pendientes>15?'var(--red)':pendientes>7?'var(--amber)':'var(--green)';
     return `<tr style="cursor:pointer" onclick="openFichaTrabajador('${t._id}')">
       <td><span style="font-weight:500;color:var(--text)">${t.nombres||''} ${t.apellidos||''}</span></td>
-      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${t.rut||'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3);white-space:nowrap">${t.rut||'—'}</td>
       <td style="color:var(--text2);font-size:12px">${t.cargo||'—'}</td>
       <td><span class="cbadge" style="background:rgba(74,158,255,0.15);color:var(--blue)">${t.empresa||'—'}</span></td>
       <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${fmtFecha(t.ingreso)}</td>
       <td style="font-size:12px;color:var(--text2)">${t.tipo_contrato||'—'}</td>
       <td style="text-align:right">${rrhhLiquidoCell(t)}</td>
+      <td style="text-align:right;white-space:nowrap">${rrhhTotalPagarCell(t)}</td>
       <td><span class="cbadge" style="background:${estadoColor[t.estado]||'var(--text3)'}22;color:${estadoColor[t.estado]||'var(--text3)'};border:1px solid ${estadoColor[t.estado]||'var(--text3)'}44">${estadoLabel[t.estado]||t.estado||'—'}</span></td>
       <td style="text-align:right;font-family:var(--font-mono);color:${col};font-weight:700">${pendientes}</td>
-      <td onclick="event.stopPropagation()" style="display:flex;gap:4px">
+      <td onclick="event.stopPropagation()" style="white-space:nowrap">
         <button class="btn-del" onclick="openFichaTrabajador('${t._id}')" style="color:var(--teal)">✎</button>
         <button class="btn-del" onclick="confirmDelTrabajador('${t._id}')">✕</button>
       </td>
