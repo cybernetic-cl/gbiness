@@ -1295,6 +1295,9 @@ body > *{flex-shrink:0}
 [style*="Bebas Neue"],[style*="Space Mono"],[style*="DM Sans"],[style*="DM Mono"],[style*="'Syne'"]{font-family:var(--font-body)!important}
 </style>
 <style id="automatik-pagos">
+.tbl-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+#rrhhOverlay .modal{overflow-x:hidden}
+#rrhhOverlay .tbl th,#rrhhOverlay .tbl td{padding-left:10px!important;padding-right:10px!important}
 /* ── RRHH · Pagos del mes ── */
 .rrhh-cp-bar{display:flex;gap:8px;align-items:center;margin-left:auto}
 .rrhh-cp-bar .fi{width:auto!important;padding:7px 10px!important;font-size:12.5px!important}
@@ -2863,9 +2866,7 @@ body > *{flex-shrink:0}
         </div>
         <div class="fw"><label class="fl">Jornada (horas/semana)</label>
           <select id="t_jornada" class="fi">
-            <option value="45">45 horas (jornada completa)</option>
-            <option value="44">44 horas</option>
-            <option value="42">42 horas (jornada legal desde abr-2026)</option>
+            <option value="42">42 horas (jornada completa · legal vigente)</option>
             <option value="40">40 horas</option>
             <option value="30">30 horas (part-time)</option>
             <option value="otro">Otra</option>
@@ -2941,8 +2942,9 @@ body > *{flex-shrink:0}
           <div class="pg-g3">
             <div class="fw"><label class="fl">Fecha <span style="color:var(--red)">*</span></label><input type="date" id="dx_fecha" class="fi"></div>
             <div class="fw"><label class="fl">Días <span style="color:var(--red)">*</span></label><input type="number" id="dx_dias" class="fi" min="0.5" step="0.5" placeholder="Ej: 1" oninput="dxPreview()"></div>
-            <div class="fw"><label class="fl">Motivo / nota</label><input type="text" id="dx_nota" class="fi" placeholder="Ej: Inventario sábado"></div>
+            <div class="fw"><label class="fl">Valor por día <span style="color:var(--text3);font-weight:400">— editable</span></label><div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="dx_valor" class="fi fi-money" placeholder="0" oninput="clpInput(this);this.dataset.t=1;dxPreview()"></div></div>
           </div>
+          <div class="fw"><label class="fl">Motivo / nota</label><input type="text" id="dx_nota" class="fi" placeholder="Ej: Inventario sábado"></div>
           <div id="dx-preview" class="pg-prev" style="display:none"></div>
           <button class="btn-primary pg-add" onclick="dxRegistrar()">+ Registrar días extra</button>
           <div class="pg-h">Días extra del mes</div>
@@ -7223,6 +7225,7 @@ function renderTrabajadores() {
       <td><span class="cbadge" style="background:${estadoColor[t.estado]||'var(--text3)'}22;color:${estadoColor[t.estado]||'var(--text3)'};border:1px solid ${estadoColor[t.estado]||'var(--text3)'}44">${estadoLabel[t.estado]||t.estado||'—'}</span></td>
       <td style="text-align:right;font-family:var(--font-mono);color:${col};font-weight:700">${pendientes}</td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
+        <button class="btn-del" onclick="rrhhComprobanteDe('${t._id}')" title="Descargar comprobante de pago del mes" style="color:var(--teal)">🧾</button>
         <button class="btn-del" onclick="openFichaTrabajador('${t._id}')" title="Editar" style="color:var(--teal)">✎</button>
         <button class="btn-del" onclick="confirmDelTrabajador('${t._id}')" title="Eliminar">✕</button>
       </td>
@@ -7276,8 +7279,11 @@ function rrhhLiquidoCellBase(t){
 
 // ══ HORAS EXTRA (Código del Trabajo art. 32: recargo 50% sobre el valor hora ordinario) ══
 // Valor hora = (sueldo mensual / 30 × 28) / (4 × jornada semanal)  → equivale al factor DT
-// Hora extra = valor hora × 1,5.   Ej. 45h: factor 0,0077777 · 44h: 0,0079545 · 42h: 0,0083333 · 40h: 0,00875
-function hxJornada(t){ const j=parseFloat(t.jornada); return j>0 ? j : 42; }
+// Hora extra = valor hora × 1,5.   Ej. 42h: factor 0,0083333 · 40h: 0,00875
+// Jornada legal máxima vigente: 42 horas semanales (Ley 21.561, desde abril 2026).
+// Fichas antiguas guardadas con 44 o 45 h se leen como 42.
+const JORNADA_LEGAL = 42;
+function hxJornada(t){ const j=parseFloat(t.jornada); return j>0 ? Math.min(j, JORNADA_LEGAL) : JORNADA_LEGAL; }
 function hxSueldoRef(t, base){ return base==='base' ? (Number(t.sueldo)||0) : (Number(t.liquido)||0); }
 function hxValorHora(t, base){
   const s=hxSueldoRef(t, base); if(!s) return 0;
@@ -7397,7 +7403,7 @@ async function pgEliminar(campo, id, que){
   pgGuardar(t,'Registro eliminado');
 }
 function pgTabla(cols, filas, pie){
-  return `<table class="tbl"><thead><tr>${cols.map(c=>`<th${c.r?' style="text-align:right"':''}>${c.t}</th>`).join('')}<th></th></tr></thead><tbody>${filas}</tbody>${pie?`<tfoot>${pie}</tfoot>`:''}</table>`;
+  return `<div class="tbl-scroll"><table class="tbl"><thead><tr>${cols.map(c=>`<th${c.r?' style="text-align:right"':''}>${c.t}</th>`).join('')}<th></th></tr></thead><tbody>${filas}</tbody>${pie?`<tfoot>${pie}</tfoot>`:''}</table></div>`;
 }
 const pgTd=(v,st)=>`<td${st?` style="${st}"`:''}>${v}</td>`;
 const pgDel=(fn)=>`<td style="width:34px"><button class="btn-del" title="Eliminar" onclick="${fn}">✕</button></td>`;
@@ -7451,27 +7457,43 @@ function pgInfoDia(t){
   $('dx-info').innerHTML=txt;
   $('au-info').innerHTML=txt.replace('Valor día:','Descuento por día:');
 }
+function dxValor(t){
+  const el=$('dx_valor');
+  if(!el.dataset.t || !clpVal('dx_valor')){ el.value=clpFormat(pgValorDia(t)); delete el.dataset.t; }
+  return clpVal('dx_valor');
+}
 function dxPreview(){
   const t=hxTrabActual(), box=$('dx-preview'); if(!t) return;
-  const d=parseFloat($('dx_dias').value)||0, vd=pgValorDia(t);
+  const d=parseFloat($('dx_dias').value)||0, vd=dxValor(t), sug=pgValorDia(t);
   if(!d||!vd){ box.style.display='none'; return; }
   box.style.display='block';
-  box.innerHTML=`${pgDias(d)} × ${fmt(vd)} = <b style="color:var(--green);font-size:15px">+${fmt(Math.round(d*vd))}</b>`;
+  box.innerHTML=`${pgDias(d)} × ${fmt(vd)} = <b style="color:var(--green);font-size:15px">+${fmt(Math.round(d*vd))}</b>`
+    + (vd!==sug ? `<div style="font-size:11.5px;color:var(--text3);margin-top:4px">Valor editado · el sugerido es ${fmt(sug)} (líquido ÷ ${PG_DIAS_MES})</div>` : '');
 }
 async function dxRegistrar(){
   const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
-  const fecha=$('dx_fecha').value, dias=parseFloat($('dx_dias').value)||0, vd=pgValorDia(t);
+  const fecha=$('dx_fecha').value, dias=parseFloat($('dx_dias').value)||0, vd=dxValor(t);
   if(!fecha||dias<=0){ showToast('Ingresa fecha y días',true); return; }
-  if(!vd){ showToast('Registra el sueldo líquido en Contrato',true); return; }
-  (t.diasExtra=t.diasExtra||[]).push({ id:'dx_'+Date.now(), fecha, dias, valorDia:vd, monto:Math.round(dias*vd), nota:($('dx_nota').value||'').trim(), creado:new Date().toISOString() });
-  if(await pgGuardar(t,'Días extra registrados',hxMesKey(fecha))){ $('dx_dias').value=''; $('dx_nota').value=''; dxPreview(); }
+  if(!vd){ showToast('Ingresa el valor por día o registra el sueldo líquido en Contrato',true); return; }
+  (t.diasExtra=t.diasExtra||[]).push({ id:'dx_'+Date.now(), fecha, dias, valorDia:vd, editado: vd!==pgValorDia(t), monto:Math.round(dias*vd), nota:($('dx_nota').value||'').trim(), creado:new Date().toISOString() });
+  if(await pgGuardar(t,'Días extra registrados',hxMesKey(fecha))){ $('dx_dias').value=''; $('dx_nota').value=''; delete $('dx_valor').dataset.t; dxPreview(); }
+}
+async function dxEditar(id){
+  const t=hxTrabActual(); if(!t) return;
+  const d=(t.diasExtra||[]).find(x=>x.id===id); if(!d) return;
+  const v=await dlgPrompt('Editar monto del día extra', `${fmtFecha(d.fecha)} · ${pgDias(d.dias)}. Ingresa el monto total a pagar:`, clpFormat(d.monto), 'Monto en pesos');
+  if(v===null) return;
+  const monto=clpParse(v);
+  if(!(monto>0)){ showToast('Ingresa un monto válido',true); return; }
+  d.monto=monto; d.valorDia=Math.round(monto/(Number(d.dias)||1)); d.editado=true;
+  pgGuardar(t,'Monto actualizado');
 }
 function dxRenderLista(r){
   const list=[...r.dx.items].sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!list.length){ $('dx-lista').innerHTML=`<div class="pg-vacio">Sin días extra en ${pgMesLabel(r.mes)}.</div>`; return; }
   $('dx-lista').innerHTML=pgTabla([{t:'Fecha'},{t:'Días',r:1},{t:'Valor día',r:1},{t:'Monto',r:1},{t:'Nota'}],
-    list.map(d=>`<tr>${pgTd(fmtFecha(d.fecha))}${pgTd(pgNum(d.dias),'text-align:right;font-weight:600')}${pgTd(fmt(d.valorDia),'text-align:right')}
-      ${pgTd('+'+fmt(d.monto),'text-align:right;font-weight:700;color:var(--green)')}${pgTd(pgEsc(d.nota),'color:var(--text3);font-size:12px')}${pgDel(`pgEliminar('diasExtra','${d.id}','este registro de días extra')`)}</tr>`).join(''),
+    list.map(d=>`<tr>${pgTd(fmtFecha(d.fecha))}${pgTd(pgNum(d.dias),'text-align:right;font-weight:600')}${pgTd(fmt(d.valorDia)+(d.editado?' <span class="pg-tag warn">editado</span>':''),'text-align:right;white-space:nowrap')}
+      ${pgTd('+'+fmt(d.monto)+` <button class="btn-del" title="Editar monto" style="color:var(--teal)" onclick="dxEditar('${d.id}')">✎</button>`,'text-align:right;font-weight:700;color:var(--green);white-space:nowrap')}${pgTd(pgEsc(d.nota),'color:var(--text3);font-size:12px')}${pgDel(`pgEliminar('diasExtra','${d.id}','este registro de días extra')`)}</tr>`).join(''),
     pgPie([{v:'Total'},{v:pgNum(r.dx.dias),r:1},{},{v:'+'+fmt(r.dx.monto),r:1,c:'var(--green)'},{}]));
 }
 function auMotivo(){ $('au_desc').checked = $('au_motivo').value!=='Permiso con goce de sueldo'; auPreview(); }
@@ -7634,7 +7656,7 @@ function pgComprobanteHTML(t, mes){
   const fila=(c,d,m,cls)=>`<tr><td>${c}</td><td class="d">${d||''}</td><td class="r ${cls||''}">${m}</td></tr>`;
   let pagos=fila('Sueldo líquido', r.liquidoEstimado?'Monto mensual (estimado)':'Monto mensual', fmt(r.liquido));
   if(r.hx.monto) pagos+=fila('Horas extra', `${pgNum(r.hx.horas)} h con recargo 50% · `+fechas(r.hx.items,h=>`${fmtFecha(h.fecha).slice(0,5)}: ${pgNum(h.horas)} h`), fmt(r.hx.monto));
-  if(r.dx.monto) pagos+=fila('Días extra', `${pgDias(r.dx.dias)} × ${fmt(r.dx.items[0].valorDia)} · `+fechas(r.dx.items,d=>`${fmtFecha(d.fecha).slice(0,5)}${d.nota?' '+e(d.nota):''}`), fmt(r.dx.monto));
+  if(r.dx.monto) pagos+=fila('Días extra', `${pgDias(r.dx.dias)} · `+fechas(r.dx.items,d=>`${fmtFecha(d.fecha).slice(0,5)}: ${pgNum(d.dias)} × ${fmt(d.valorDia)}${d.nota?' '+e(d.nota):''}`), fmt(r.dx.monto));
   r.bonos.items.forEach(b=>{ pagos+=fila('Bono', e(b.concepto), fmt(b.monto)); });
   let desc='';
   if(r.au.monto) desc+=fila('Ausencias', `${pgDias(r.au.dias)} × ${fmt(r.au.items[0].valorDia)} · `+fechas(r.au.items,a=>`${fmtFecha(a.fecha).slice(0,5)} ${e(a.motivo)}`), '−'+fmt(r.au.monto),'neg');
@@ -7684,19 +7706,33 @@ tr.sub td{font-weight:700;background:#fbfcff}
 .firmas div{text-align:center;font-size:12px;font-weight:600}.firmas i{display:block;border-top:1px solid #1c1c30;margin-bottom:6px}.firmas small{display:block;font-weight:400;color:#6e7189;font-size:11px}
 footer{padding:14px 28px 20px;font-size:10.5px;color:#6e7189;text-align:center}
 @media print{body{background:#fff}.cp{margin:0;box-shadow:none;border-radius:0;max-width:none}}`;
+// Abre un documento en una ventana nueva y lanza la impresión (Guardar como PDF).
+// Si el navegador bloquea la ventana, descarga el documento como archivo .html.
+function pgAbrirDoc(titulo, body, css, win){
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${pgEsc(titulo)}</title>`
+    + `<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${css}</style></head><body>${body}`
+    + '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},500);}</scr'+'ipt></body></html>';
+  win = win || window.open('','_blank');
+  if(win){ win.document.open(); win.document.write(html); win.document.close(); return true; }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+  a.download=titulo.replace(/[^\wáéíóúñÁÉÍÓÚÑ -]+/g,'').replace(/\s+/g,'_')+'.html';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1000);
+  showToast('El navegador bloqueó la ventana: se descargó el documento para abrir e imprimir');
+  return false;
+}
 function pgAbrirComprobantes(lista, mes){
-  const win=window.open('','_blank');
-  if(!win){ showToast('Permite las ventanas emergentes para exportar el comprobante',true); return; }
   const titulo = lista.length===1 ? `Comprobante de pago ${pgMesLabel(mes)} - ${lista[0].nombres||''} ${lista[0].apellidos||''}` : `Comprobantes de pago ${pgMesLabel(mes)}`;
-  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${pgEsc(titulo)}</title>`
-    + `<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${PG_CP_CSS}</style></head><body>`
-    + lista.map(t=>pgComprobanteHTML(t,mes)).join('')
-    + '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},500);}</scr'+'ipt></body></html>');
-  win.document.close();
+  pgAbrirDoc(titulo, lista.map(t=>pgComprobanteHTML(t,mes)).join(''), PG_CP_CSS);
 }
 function pgExportarComprobante(){
   const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
   pgAbrirComprobantes([t], pgMes());
+}
+function rrhhComprobanteDe(id){
+  const t=rrhhState.trabajadores.find(x=>x._id===id); if(!t) return;
+  pgAbrirComprobantes([t], rrhhMesPago());
 }
 function rrhhComprobantesMes(){
   const lista=rrhhState.trabajadores.filter(t=>t.estado!=='inactivo')
@@ -7843,14 +7879,14 @@ async function solicitarVacaciones() {
     estado:'aprobada', fecha_solicitud:new Date().toISOString().slice(0,10),
     folio:'SOL-'+Date.now().toString().slice(-6)
   };
+  const win=window.open('','_blank');
   t.vacaciones.push(solicitud);
-  await saveRRHH(t);
+  try{ await saveRRHH(t); }catch(e){ if(win) win.close(); return; }
   closeOv('vaccOverlay');
   showToast('Vacaciones registradas ✓');
   calcularVaccInfo();
   renderHistorialFicha();
-  // Auto-generate certificate
-  setTimeout(()=>generarCertificado(t, solicitud), 300);
+  generarCertificado(t, solicitud, win);
 }
 
 function renderHistorialFicha() {
@@ -7862,30 +7898,30 @@ function renderHistorialFicha() {
     box.innerHTML='<div style="color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:12px 0">Sin solicitudes de vacaciones registradas.</div>';
     return;
   }
-  box.innerHTML=`<table class="tbl" style="margin-top:0">
+  box.innerHTML=`<div class="tbl-scroll"><table class="tbl" style="margin-top:0">
     <thead><tr>
       <th>Folio</th><th>Solicitud</th><th>Desde</th><th>Hasta</th>
-      <th style="text-align:right">Días háb.</th><th>Estado</th><th style="text-align:center">Acciones</th>
+      <th style="text-align:right">Días</th><th>Estado</th><th></th>
     </tr></thead><tbody>
     ${[...vaccs].reverse().map((v,ri)=>{
       const i=vaccs.length-1-ri;
       return `<tr>
-        <td style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">${v.folio||'—'}</td>
-        <td style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${fmtFecha(v.fecha_solicitud)}</td>
-        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.inicio)}</td>
-        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.fin)}</td>
+        <td style="font-size:12px;color:var(--teal);white-space:nowrap;font-weight:600">${v.folio||'—'}</td>
+        <td style="font-size:12px;color:var(--text3);white-space:nowrap">${fmtFecha(v.fecha_solicitud)}</td>
+        <td style="font-size:12px;white-space:nowrap">${fmtFecha(v.inicio)}</td>
+        <td style="font-size:12px;white-space:nowrap">${fmtFecha(v.fin)}</td>
         <td style="text-align:right;font-family:var(--font-mono);color:var(--blue);font-weight:700">${v.dias_habiles}</td>
-        <td><span class="cbadge" style="background:rgba(23,134,79,0.12);color:var(--green);border:1px solid rgba(23,134,79,0.3)">✓ Aprobada</span></td>
-        <td style="text-align:center;display:flex;gap:6px;justify-content:center">
-          <button onclick="generarCertificado(rrhhState.trabajadores.find(x=>x._id==='${id}'),${JSON.stringify(v).replace(/'/g,'&apos;')})"
-            style="background:var(--teal);color:#fff;border:none;font-family:var(--font-mono);font-size:9px;padding:4px 10px;border-radius:2px;cursor:pointer;letter-spacing:1px;white-space:nowrap">
-            ⬇ CERTIFICADO
+        <td><span class="cbadge" style="background:rgba(23,134,79,0.12);color:var(--green);border:1px solid rgba(23,134,79,0.3);white-space:nowrap">✓ Aprobada</span></td>
+        <td style="text-align:center;white-space:nowrap">
+          <button onclick="vaccCertificado('${id}',${i})"
+            style="background:var(--teal);color:#fff;border:none;font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;white-space:nowrap">
+            ⬇ Certificado
           </button>
           <button class="btn-del" onclick="eliminarVaccFicha('${id}',${i})">✕</button>
         </td>
       </tr>`;
     }).join('')}
-  </tbody></table>`;
+  </tbody></table></div>`;
 }
 
 async function eliminarVaccFicha(tid, idx) {
@@ -7897,197 +7933,73 @@ async function eliminarVaccFicha(tid, idx) {
   calcularVaccInfo(); renderHistorialFicha();
 }
 
-// ── GENERADOR DE CERTIFICADO ──
-function generarCertificado(t, v) {
-  if(!t||!v){showToast('Error al generar certificado',true);return;}
-  const hoy=new Date();
-  const fmtLong=(iso)=>{
-    if(!iso) return '—';
-    const [y,m,d]=iso.split('-');
-    const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
-  };
-  const info=calcVaccLegal(t.ingreso);
-  // Calcular saldo: días tomados ANTES de esta solicitud, saldo restante DESPUÉS
-  const tomadasAntesDeEsta = (t.vacaciones||[])
-    .filter(x=>x.estado!=='rechazada' && x.id!==v.id)
-    .reduce((a,x)=>a+(x.dias_habiles||0),0);
-  const saldoAntes   = Math.max(0, info.diasAcumulados - tomadasAntesDeEsta);
-  const saldoRestante= Math.max(0, saldoAntes - (v.dias_habiles||0));
-  const html=`<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Certificado de Vacaciones · ${t.nombres} ${t.apellidos}</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap');
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'DM Sans',Arial,sans-serif;background:#fff;color:#1a1a2e;padding:0}
-  .page{width:210mm;min-height:297mm;margin:0 auto;padding:12mm 18mm;background:#fff;position:relative}
-  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5mm;padding-bottom:4mm;border-bottom:3px solid #00d4aa}
-  .logo-area h1{font-size:28px;font-weight:800;letter-spacing:3px;color:#07080f;margin-bottom:2px}
-  .logo-area h1 span{color:#00d4aa}
-  .logo-area p{font-size:11px;color:#606888;letter-spacing:1px}
-  .folio-area{text-align:right}
-  .folio-area .folio{font-family:monospace;font-size:13px;font-weight:700;color:#00d4aa;background:#07080f;padding:6px 14px;border-radius:3px;letter-spacing:2px}
-  .folio-area .fecha-emit{font-size:10px;color:#606888;margin-top:5px}
-  .doc-title{text-align:center;margin:4mm 0;padding:3mm 0;border-top:1px solid #e0e4f0;border-bottom:1px solid #e0e4f0}
-  .doc-title h2{font-size:22px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#07080f}
-  .doc-title p{font-size:11px;color:#606888;letter-spacing:1px;margin-top:4px}
-  .section{margin-bottom:4mm}
-  .section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#606888;border-bottom:1px solid #e8eaf6;padding-bottom:3px;margin-bottom:4mm}
-  .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm 8mm}
-  .data-item label{font-size:9px;color:#606888;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:2px}
-  .data-item span{font-size:13px;color:#1a1a2e;font-weight:500}
-  .highlight-box{background:#f0fdf9;border:2px solid #00d4aa;border-radius:4px;padding:4mm;margin:4mm 0;display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;text-align:center}
-  .highlight-item .num{font-size:22px;font-weight:700;color:#00d4aa;font-family:monospace;line-height:1}
-  .highlight-item .lbl{font-size:9px;color:#606888;letter-spacing:1px;text-transform:uppercase;margin-top:3px}
-  .legal-box{background:#fafbff;border:1px solid #e0e4f0;border-left:3px solid #4a9eff;border-radius:2px;padding:4mm;margin-bottom:4mm}
-  .legal-box p{font-size:10px;color:#606888;line-height:1.6}
-  .firma-area{margin-top:8mm;display:grid;grid-template-columns:1fr 1fr;gap:12mm}
-  .firma-box{text-align:center}
-  .firma-electronica{background:linear-gradient(135deg,#f0fdf9,#e8f5ff);border:1.5px solid #00d4aa;border-radius:6px;padding:5mm;margin-bottom:3mm;position:relative;overflow:hidden}
-  .firma-electronica::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00d4aa,#4a9eff)}
-  .firma-sello{display:flex;align-items:center;gap:3mm;margin-bottom:3mm}
-  .firma-sello-icon{width:28px;height:28px;background:#07080f;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .firma-sello-icon svg{width:16px;height:16px}
-  .firma-sello-text{font-size:8px;color:#059669;font-weight:700;letter-spacing:1px;text-transform:uppercase}
-  .firma-hash{font-family:monospace;font-size:7px;color:#a0a8c8;letter-spacing:0.5px;word-break:break-all;background:#fff;padding:2px 4px;border-radius:2px;border:1px solid #e0e4f0}
-  .firma-nombre{font-size:11px;font-weight:700;color:#07080f;letter-spacing:0.5px;margin-bottom:2px}
-  .firma-rut{font-size:9px;color:#606888;font-family:monospace}
-  .firma-line{border-top:1.5px solid #1a1a2e;padding-top:4px;margin-bottom:3px}
-  .firma-label{font-size:10px;color:#606888;font-weight:600;letter-spacing:1px;text-transform:uppercase}
-  .firma-sub{font-size:9px;color:#a0a8c8}
-  .footer{position:absolute;bottom:8mm;left:22mm;right:22mm;border-top:1px solid #e8eaf6;padding-top:4px;display:flex;justify-content:space-between}
-  .footer span{font-size:8px;color:#a0a8c8;letter-spacing:1px}
-  @media print{
-    body{background:#fff}
-    .page{padding:10mm 15mm;margin:0;width:100%;min-height:auto}
-    .no-print{display:none}
-  }
-</style>
-</head>
-<body>
-<div class="page">
-  <div class="header">
-    <div class="logo-area">
-      <h1>G<span>BISNESS</span></h1>
-      <p>CYBERNETIC SPA · GESTIÓN RRHH</p>
-    </div>
-    <div class="folio-area">
-      <div class="folio">${v.folio||'SOL-000000'}</div>
-      <div class="fecha-emit">Emitido: ${fmtLong(hoy.toISOString().slice(0,10))}</div>
-    </div>
-  </div>
-
-  <div class="doc-title">
-    <h2>Certificado de Vacaciones</h2>
-    <p>DOCUMENTO OFICIAL · CÓDIGO DEL TRABAJO DE CHILE · ART. 67</p>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Datos del Trabajador</div>
-    <div class="data-grid">
-      <div class="data-item"><label>Nombre completo</label><span>${t.nombres} ${t.apellidos}</span></div>
-      <div class="data-item"><label>RUT</label><span>${t.rut||'—'}</span></div>
-      <div class="data-item"><label>Cargo / Función</label><span>${t.cargo||'—'}</span></div>
-      <div class="data-item"><label>Empresa</label><span>${t.empresa||'—'}</span></div>
-      <div class="data-item"><label>Área / Departamento</label><span>${t.area||'—'}</span></div>
-      <div class="data-item"><label>Tipo de contrato</label><span>${t.tipo_contrato||'—'}</span></div>
-      <div class="data-item"><label>Fecha de ingreso</label><span>${fmtLong(t.ingreso)}</span></div>
-      <div class="data-item"><label>Antigüedad</label><span>${info.anos} año${info.anos!==1?'s':''} ${info.meses%12} mes${info.meses%12!==1?'es':''}</span></div>
-    </div>
-  </div>
-
-  <div class="highlight-box">
-    <div class="highlight-item"><div class="num">${v.dias_habiles}</div><div class="lbl">Días hábiles</div></div>
-    <div class="highlight-item"><div class="num" style="color:#1a1a2e;font-size:15px;padding-top:6px">${fmtLong(v.inicio)}</div><div class="lbl">Fecha inicio</div></div>
-    <div class="highlight-item"><div class="num" style="color:#1a1a2e;font-size:15px;padding-top:6px">${fmtLong(v.fin)}</div><div class="lbl">Fecha término</div></div>
-    <div class="highlight-item"><div class="num" style="color:#1a1a2e;font-size:15px;padding-top:6px">${fmtLong(v.fecha_solicitud)}</div><div class="lbl">Fecha solicitud</div></div>
-  </div>
-
-  <div class="legal-box">
-    <p>De conformidad con lo establecido en el <strong>Artículo 67 del Código del Trabajo de Chile</strong>, el trabajador individualizado precedentemente ha acumulado y tiene derecho a gozar de vacaciones legales anuales, con goce de remuneración. El presente documento certifica el período de vacaciones autorizado por la empresa, comprendido entre las fechas indicadas, excluyendo días sábado, domingo y feriados legales conforme al calendario oficial del año en curso.</p>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Resumen de Saldo</div>
-    <div style="background:#f0fdf9;border:1px solid #d1fae5;border-radius:4px;padding:3mm 5mm;display:flex;align-items:center;gap:5mm;margin-bottom:2mm">
-      <div style="display:flex;align-items:center;gap:4mm;flex:1">
-        <div style="text-align:center">
-          <div style="font-size:8px;color:#606888;letter-spacing:1px;text-transform:uppercase;margin-bottom:1px">Saldo actual</div>
-          <div style="font-size:20px;font-weight:700;color:#059669;font-family:monospace;line-height:1">${saldoAntes}</div>
-          <div style="font-size:8px;color:#606888">días hábiles</div>
-        </div>
-        <div style="font-size:18px;color:#d1d5db;font-weight:300">−</div>
-        <div style="text-align:center">
-          <div style="font-size:8px;color:#606888;letter-spacing:1px;text-transform:uppercase;margin-bottom:1px">Solicitados</div>
-          <div style="font-size:20px;font-weight:700;color:#dc2626;font-family:monospace;line-height:1">${v.dias_habiles||0}</div>
-          <div style="font-size:8px;color:#606888">días hábiles</div>
-        </div>
-        <div style="font-size:18px;color:#d1d5db;font-weight:300">=</div>
-        <div style="text-align:center">
-          <div style="font-size:8px;color:#606888;letter-spacing:1px;text-transform:uppercase;margin-bottom:1px">Saldo restante</div>
-          <div style="font-size:20px;font-weight:700;color:${saldoRestante>0?'#059669':'#dc2626'};font-family:monospace;line-height:1">${saldoRestante}</div>
-          <div style="font-size:8px;color:#606888">días hábiles</div>
-        </div>
-      </div>
-      <div style="border-left:1px solid #d1fae5;padding-left:5mm;font-size:9px;color:#606888;line-height:1.9">
-        <div><strong style="color:#1a1a2e">${info.diasAcumulados}</strong> días acumulados</div>
-        <div>Base: 15 días/año · ${info.diasPorMes} días/mes</div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="firma-area">
-    <div class="firma-box">
-      <div class="firma-line"></div>
-      <div class="firma-label">${t.nombres} ${t.apellidos}</div>
-      <div class="firma-sub">RUT: ${t.rut||'—'} · Trabajador</div>
-    </div>
-    <div class="firma-box">
-      <div class="firma-electronica">
-        <div class="firma-sello">
-          <div class="firma-sello-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2" stroke-linecap="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <polyline points="9 12 11 14 15 10"/>
-            </svg>
-          </div>
-          <div>
-            <div class="firma-sello-text">✓ Firmado electrónicamente</div>
-            <div style="font-size:7px;color:#606888;margin-top:1px">${hoy.toLocaleString('es-CL')}</div>
-          </div>
-        </div>
-        <div class="firma-nombre">Richard Daniel Urbina</div>
-        <div class="firma-rut">RUT: 26.338.779-1</div>
-        <div style="margin-top:3mm">
-          <div class="firma-hash">${'sha256:'+btoa((v.folio||'')+'26338779'+hoy.toISOString().slice(0,10)).replace(/=/g,'').slice(0,40)}</div>
-        </div>
-      </div>
-      <div class="firma-sub" style="margin-top:3px">Representante Legal · ${t.empresa||'Cybernetic SpA'}</div>
-    </div>
-  </div>
-
-  <div class="footer">
-    <span>GBISNESS · GESTIÓN RRHH · ${t.empresa||''}</span>
-    <span>FOLIO: ${v.folio||'—'} · DOC. GENERADO AUTOMÁTICAMENTE</span>
-  </div>
-</div>
-${'<scr'+'ipt>window.print();</scr'+'ipt>'}
-</body></html>`;
-
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`Certificado_Vacaciones_${(t.nombres+'_'+t.apellidos).replace(/\s+/g,'_')}_${v.folio||v.id}.html`;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000);
-  showToast('Certificado descargado ✓');
+// ── CERTIFICADO DE VACACIONES (mismo estilo que el comprobante de pago) ──
+function vaccCertificado(tid, idx){
+  const t=rrhhState.trabajadores.find(x=>x._id===tid);
+  generarCertificado(t, t && (t.vacaciones||[])[idx]);
 }
+function generarCertificado(t, v, win) {
+  if(!t||!v){ showToast('No se encontró la solicitud de vacaciones',true); if(win) win.close(); return; }
+  const e=pgEsc, hoy=new Date(), hoyIso=pgHoy();
+  const fmtLong=iso=>{ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${parseInt(d)} de ${MESES[parseInt(m)-1].toLowerCase()} de ${y}`; };
+  const info=calcVaccLegal(t.ingreso);
+  const tomadasAntes=(t.vacaciones||[]).filter(x=>x.estado!=='rechazada' && x.id!==v.id).reduce((a,x)=>a+(x.dias_habiles||0),0);
+  const saldoAntes=Math.max(0, info.diasAcumulados-tomadasAntes);
+  const saldoRestante=Math.max(0, saldoAntes-(v.dias_habiles||0));
+  const dato=(l,val)=>`<div><span>${l}</span><b>${e(val||'—')}</b></div>`;
+  const hash='sha256:'+btoa((v.folio||'')+'26338779'+hoyIso).replace(/=/g,'').slice(0,40);
+  const body=`<section class="cp">
+    <header><div><div class="emp">${e(t.empresa||'')}</div><h1>Certificado de vacaciones</h1></div>
+      <div class="per"><span>Folio</span><b>${e(v.folio||'—')}</b><small>Emitido el ${fmtLong(hoyIso)}</small></div></header>
+    <div class="trab">
+      ${dato('Trabajador',`${t.nombres||''} ${t.apellidos||''}`)}${dato('RUT',t.rut)}${dato('Cargo',t.cargo)}
+      ${dato('Empresa',t.empresa)}${dato('Área',t.area)}${dato('Contrato',t.tipo_contrato)}
+      ${dato('Fecha de ingreso',fmtLong(t.ingreso))}${dato('Antigüedad',`${info.anos} año${info.anos!==1?'s':''} ${info.meses%12} mes${info.meses%12!==1?'es':''}`)}${dato('Fecha de solicitud',fmtLong(v.fecha_solicitud))}
+    </div>
+    <div class="vk">
+      <div class="vk-main"><span>Días hábiles</span><b>${v.dias_habiles||0}</b></div>
+      <div><span>Desde</span><b>${fmtLong(v.inicio)}</b></div>
+      <div><span>Hasta</span><b>${fmtLong(v.fin)}</b></div>
+    </div>
+    <div class="legal">De conformidad con el <b>artículo 67 del Código del Trabajo</b>, el trabajador individualizado tiene derecho a un feriado anual con goce de remuneración. Este documento certifica el período de vacaciones autorizado por la empresa entre las fechas indicadas, excluyendo sábados, domingos y feriados legales.</div>
+    <div class="h2">Resumen de saldo</div>
+    <div class="saldo">
+      <div><span>Saldo actual</span><b class="ok">${saldoAntes}</b><small>días hábiles</small></div><i>−</i>
+      <div><span>Solicitados</span><b class="neg">${v.dias_habiles||0}</b><small>días hábiles</small></div><i>=</i>
+      <div><span>Saldo restante</span><b class="${saldoRestante>0?'ok':'neg'}">${saldoRestante}</b><small>días hábiles</small></div>
+      <div class="acum"><b>${info.diasAcumulados}</b> días acumulados<br>Base: 15 días/año · ${info.diasPorMes} días/mes</div>
+    </div>
+    <div class="firmas2">
+      <div class="f-trab"><i></i><b>${e((t.nombres||'')+' '+(t.apellidos||''))}</b><small>RUT ${e(t.rut||'—')} · Trabajador</small></div>
+      <div class="f-elec">
+        <div class="sello"><span>✓</span><div><b>Firmado electrónicamente</b><small>${hoy.toLocaleString('es-CL')}</small></div></div>
+        <div class="fn">Richard Daniel Urbina</div><div class="fr">RUT 26.338.779-1 · Representante legal · ${e(t.empresa||'Cybernetic SpA')}</div>
+        <code>${hash}</code>
+      </div>
+    </div>
+    <footer>${e(t.empresa||'')} · Gestión RRHH · Folio ${e(v.folio||'—')} · Documento generado automáticamente</footer>
+  </section>`;
+  const ok=pgAbrirDoc(`Certificado de vacaciones ${v.folio||''} - ${t.nombres||''} ${t.apellidos||''}`, body, PG_CP_CSS+PG_CERT_CSS, win);
+  if(ok) showToast('Certificado listo · usa "Guardar como PDF" en la ventana de impresión');
+}
+const PG_CERT_CSS=`
+.vk{display:grid;grid-template-columns:1fr 1.4fr 1.4fr;gap:10px;margin:18px 28px 0}
+.vk>div{background:#f6f8ff;border:1px solid #e3e6ef;border-radius:12px;padding:12px 16px}
+.vk span{display:block;font-size:10.5px;color:#6e7189}.vk b{font-size:15px;font-weight:700}
+.vk .vk-main{background:#2d2aea;border-color:#2d2aea;color:#fff}.vk .vk-main span{color:rgba(255,255,255,.8)}.vk .vk-main b{font-size:28px;line-height:1.1}
+.legal{margin:14px 28px 0;font-size:11.5px;line-height:1.65;color:#3a3a55;background:#fbfcff;border:1px solid #e3e6ef;border-left:3px solid #2d2aea;border-radius:8px;padding:12px 14px}
+.h2{margin:18px 28px 8px;font-size:12px;font-weight:700;color:#2d2aea}
+.saldo{margin:0 28px;display:flex;align-items:center;gap:14px;background:#f6f8ff;border:1px solid #e3e6ef;border-radius:12px;padding:12px 18px}
+.saldo>div{text-align:center}.saldo span{display:block;font-size:10.5px;color:#6e7189}.saldo b{display:block;font-size:24px;font-weight:700;line-height:1.15}.saldo small{font-size:10px;color:#6e7189}
+.saldo i{font-style:normal;font-size:18px;color:#b8bfd6}.saldo .ok{color:#17864f}.saldo .neg{color:#d13a3a}
+.saldo .acum{margin-left:auto;text-align:left;border-left:1px solid #e3e6ef;padding-left:16px;font-size:11px;color:#6e7189;line-height:1.7}.saldo .acum b{display:inline;font-size:12px;color:#1c1c30}
+.firmas2{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:40px 28px 6px;align-items:end}
+.f-trab{text-align:center}.f-trab i{display:block;border-top:1px solid #1c1c30;margin-bottom:6px}.f-trab b{display:block;font-size:12px}.f-trab small{font-size:11px;color:#6e7189}
+.f-elec{border:1px solid #dce6ff;background:#f5f7ff;border-radius:12px;padding:12px 14px}
+.sello{display:flex;gap:10px;align-items:center;margin-bottom:8px}.sello>span{width:28px;height:28px;border-radius:50%;background:#2d2aea;color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;flex-shrink:0}
+.sello b{display:block;font-size:11px;color:#17864f}.sello small{font-size:10px;color:#6e7189}
+.fn{font-size:12.5px;font-weight:700}.fr{font-size:10.5px;color:#6e7189;margin-bottom:6px}
+.f-elec code{display:block;font-size:8.5px;color:#9aa0b8;background:#fff;border:1px solid #e3e6ef;border-radius:6px;padding:3px 6px;word-break:break-all}`;
 
 function renderRRHHVacaciones() {
   const list=rrhhState.trabajadores.filter(t=>t.estado==='activo');
@@ -8130,8 +8042,8 @@ function renderRRHHVacaciones() {
     hg.innerHTML=`<table class="tbl"><thead><tr><th>Trabajador</th><th>Desde</th><th>Hasta</th><th style="text-align:right">Días hábiles</th><th>Estado</th></tr></thead><tbody>
       ${all.map(v=>`<tr>
         <td style="color:var(--text)">${v.nombre}</td>
-        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.inicio)}</td>
-        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.fin)}</td>
+        <td style="font-size:12px;white-space:nowrap">${fmtFecha(v.inicio)}</td>
+        <td style="font-size:12px;white-space:nowrap">${fmtFecha(v.fin)}</td>
         <td style="text-align:right;font-family:var(--font-mono);color:var(--blue)">${v.dias_habiles}</td>
         <td><span class="cbadge" style="background:rgba(23,134,79,0.12);color:var(--green)">Aprobada</span></td>
       </tr>`).join('')}
@@ -8149,7 +8061,7 @@ function openNuevoTrabajador() {
   $('t_nacionalidad').value='Chilena';
   $('t_sueldo').value='';
   if($('t_liquido')) $('t_liquido').value='';
-  $('t_jornada').value='45';
+  $('t_jornada').value='42';
   populateOrgSelects(null);
   fichaTab($('ft-tab-personal'),'personal');
   $('rrhhOverlay').classList.add('open');
@@ -8170,7 +8082,8 @@ function openFichaTrabajador(id) {
   set('t_tipo_contrato',t.tipo_contrato);set('t_ingreso',t.ingreso);set('t_termino',t.termino);
   set('t_obs',t.obs);
   $('t_estado').value=t.estado||'activo';
-  $('t_jornada').value=t.jornada||'45';
+  $('t_jornada').value=String(hxJornada(t));
+  if(!$('t_jornada').value) $('t_jornada').value='otro';
   if(t.sueldo){ $('t_sueldo').value=clpFormat(t.sueldo); }else{ $('t_sueldo').value=''; }
   if($('t_liquido')) $('t_liquido').value = t.liquido ? clpFormat(t.liquido) : '';
   populateOrgSelects(t);
@@ -8209,7 +8122,7 @@ async function saveTrabajador() {
     jefe_id:($('t_jefe_id')||{value:''}).value||null,
     tipo_contrato:($('t_tipo_contrato')||{value:''}).value,
     ingreso, termino:($('t_termino')||{value:''}).value,
-    sueldo, liquido:clpVal('t_liquido')||0, jornada:($('t_jornada')||{value:'45'}).value,
+    sueldo, liquido:clpVal('t_liquido')||0, jornada:($('t_jornada')||{value:'42'}).value,
     estado:($('t_estado')||{value:'activo'}).value,
     obs:($('t_obs')||{value:''}).value.trim(),
     vacaciones: existing.vacaciones||[]
@@ -8364,6 +8277,7 @@ function renderTrabajadoresSA() {
       <td><span class="cbadge" style="background:${estadoColor[t.estado]||'var(--text3)'}22;color:${estadoColor[t.estado]||'var(--text3)'};border:1px solid ${estadoColor[t.estado]||'var(--text3)'}44">${estadoLabel[t.estado]||t.estado||'—'}</span></td>
       <td style="text-align:right;font-family:var(--font-mono);color:${col};font-weight:700">${pendientes}</td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
+        <button class="btn-del" onclick="rrhhComprobanteDe('${t._id}')" title="Descargar comprobante de pago del mes" style="color:var(--teal)">🧾</button>
         <button class="btn-del" onclick="openFichaTrabajador('${t._id}')" style="color:var(--teal)">✎</button>
         <button class="btn-del" onclick="confirmDelTrabajador('${t._id}')">✕</button>
       </td>
@@ -8410,8 +8324,8 @@ function renderRRHHVacacionesSA() {
     hg.innerHTML=`<table class="tbl"><thead><tr><th>Trabajador</th><th>Desde</th><th>Hasta</th><th style="text-align:right">Días hábiles</th><th>Estado</th></tr></thead><tbody>
       ${all.map(v=>`<tr>
         <td style="color:var(--text)">${v.nombre}</td>
-        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.inicio)}</td>
-        <td style="font-family:var(--font-mono);font-size:11px">${fmtFecha(v.fin)}</td>
+        <td style="font-size:12px;white-space:nowrap">${fmtFecha(v.inicio)}</td>
+        <td style="font-size:12px;white-space:nowrap">${fmtFecha(v.fin)}</td>
         <td style="text-align:right;font-family:var(--font-mono);color:var(--blue)">${v.dias_habiles}</td>
         <td><span class="cbadge" style="background:rgba(23,134,79,0.12);color:var(--green)">Aprobada</span></td>
       </tr>`).join('')}
