@@ -1835,6 +1835,8 @@ input.fi-money{padding-left:58px!important;width:100%}
     <div class="topbar-logo">📆 GBISNESS · CIERRE ANUAL</div>
     <select id="yearSel" class="month-select" onchange="onAnnualYearChange()"></select>
     <button class="btn-primary" onclick="openNewYear()">+ Nuevo Año</button>
+    <button class="btn-secondary" onclick="annualDownloadTemplate()" title="Descarga un Excel con todas las empresas y meses del año seleccionado">⬇ Plantilla Excel</button>
+    <button class="btn-secondary" onclick="document.getElementById('annualUploadInput').click()" title="Importa la planilla completada">⬆ Importar Excel</button>
     <button class="btn-logout" onclick="doLogout()">SALIR</button>
   </div>
   <div id="tickerBanner3">
@@ -1888,7 +1890,7 @@ input.fi-money{padding-left:58px!important;width:100%}
         </div>
         <div id="annualMonthTabs" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
-          <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">// Puedes cargar todos los meses desde Excel. Solo se llenan columnas editables; IVA, PPM, remanente, total impuesto y ganancia se calculan automáticamente.</div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">Descarga la plantilla (trae todas las empresas y los 12 meses con los datos actuales), complétala y vuelve a importarla. Solo se cargan las columnas editables; IVA, PPM, remanente, total impuesto y ganancia se calculan solos.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn-secondary" onclick="annualDownloadTemplate()">⬇ Descargar plantilla</button>
             <button class="btn-secondary" onclick="$('annualUploadInput').click()">⬆ Subir planilla</button>
@@ -6880,6 +6882,7 @@ function renderRRHHKpis() {
     <div class="kpi-card camber"><div class="kpi-label">Días Vacc. Pendientes</div><div class="kpi-val" style="color:var(--amber)">${totalDiasPend}</div><div class="kpi-sub">Días hábiles acumulados sin tomar</div></div>
   `;
   kpi.insertAdjacentHTML('beforeend', rrhhKpiRemuneraciones());
+  kpi.insertAdjacentHTML('beforeend', rrhhKpiHorasExtra());
 }
 
 function renderTrabajadores() {
@@ -7032,6 +7035,13 @@ function rrhhRefrescarListas(){
 
 // ── Totales de remuneraciones (RRHH) ──
 function rrhhLiquidoDe(t){ return Number(t.liquido)>0 ? Number(t.liquido) : rrhhEstimarLiquido(t); }
+function rrhhKpiHorasExtra(){
+  const mes=hxMesActual(), [y,m]=mes.split('-');
+  const vig = rrhhState.trabajadores.filter(t=>t.estado!=='inactivo');
+  let horas=0, monto=0, personas=0;
+  vig.forEach(t=>{ const r=hxTotalMes(t,mes); if(r.monto>0){ personas++; horas+=r.horas; monto+=r.monto; } });
+  return `<div class="kpi-card camber"><div class="kpi-label">Horas extras del mes</div><div class="kpi-val" style="color:var(--amber)">${fmt(monto)}</div><div class="kpi-sub">${horas} h · ${personas} trabajador${personas!==1?'es':''} · ${MESES[+m-1]} ${y}</div></div>`;
+}
 function rrhhKpiRemuneraciones(){
   const vig = rrhhState.trabajadores.filter(t=>t.estado!=='inactivo');
   const base = vig.reduce((s,t)=>s+(Number(t.sueldo)||0),0);
@@ -7684,6 +7694,7 @@ function renderRRHHKpisSA() {
     <div class="kpi-card camber"><div class="kpi-label">Días Vacc. Pendientes</div><div class="kpi-val" style="color:var(--amber)">${totalDiasPend}</div><div class="kpi-sub">Días hábiles acumulados sin tomar</div></div>
   `;
   kpi.insertAdjacentHTML('beforeend', rrhhKpiRemuneraciones());
+  kpi.insertAdjacentHTML('beforeend', rrhhKpiHorasExtra());
 }
 
 function renderTrabajadoresSA() {
@@ -14603,7 +14614,10 @@ body{display:flex;flex-direction:column;min-height:100vh}
 body > *{flex-shrink:0}
 #footer-ai{order:99;margin-top:auto}
 #anl-listWrap{display:none}
-#rrhh-kpis,#rrhh-sa-kpis{grid-template-columns:repeat(auto-fit,minmax(155px,1fr))!important}
+#annualKpiGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+@media(max-width:900px){#annualKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+#rrhh-kpis,#rrhh-sa-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+@media(max-width:1000px){#rrhh-kpis,#rrhh-sa-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 #app-proveedores .uso-pill.on{color:#fff!important}
 #rend-rpt-chart-wrap > div,#rendf-rpt-chart-wrap > div{border-radius:var(--ui-r-m)!important;box-shadow:var(--ui-shadow);padding:18px 20px!important}
 #app-calc *{font-family:'Poppins',sans-serif!important}
@@ -14784,5 +14798,104 @@ body > *{flex-shrink:0}
     })();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+
+<script>
+/* ══ CIERRE ANUAL · plantilla Excel multiempresa + importación con resumen ══ */
+(function(){
+  var CAMPOS=[
+    ['compras_factura','Compras · Factura afecta'],['compras_exenta','Compras · Factura exenta'],['compras_din','Compras · DIN'],
+    ['compras_nd','Compras · Nota de débito'],['compras_nc','Compras · Nota de crédito'],
+    ['ventas_factura','Ventas · Factura afecta'],['ventas_boleta','Ventas · Boleta'],['ventas_liquidacion','Ventas · Liquidación'],
+    ['ventas_nd','Ventas · Nota de débito'],['ventas_nc','Ventas · Nota de crédito'],
+    ['sueldos','Sueldos'],['pendiente_facturar','Pendiente por facturar']
+  ];
+  function norm(x){ return String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim(); }
+
+  window.annualDownloadTemplate=function(){
+    if(typeof XLSX==='undefined'){ showToast('No se pudo cargar la librería Excel',true); return; }
+    var year=String(annualState.year||new Date().getFullYear());
+    var yearObj=annualState.data[year]||mkAnnualYear(year);
+    var empresas=getAnnualCompanyNames();
+    if(!empresas.length){ showToast('Primero agrega una empresa en Configuración',true); return; }
+    var header=['Empresa','Año','Mes'].concat(CAMPOS.map(function(c){return c[1];}));
+    var rows=[header];
+    empresas.forEach(function(emp){
+      var cd=(yearObj.companies||{})[emp]||{months:{}};
+      ANNUAL_MONTH_KEYS.forEach(function(mk){
+        var m=annualMonthMerged((cd.months||{})[mk]||{});
+        rows.push([emp,Number(year),MESES[+mk-1]].concat(CAMPOS.map(function(c){ return Number(m[c[0]])||0; })));
+      });
+    });
+    var ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:16},{wch:7},{wch:12}].concat(CAMPOS.map(function(){return {wch:16};}));
+    ws['!autofilter']={ref:'A1:'+XLSX.utils.encode_col(header.length-1)+'1'};
+    ws['!freeze']={xSplit:3,ySplit:1};
+    var info=[['Columna','Qué ingresar'],['Empresa','Debe coincidir con una empresa de Cierre Anual → Configuración ('+empresas.join(', ')+')'],
+      ['Año','Ej: '+year+'. Puedes incluir filas de otros años; se guardan en su año'],['Mes','Enero…Diciembre o 1…12']]
+      .concat(CAMPOS.map(function(c){return [c[1],'Monto en pesos, sin IVA (solo números)'];}))
+      .concat([['—',''],['Se calculan solos','Total compras/ventas, crédito y débito fiscal, IVA, PPM, remanente, total impuesto y ganancia'],
+               ['Filas vacías','Una fila con todos los montos en 0 deja ese mes en 0']]);
+    var ws2=XLSX.utils.aoa_to_sheet(info); ws2['!cols']=[{wch:28},{wch:90}];
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Cierre '+year);
+    XLSX.utils.book_append_sheet(wb,ws2,'Instrucciones');
+    XLSX.writeFile(wb,'Cierre_Anual_'+year+'_plantilla.xlsx');
+    showToast('Plantilla '+year+' descargada');
+  };
+
+  window.annualUploadTemplate=async function(event){
+    var file=event&&event.target&&event.target.files&&event.target.files[0];
+    if(!file) return;
+    try{
+      if(typeof XLSX==='undefined') throw new Error('Librería Excel no disponible');
+      var wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+      var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+      if(!rows.length){ showToast('La planilla no tiene datos',true); return; }
+
+      // mapa de columnas: acepta nombres nuevos ("Compras · Factura afecta") y antiguos ("compras_factura")
+      var keys=Object.keys(rows[0]); var colOf={};
+      function findCol(cands){ for(var i=0;i<keys.length;i++){ var nk=norm(keys[i]); if(cands.indexOf(nk)!==-1) return keys[i]; } return null; }
+      colOf.empresa=findCol(['empresa']); colOf.anio=findCol(['ano','anio','year','a o']); colOf.mes=findCol(['mes','month']);
+      CAMPOS.forEach(function(c){ colOf[c[0]]=findCol([norm(c[1]),norm(c[0]),norm(c[0].replace(/_/g,' '))]); });
+      if(!colOf.mes){ showToast('La planilla no tiene la columna "Mes"',true); return; }
+
+      var empresas=getAnnualCompanyNames(), empMap={};
+      empresas.forEach(function(e){ empMap[norm(e)]=e; });
+      var cur=getSelectedAnnualCompany();
+      var tocados={}, ok=0, sinEmpresa={}, malMes=0;
+
+      rows.forEach(function(r){
+        var mk=annualMonthLabelToKey(r[colOf.mes]);
+        if(!mk){ if(String(r[colOf.mes]).trim()) malMes++; return; }
+        var empRaw=colOf.empresa?String(r[colOf.empresa]).trim():'';
+        var emp=empRaw ? empMap[norm(empRaw)] : cur;
+        if(!emp){ sinEmpresa[empRaw]=1; return; }
+        var y=String(colOf.anio?r[colOf.anio]:'').trim(); if(!/^\d{4}$/.test(y)) y=String(annualState.year||new Date().getFullYear());
+        if(!annualState.data[y]) annualState.data[y]=mkAnnualYear(y);
+        var cd=ensureAnnualCompanyYear(annualState.data[y],emp);
+        var upd={}; CAMPOS.forEach(function(c){ if(colOf[c[0]]) upd[c[0]]=annualParseMoney(r[colOf[c[0]]]); });
+        cd.months[mk]=annualMonthMerged(Object.assign({},cd.months[mk],upd));
+        tocados[y]=tocados[y]||{}; tocados[y][emp]=(tocados[y][emp]||0)+1; ok++;
+      });
+
+      var years=Object.keys(tocados);
+      for(var i=0;i<years.length;i++){ recalcAnnualYear(annualState.data[years[i]]); await saveAnnualYear(years[i]); }
+      if(years.length){
+        if(!tocados[annualState.year]) annualState.year=years.sort().reverse()[0];
+        buildYearSel(); if($('yearSel')) $('yearSel').value=annualState.year;
+        persistAnnualSelection(); renderAnnualApp();
+      }
+      var det=years.map(function(y){ return y+': '+Object.keys(tocados[y]).map(function(e){return e+' ('+tocados[y][e]+' meses)';}).join(', '); }).join('\n');
+      var faltan=Object.keys(sinEmpresa).filter(Boolean);
+      var msg=(ok?('Se cargaron '+ok+' fila(s):\n'+det):'No se cargó ninguna fila.')
+        +(faltan.length?('\n\nEmpresas no encontradas (agrégalas en Configuración y vuelve a importar): '+faltan.join(', ')):'')
+        +(malMes?('\n\n'+malMes+' fila(s) con mes no reconocido.'):'');
+      dlgAlert(ok?'Importación completada':'Importación sin datos', msg);
+    }catch(e){
+      console.error('Importación cierre anual',e); showToast('Error al leer la planilla: '+(e.message||e),true);
+    }finally{ if(event&&event.target) event.target.value=''; }
+  };
 })();
 </script>
