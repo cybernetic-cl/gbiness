@@ -1294,6 +1294,58 @@ body > *{flex-shrink:0}
 /* fuentes antiguas escritas a mano → Poppins */
 [style*="Bebas Neue"],[style*="Space Mono"],[style*="DM Sans"],[style*="DM Mono"],[style*="'Syne'"]{font-family:var(--font-body)!important}
 </style>
+<style id="automatik-pagos">
+/* ── RRHH · Pagos del mes ── */
+.rrhh-cp-bar{display:flex;gap:8px;align-items:center;margin-left:auto}
+.rrhh-cp-bar .fi{width:auto!important;padding:7px 10px!important;font-size:12.5px!important}
+#ft-pagos .pg-top{display:flex;gap:10px;align-items:flex-end;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
+#ft-pagos .pg-top .fw{margin:0}
+#ft-pagos .pg-top .fi{width:auto}
+.pg-res{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.pg-res .it{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 11px;min-width:0}
+.pg-res .it .l{font-size:11px;color:var(--text3);white-space:nowrap}
+.pg-res .it .v{font-weight:700;font-size:14px;margin-top:2px;white-space:nowrap}
+.pg-res .it.pos .v{color:var(--green)}
+.pg-res .it.neg .v{color:var(--red)}
+.pg-res .it.cero .v{color:var(--text3);font-weight:500}
+.pg-res .it.tot{background:var(--teal);border-color:var(--teal);grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:12px 16px}
+.pg-res .it.tot .l{font-size:13px;font-weight:500}
+.pg-res .it.tot .l{color:rgba(255,255,255,.8)}
+.pg-res .it.tot .v{color:#fff;font-size:20px;margin:0}
+.pg-subs{display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:999px;padding:4px;margin-bottom:14px;overflow-x:auto}
+.pg-sub{flex:1;white-space:nowrap;border:none;background:none;border-radius:999px;padding:7px 12px;font-family:var(--font-body);font-size:12.5px;font-weight:500;color:var(--text2);cursor:pointer;display:inline-flex;gap:6px;align-items:center;justify-content:center}
+.pg-sub:hover{color:var(--teal)}
+.pg-sub.active{background:#fff;color:var(--teal);font-weight:600;box-shadow:0 1px 4px rgba(28,28,48,.1)}
+.pg-n{background:var(--teal);color:#fff;border-radius:999px;font-size:10.5px;min-width:18px;height:18px;padding:0 5px;display:inline-grid;place-items:center;font-weight:600}
+.pg-note{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12.5px;color:var(--text2)}
+.pg-prev{background:#e9efff;border:1px solid #dce6ff;border-radius:10px;padding:12px 14px;margin:4px 0 12px;font-size:13px;color:var(--text)}
+.pg-g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pg-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.pg-add{width:100%;margin-bottom:18px}
+.pg-h{font-weight:600;font-size:13.5px;margin:2px 0 8px}
+.pg-vacio{color:var(--text3);font-size:12.5px;padding:10px 0}
+.pg-check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--text2);cursor:pointer;padding-bottom:10px}
+.pg-check input{width:16px;height:16px;accent-color:var(--teal)}
+.cr-card{border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:#fff}
+.cr-card.fin{background:var(--bg3)}
+.cr-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.cr-tit{font-weight:600;font-size:14px}
+.cr-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.cr-bar{height:8px;border-radius:99px;background:var(--bg3);overflow:hidden;margin:12px 0 6px}
+.cr-bar>i{display:block;height:100%;background:linear-gradient(90deg,#5b57ff,#2d2aea);border-radius:99px}
+.cr-card.fin .cr-bar>i{background:var(--green)}
+.cr-stats{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--text2)}
+.cr-stats b{color:var(--text)}
+.cr-tog{background:none;border:none;color:var(--teal);font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;padding:8px 0 0}
+.cr-sched{margin-top:8px}
+.pg-tag{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;white-space:nowrap}
+.pg-tag.ok{background:#d7f9e7;color:#17864f}
+.pg-tag.now{background:#e9efff;color:#2d2aea}
+.pg-tag.pend{background:#f0f2f7;color:#6e7189}
+.pg-tag.warn{background:#fff0dc;color:#c46a00}
+.pg-res .it .v{overflow:hidden;text-overflow:ellipsis}
+@media(max-width:640px){.pg-res{grid-template-columns:repeat(3,minmax(0,1fr))}.pg-g2,.pg-g3{grid-template-columns:1fr}.rrhh-cp-bar{margin-left:0;flex-wrap:wrap}}
+</style>
 </head>
 <body>
 
@@ -1426,7 +1478,7 @@ body > *{flex-shrink:0}
           </div>
           <div class="kpi-grid" id="rrhh-kpis" style="margin-bottom:18px"></div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">Nómina de trabajadores</div></div>
+            <div class="card-hdr"><div class="card-title">Nómina de trabajadores</div><div class="rrhh-cp-bar"><input type="month" class="fi rrhh-cp-mes" title="Mes de pago" onchange="rrhhSetMesPago(this.value)"><button class="btn-secondary" onclick="rrhhComprobantesMes()">🧾 Comprobantes del mes</button></div></div>
             <div class="card-body" style="padding:0">
               <table class="tbl">
                 <thead><tr>
@@ -2293,7 +2345,7 @@ body > *{flex-shrink:0}
         </div>
         <div class="kpi-grid" id="rrhh-sa-kpis" style="margin-bottom:18px"></div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">Nómina de trabajadores</div></div>
+          <div class="card-hdr"><div class="card-title">Nómina de trabajadores</div><div class="rrhh-cp-bar"><input type="month" class="fi rrhh-cp-mes" title="Mes de pago" onchange="rrhhSetMesPago(this.value)"><button class="btn-secondary" onclick="rrhhComprobantesMes()">🧾 Comprobantes del mes</button></div></div>
           <div class="card-body" style="padding:0">
             <table class="tbl">
               <thead><tr>
@@ -2687,7 +2739,7 @@ body > *{flex-shrink:0}
 
 <!-- MODAL TRABAJADOR -->
 <div class="overlay" id="rrhhOverlay">
-  <div class="modal" style="max-width:620px;max-height:92vh;overflow-y:auto">
+  <div class="modal" style="max-width:780px;max-height:92vh;overflow-y:auto">
     <button class="close-btn" onclick="closeOv('rrhhOverlay')">✕</button>
     <div class="modal-title" id="rrhh-modal-title">Nuevo Trabajador</div>
     <div class="modal-sub">Ficha de trabajador · campos requeridos marcados con *</div>
@@ -2698,7 +2750,7 @@ body > *{flex-shrink:0}
       <button class="ptab active" id="ft-tab-personal" onclick="fichaTab(this,'personal')">Personal</button>
       <button class="ptab" id="ft-tab-contrato" onclick="fichaTab(this,'contrato')">Contrato</button>
       <button class="ptab" id="ft-tab-vacaciones" onclick="fichaTab(this,'vacaciones')">Vacaciones</button>
-      <button class="ptab" id="ft-tab-hextra" onclick="fichaTab(this,'hextra')">⏱ Horas extra</button>
+      <button class="ptab" id="ft-tab-pagos" onclick="fichaTab(this,'pagos')">💵 Pagos del mes</button>
       <button class="ptab" id="ft-tab-org" onclick="fichaTab(this,'org')">🏢 Org.</button>
     </div>
 
@@ -2847,26 +2899,107 @@ body > *{flex-shrink:0}
     </div>
 
     <!-- PANEL ORG -->
-    <!-- PANEL HORAS EXTRA -->
-    <div id="ft-hextra" style="display:none">
-      <div id="hx-info" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;font-size:12.5px;color:var(--text2)"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fw"><label class="fl">Fecha <span style="color:var(--red)">*</span></label><input type="date" id="hx_fecha" class="fi" onchange="hxPreview()"></div>
-        <div class="fw"><label class="fl">Horas extra <span style="color:var(--red)">*</span></label><input type="number" id="hx_horas" class="fi" min="0.5" max="12" step="0.5" placeholder="Ej: 2" oninput="hxPreview()"></div>
-        <div class="fw"><label class="fl">Calcular sobre</label>
-          <select id="hx_base" class="fi" onchange="hxPreview()">
-            <option value="liquido">Sueldo líquido registrado</option>
-            <option value="base">Sueldo base (fórmula Dirección del Trabajo)</option>
-          </select></div>
-        <div class="fw"><label class="fl">Motivo / nota</label><input type="text" id="hx_nota" class="fi" placeholder="Ej: Despacho urgente"></div>
+    <!-- PANEL PAGOS DEL MES: horas extra · días extra · ausencias · bonos · créditos -->
+    <div id="ft-pagos" style="display:none">
+      <div id="pg-sin" class="pg-note" style="display:none">Guarda primero el trabajador para registrar sus pagos del mes.</div>
+      <div id="pg-body">
+        <div class="pg-top">
+          <div class="fw"><label class="fl">Mes</label><input type="month" id="pg_mes" class="fi" onchange="pgRender()"></div>
+          <button class="btn-primary" onclick="pgExportarComprobante()">🧾 Exportar comprobante de pago</button>
+        </div>
+        <div id="pg-resumen"></div>
+        <div class="pg-subs">
+          <button type="button" class="pg-sub active" data-s="hx" onclick="pgSub('hx')">⏱ Horas extra</button>
+          <button type="button" class="pg-sub" data-s="dx" onclick="pgSub('dx')">➕ Días extra</button>
+          <button type="button" class="pg-sub" data-s="au" onclick="pgSub('au')">🚫 Ausencias</button>
+          <button type="button" class="pg-sub" data-s="bo" onclick="pgSub('bo')">🎁 Bonos</button>
+          <button type="button" class="pg-sub" data-s="cr" onclick="pgSub('cr')">💳 Créditos</button>
+        </div>
+
+        <!-- Horas extra -->
+        <div class="pg-sec" id="pg-sec-hx">
+          <div id="hx-info" class="pg-note"></div>
+          <div class="pg-g2">
+            <div class="fw"><label class="fl">Fecha <span style="color:var(--red)">*</span></label><input type="date" id="hx_fecha" class="fi"></div>
+            <div class="fw"><label class="fl">Horas extra <span style="color:var(--red)">*</span></label><input type="number" id="hx_horas" class="fi" min="0.5" max="12" step="0.5" placeholder="Ej: 2" oninput="hxPreview()"></div>
+            <div class="fw"><label class="fl">Calcular sobre</label>
+              <select id="hx_base" class="fi" onchange="hxPreview()">
+                <option value="liquido">Sueldo líquido registrado</option>
+                <option value="base">Sueldo base (fórmula Dirección del Trabajo)</option>
+              </select></div>
+            <div class="fw"><label class="fl">Motivo / nota</label><input type="text" id="hx_nota" class="fi" placeholder="Ej: Despacho urgente"></div>
+          </div>
+          <div id="hx-preview" class="pg-prev" style="display:none"></div>
+          <button class="btn-primary pg-add" onclick="hxRegistrar()">+ Registrar horas extra</button>
+          <div class="pg-h">Horas extra del mes</div>
+          <div id="hx-lista"></div>
+        </div>
+
+        <!-- Días extra -->
+        <div class="pg-sec" id="pg-sec-dx" style="display:none">
+          <div id="dx-info" class="pg-note"></div>
+          <div class="pg-g3">
+            <div class="fw"><label class="fl">Fecha <span style="color:var(--red)">*</span></label><input type="date" id="dx_fecha" class="fi"></div>
+            <div class="fw"><label class="fl">Días <span style="color:var(--red)">*</span></label><input type="number" id="dx_dias" class="fi" min="0.5" step="0.5" placeholder="Ej: 1" oninput="dxPreview()"></div>
+            <div class="fw"><label class="fl">Motivo / nota</label><input type="text" id="dx_nota" class="fi" placeholder="Ej: Inventario sábado"></div>
+          </div>
+          <div id="dx-preview" class="pg-prev" style="display:none"></div>
+          <button class="btn-primary pg-add" onclick="dxRegistrar()">+ Registrar días extra</button>
+          <div class="pg-h">Días extra del mes</div>
+          <div id="dx-lista"></div>
+        </div>
+
+        <!-- Ausencias -->
+        <div class="pg-sec" id="pg-sec-au" style="display:none">
+          <div id="au-info" class="pg-note"></div>
+          <div class="pg-g3">
+            <div class="fw"><label class="fl">Fecha <span style="color:var(--red)">*</span></label><input type="date" id="au_fecha" class="fi"></div>
+            <div class="fw"><label class="fl">Días <span style="color:var(--red)">*</span></label><input type="number" id="au_dias" class="fi" min="0.5" step="0.5" placeholder="Ej: 1" oninput="auPreview()"></div>
+            <div class="fw"><label class="fl">Motivo</label>
+              <select id="au_motivo" class="fi" onchange="auMotivo()">
+                <option>Inasistencia</option><option>Permiso sin goce de sueldo</option><option>Licencia médica</option><option>Permiso con goce de sueldo</option><option>Otro</option>
+              </select></div>
+          </div>
+          <div class="pg-g2">
+            <div class="fw"><label class="fl">Nota</label><input type="text" id="au_nota" class="fi" placeholder="Opcional"></div>
+            <div class="fw" style="display:flex;align-items:flex-end"><label class="pg-check"><input type="checkbox" id="au_desc" checked onchange="auPreview()"> Descontar del pago</label></div>
+          </div>
+          <div id="au-preview" class="pg-prev" style="display:none"></div>
+          <button class="btn-primary pg-add" onclick="auRegistrar()">+ Registrar ausencia</button>
+          <div class="pg-h">Ausencias del mes</div>
+          <div id="au-lista"></div>
+        </div>
+
+        <!-- Bonos -->
+        <div class="pg-sec" id="pg-sec-bo" style="display:none">
+          <div class="pg-g2">
+            <div class="fw"><label class="fl">Concepto <span style="color:var(--red)">*</span></label><input type="text" id="bo_concepto" class="fi" list="bo_sugerencias" placeholder="Ej: Bono de producción">
+              <datalist id="bo_sugerencias"><option>Bono de producción</option><option>Bono de asistencia</option><option>Bono de metas</option><option>Comisión por ventas</option><option>Aguinaldo</option><option>Bono de movilización</option></datalist></div>
+            <div class="fw"><label class="fl">Monto <span style="color:var(--red)">*</span></label><div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="bo_monto" class="fi fi-money" placeholder="0" oninput="clpInput(this)"></div></div>
+          </div>
+          <button class="btn-primary pg-add" onclick="boRegistrar()">+ Agregar bono a <span id="pg-bo-mes"></span></button>
+          <div class="pg-h">Bonos del mes</div>
+          <div id="bo-lista"></div>
+        </div>
+
+        <!-- Créditos -->
+        <div class="pg-sec" id="pg-sec-cr" style="display:none">
+          <div class="pg-g2">
+            <div class="fw"><label class="fl">Concepto <span style="color:var(--red)">*</span></label><input type="text" id="cr_concepto" class="fi" list="cr_sugerencias" placeholder="Ej: Préstamo personal">
+              <datalist id="cr_sugerencias"><option>Préstamo personal</option><option>Anticipo de sueldo</option><option>Compra de productos</option></datalist></div>
+            <div class="fw"><label class="fl">Monto total <span style="color:var(--red)">*</span></label><div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="cr_monto" class="fi fi-money" placeholder="0" oninput="clpInput(this);crPreview()"></div></div>
+          </div>
+          <div class="pg-g3">
+            <div class="fw"><label class="fl">N° de cuotas <span style="color:var(--red)">*</span></label><input type="number" id="cr_cuotas" class="fi" min="1" max="60" step="1" value="1" oninput="crPreview()"></div>
+            <div class="fw"><label class="fl">Fecha del crédito</label><input type="date" id="cr_fecha" class="fi" onchange="crAutoInicio()"></div>
+            <div class="fw"><label class="fl">Mes de la primera cuota</label><input type="month" id="cr_inicio" class="fi" onchange="this.dataset.t=1;crPreview()"></div>
+          </div>
+          <div id="cr-preview" class="pg-prev" style="display:none"></div>
+          <button class="btn-primary pg-add" onclick="crRegistrar()">+ Registrar crédito</button>
+          <div class="pg-h">Créditos del trabajador</div>
+          <div id="cr-lista"></div>
+        </div>
       </div>
-      <div id="hx-preview" style="display:none;background:#e9efff;border:1px solid #dce6ff;border-radius:10px;padding:12px 14px;margin:4px 0 12px;font-size:13px;color:var(--text)"></div>
-      <button class="btn-primary" style="width:100%;margin-bottom:18px" onclick="hxRegistrar()">+ Registrar horas extra</button>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap">
-        <div style="font-weight:600;font-size:13.5px">Historial</div>
-        <select id="hx_mes" class="fi" style="width:auto" onchange="this.dataset.t=1;hxRenderLista()"></select>
-      </div>
-      <div id="hx-lista"></div>
     </div>
 
     <div id="ft-org" style="display:none">
@@ -7024,12 +7157,12 @@ function rrhhTab(el, tab) {
 function fichaTab(el, tab) {
   document.querySelectorAll('#rrhhOverlay .ptab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  ['personal','contrato','vacaciones','hextra','org'].forEach(t=>{
+  ['personal','contrato','vacaciones','pagos','org'].forEach(t=>{
     const el2=$('ft-'+t); if(el2) el2.style.display=t===tab?'block':'none';
   });
   if(tab==='vacaciones') { calcularVaccInfo(); renderHistorialFicha(); }
   if(tab==='org') renderFichaOrg();
-  if(tab==='hextra') hxInit();
+  if(tab==='pagos') pgInit();
 }
 
 function renderRRHH() {
@@ -7111,16 +7244,27 @@ function rrhhEstimarLiquido(t){
 function rrhhLiquidoCell(t){
   return rrhhLiquidoCellBase(t);
 }
-function rrhhTotalPagarCell(t){
-  const liq=rrhhLiquidoDe(t), hx=hxTotalMes(t, hxMesActual()).monto, tot=liq+hx;
-  if(!tot) return '<span style="color:var(--text3)">—</span>';
-  const estimado=!(Number(t.liquido)>0);
-  return `<span style="font-size:13px;font-weight:700;color:var(--teal)"${estimado?' title="Incluye sueldo líquido estimado"':''}>${estimado?'~':''}${fmt(tot)}</span>`
-    + (hx ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${fmt(liq)} + ${fmt(hx)} HH.EE.</div>` : '');
+// ── Mes de pago de la nómina (selector "Comprobantes del mes") ──
+function rrhhMesPago(){ return rrhhState.mesPago || hxMesActual(); }
+function rrhhSetMesPago(m){
+  rrhhState.mesPago = m || hxMesActual();
+  document.querySelectorAll('.rrhh-cp-mes').forEach(i=>{ i.value=rrhhState.mesPago; });
+  rrhhRefrescarListas();
 }
-function rrhhHxBadge(t){
-  const m=hxTotalMes(t, hxMesActual());
-  return m.monto ? `<div style="font-size:11px;color:var(--teal);margin-top:2px" title="Horas extra del mes en curso">+${fmt(m.monto)} HH.EE. (${m.horas} h)</div>` : '';
+document.querySelectorAll('.rrhh-cp-mes').forEach(i=>{ i.value=hxMesActual(); });
+
+function rrhhTotalPagarCell(t){
+  const r=rrhhPagoMes(t, rrhhMesPago());
+  if(!r.total && !r.liquido) return '<span style="color:var(--text3)">—</span>';
+  const det=[];
+  if(r.hx.monto) det.push('Horas extra +'+fmt(r.hx.monto));
+  if(r.dx.monto) det.push('Días extra +'+fmt(r.dx.monto));
+  if(r.bonos.monto) det.push('Bonos +'+fmt(r.bonos.monto));
+  if(r.au.monto) det.push('Ausencias −'+fmt(r.au.monto));
+  if(r.cr.monto) det.push('Créditos −'+fmt(r.cr.monto));
+  const sub = (r.extras ? ` <span style="color:var(--green)">+${fmt(r.extras)}</span>` : '') + (r.descuentos ? ` <span style="color:var(--red)">−${fmt(r.descuentos)}</span>` : '');
+  return `<span title="${det.join(' · ')||'Solo sueldo líquido'}" style="font-size:13px;font-weight:700;color:var(--teal)">${r.liquidoEstimado?'~':''}${fmt(r.total)}</span>`
+    + (sub ? `<div style="font-size:11px;margin-top:2px;white-space:nowrap">${sub.trim()}</div>` : '');
 }
 function rrhhLiquidoCellBase(t){
   if(Number(t.liquido)>0) return `<span style="font-family:var(--font-mono);font-size:12px;color:var(--green);font-weight:700">${fmt(t.liquido)}</span>`;
@@ -7146,23 +7290,128 @@ function hxTotalMes(t, mes){
 }
 function hxTrabActual(){ const id=$('rrhh-edit-id')?$('rrhh-edit-id').value:''; return id ? rrhhState.trabajadores.find(x=>x._id===id) : null; }
 
-function hxInit(){
-  const t=hxTrabActual(), info=$('hx-info');
-  if(!t){ info.innerHTML='Guarda primero el trabajador para registrar horas extra.'; $('hx-lista').innerHTML=''; return; }
-  if(!$('hx_fecha').value){ const n=new Date(); $('hx_fecha').value=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); }
+// ══ PAGOS DEL MES · horas extra, días extra, ausencias, bonos y créditos ══
+const PG_DIAS_MES = 20;   // valor día = sueldo líquido ÷ 20 días
+function pgMes(){ const el=$('pg_mes'); return (el && el.value) || hxMesActual(); }
+function pgMesLabel(m){ const [y,mm]=String(m).split('-'); return MESES[+mm-1]+' '+y; }
+function pgMesCorto(m){ const [y,mm]=String(m).split('-'); return MESES[+mm-1].slice(0,3)+' '+y; }
+function pgMesSum(m, n){ let [y,mm]=m.split('-').map(Number); const t=y*12+(mm-1)+n; return Math.floor(t/12)+'-'+String(t%12+1).padStart(2,'0'); }
+function pgHoy(){ const n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); }
+function pgFechaDefault(){ const m=pgMes(); return m===hxMesActual() ? pgHoy() : m+'-01'; }
+function pgValorDia(t){ return Math.round(rrhhLiquidoDe(t)/PG_DIAS_MES); }
+function pgEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function pgNum(n){ return String(Math.round(n*100)/100).replace('.',','); }
+function pgDias(n){ return pgNum(n)+' día'+(n==1?'':'s'); }
+
+// ── Créditos: cuotas y control automático ──
+function crCuotas(c){
+  const n=Math.max(1,parseInt(c.cuotas)||1), base=Math.floor((Number(c.monto)||0)/n);
+  return Array.from({length:n},(_,i)=>({ k:i+1, n, mes:pgMesSum(c.mesInicio,i), monto: i===n-1 ? (Number(c.monto)||0)-base*(n-1) : base }));
+}
+function crCuotaDelMes(c, mes){ return crCuotas(c).find(q=>q.mes===mes)||null; }
+// Cuotas de meses anteriores al actual = descontadas; la del mes actual = "este mes"; las siguientes = pendientes
+function crEstado(c, ref){
+  ref = ref || hxMesActual();
+  const q=crCuotas(c), pagadas=q.filter(x=>x.mes<ref), enCurso=q.find(x=>x.mes===ref)||null, pend=q.filter(x=>x.mes>ref);
+  const pagado=pagadas.reduce((s,x)=>s+x.monto,0);
+  return { cuotas:q, pagadas:pagadas.length, enCurso, pendientes:pend.length, pagado, saldo:(Number(c.monto)||0)-pagado,
+           proxima: enCurso || pend[0] || null, terminado: !enCurso && !pend.length, ultima:q[q.length-1] };
+}
+function crSaldoTras(c, mes){ return crCuotas(c).filter(x=>x.mes>mes).reduce((s,x)=>s+x.monto,0); }
+
+// ── Resumen de pago de un trabajador para un mes ──
+function rrhhPagoMes(t, mes){
+  mes = mes || hxMesActual();
+  const enMes=a=>(a||[]).filter(x=>hxMesKey(x.fecha)===mes);
+  const sum=(a,f)=>a.reduce((s,x)=>s+(Number(x[f])||0),0);
+  const hx=enMes(t.horasExtra), dx=enMes(t.diasExtra), auTodas=enMes(t.ausencias), au=auTodas.filter(a=>a.descuenta!==false);
+  const bonos=(t.bonos||[]).filter(b=>b.mes===mes);
+  const cr=(t.creditos||[]).map(c=>({c, q:crCuotaDelMes(c,mes)})).filter(x=>x.q);
+  const r={ mes, liquido:rrhhLiquidoDe(t), liquidoEstimado:!(Number(t.liquido)>0),
+    hx:{horas:sum(hx,'horas'), monto:sum(hx,'monto'), items:hx},
+    dx:{dias:sum(dx,'dias'), monto:sum(dx,'monto'), items:dx},
+    bonos:{monto:sum(bonos,'monto'), items:bonos},
+    au:{dias:sum(au,'dias'), monto:sum(au,'monto'), items:au, todas:auTodas},
+    cr:{monto:cr.reduce((s,x)=>s+x.q.monto,0), items:cr} };
+  r.extras = r.hx.monto + r.dx.monto + r.bonos.monto;
+  r.haberes = r.liquido + r.extras;
+  r.descuentos = r.au.monto + r.cr.monto;
+  r.total = r.haberes - r.descuentos;
+  return r;
+}
+
+// ── Pestaña "Pagos del mes" ──
+function pgInit(){
+  const t=hxTrabActual();
+  $('pg-sin').style.display = t ? 'none' : 'block';
+  $('pg-body').style.display = t ? '' : 'none';
+  if(!t) return;
+  if(!$('pg_mes').value) $('pg_mes').value=hxMesActual();
+  if(!$('cr_fecha').value){ $('cr_fecha').value=pgHoy(); }
   $('hx_base').value = Number(t.liquido)>0 ? 'liquido' : 'base';
+  crAutoInicio();
+  pgRender();
+}
+function pgSub(s){
+  document.querySelectorAll('#ft-pagos .pg-sub').forEach(b=>b.classList.toggle('active', b.dataset.s===s));
+  document.querySelectorAll('#ft-pagos .pg-sec').forEach(d=>d.style.display = d.id==='pg-sec-'+s ? 'block' : 'none');
+}
+function pgRender(){
+  const t=hxTrabActual(); if(!t) return;
+  const mes=pgMes(), r=rrhhPagoMes(t,mes);
+  ['hx_fecha','dx_fecha','au_fecha'].forEach(id=>{ const el=$(id); if(el && hxMesKey(el.value)!==mes) el.value=pgFechaDefault(); });
+  $('pg-bo-mes').textContent=pgMesLabel(mes);
+  const it=(l,v,cls)=>`<div class="it ${cls}"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+  const signo=(v,s)=>v ? s+fmt(v) : '$0';
+  $('pg-resumen').innerHTML=`<div class="pg-res">
+    ${it('Sueldo líquido'+(r.liquidoEstimado&&r.liquido?' ~':''), fmt(r.liquido), '')}
+    ${it('Horas extra', signo(r.hx.monto,'+'), r.hx.monto?'pos':'cero')}
+    ${it('Días extra', signo(r.dx.monto,'+'), r.dx.monto?'pos':'cero')}
+    ${it('Bonos', signo(r.bonos.monto,'+'), r.bonos.monto?'pos':'cero')}
+    ${it('Ausencias', signo(r.au.monto,'−'), r.au.monto?'neg':'cero')}
+    ${it('Créditos', signo(r.cr.monto,'−'), r.cr.monto?'neg':'cero')}
+    ${it('Total a pagar · '+pgMesLabel(mes), fmt(r.total), 'tot')}
+  </div>`;
+  const activos=(t.creditos||[]).filter(c=>!crEstado(c).terminado).length;
+  const cnt={hx:r.hx.items.length, dx:r.dx.items.length, au:r.au.todas.length, bo:r.bonos.items.length, cr:activos};
+  document.querySelectorAll('#ft-pagos .pg-sub').forEach(b=>{
+    let n=b.querySelector('.pg-n'); if(!n){ n=document.createElement('span'); n.className='pg-n'; b.appendChild(n); }
+    n.textContent=cnt[b.dataset.s]||''; n.style.display=cnt[b.dataset.s]?'':'none';
+  });
+  hxInfo(t); hxPreview(); hxRenderLista(t, r);
+  pgInfoDia(t); dxPreview(); dxRenderLista(r);
+  auPreview(); auRenderLista(r);
+  boRenderLista(r);
+  crPreview(); crRenderLista(t, mes);
+}
+async function pgGuardar(t, msg, mesNuevo){
+  try{ await saveRRHH(t); }catch(e){ return false; }
+  if(mesNuevo) $('pg_mes').value=mesNuevo;
+  pgRender(); rrhhRefrescarListas(); showToast(msg);
+  return true;
+}
+async function pgEliminar(campo, id, que){
+  const t=hxTrabActual(); if(!t) return;
+  if(!await dlgConfirm('¿Eliminar '+que+'?','Eliminar','danger')) return;
+  t[campo]=(t[campo]||[]).filter(x=>x.id!==id);
+  pgGuardar(t,'Registro eliminado');
+}
+function pgTabla(cols, filas, pie){
+  return `<table class="tbl"><thead><tr>${cols.map(c=>`<th${c.r?' style="text-align:right"':''}>${c.t}</th>`).join('')}<th></th></tr></thead><tbody>${filas}</tbody>${pie?`<tfoot>${pie}</tfoot>`:''}</table>`;
+}
+const pgTd=(v,st)=>`<td${st?` style="${st}"`:''}>${v}</td>`;
+const pgDel=(fn)=>`<td style="width:34px"><button class="btn-del" title="Eliminar" onclick="${fn}">✕</button></td>`;
+const pgPie=(celdas)=>`<tr style="background:var(--bg3)">${celdas.map(c=>`<td style="padding:10px 12px;font-weight:700;${c.r?'text-align:right;':''}${c.c?'color:'+c.c:''}">${c.v||''}</td>`).join('')}<td></td></tr>`;
+
+// ── Horas extra ──
+function hxInfo(t){
   const vl=hxValorHora(t,'liquido'), vb=hxValorHora(t,'base');
-  info.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+  $('hx-info').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
     <div><div style="color:var(--text3);font-size:11px">Jornada semanal</div><div style="font-weight:700;font-size:15px">${hxJornada(t)} horas</div></div>
     <div><div style="color:var(--text3);font-size:11px">Valor HE sobre líquido</div><div style="font-weight:700;font-size:15px;color:var(--teal)">${vl?fmt(vl):'<span style="color:var(--text3);font-size:12px">Sin líquido registrado</span>'}</div></div>
     <div><div style="color:var(--text3);font-size:11px">Valor HE sobre sueldo base</div><div style="font-weight:700;font-size:15px">${vb?fmt(vb):'—'}</div></div>
   </div>
   <div style="font-size:11px;color:var(--text3);margin-top:8px">Fórmula: sueldo ÷ 30 × 28 ÷ (4 × jornada) × 1,5 (recargo 50%, art. 32 CT). Máximo legal: 2 horas extra por día.</div>`;
-  const meses=[...new Set([hxMesActual(),...(t.horasExtra||[]).map(h=>hxMesKey(h.fecha))])].sort().reverse();
-  const sel=$('hx_mes'), cur=sel.value;
-  sel.innerHTML='<option value="">Todos los meses</option>'+meses.map(m=>{const [y,mm]=m.split('-');return `<option value="${m}">${MESES[+mm-1]} ${y}</option>`;}).join('');
-  sel.value = (sel.dataset.t && (cur==='' || meses.includes(cur))) ? cur : hxMesActual();
-  hxPreview(); hxRenderLista();
 }
 function hxPreview(){
   const t=hxTrabActual(), box=$('hx-preview'); if(!t||!box) return;
@@ -7171,7 +7420,7 @@ function hxPreview(){
   box.style.display='block';
   if(!vh){ box.innerHTML=`<span style="color:var(--red)">No hay ${base==='base'?'sueldo base':'sueldo líquido'} registrado en la pestaña Contrato.</span>`; return; }
   const aviso = h>2 ? `<div style="color:var(--amber);font-size:11.5px;margin-top:4px">⚠ El Código del Trabajo permite máximo 2 horas extra por día.</div>` : '';
-  box.innerHTML=`${h} h × ${fmt(vh)} = <b style="color:var(--teal);font-size:15px">${fmt(Math.round(h*vh))}</b>${aviso}`;
+  box.innerHTML=`${pgNum(h)} h × ${fmt(vh)} = <b style="color:var(--teal);font-size:15px">${fmt(Math.round(h*vh))}</b>${aviso}`;
 }
 async function hxRegistrar(){
   const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
@@ -7179,39 +7428,153 @@ async function hxRegistrar(){
   if(!fecha||horas<=0){ showToast('Ingresa fecha y horas',true); return; }
   const vh=hxValorHora(t,base);
   if(!vh){ showToast(base==='base'?'Registra el sueldo base en Contrato':'Registra el sueldo líquido en Contrato',true); return; }
-  if(!t.horasExtra) t.horasExtra=[];
-  t.horasExtra.push({ id:'hx_'+Date.now(), fecha, horas, base, jornada:hxJornada(t), valorHora:vh, monto:Math.round(horas*vh), nota:($('hx_nota').value||'').trim(), creado:new Date().toISOString() });
-  try{ await saveRRHH(t); }catch(e){ return; }
-  $('hx_horas').value=''; $('hx_nota').value='';
-  $('hx_mes').dataset.t=1; $('hx_mes').innerHTML+=`<option value="${hxMesKey(fecha)}"></option>`; $('hx_mes').value=hxMesKey(fecha);
-  hxInit(); rrhhRefrescarListas();
-  showToast('Horas extra registradas');
+  (t.horasExtra=t.horasExtra||[]).push({ id:'hx_'+Date.now(), fecha, horas, base, jornada:hxJornada(t), valorHora:vh, monto:Math.round(horas*vh), nota:($('hx_nota').value||'').trim(), creado:new Date().toISOString() });
+  if(await pgGuardar(t,'Horas extra registradas',hxMesKey(fecha))){ $('hx_horas').value=''; $('hx_nota').value=''; hxPreview(); }
 }
-async function hxEliminar(hid){
-  const t=hxTrabActual(); if(!t) return;
-  if(!await dlgConfirm('¿Eliminar este registro de horas extra?','Eliminar','danger')) return;
-  t.horasExtra=(t.horasExtra||[]).filter(h=>h.id!==hid);
-  try{ await saveRRHH(t); }catch(e){ return; }
-  hxInit(); rrhhRefrescarListas();
-  showToast('Registro eliminado');
+function hxEliminar(id){ pgEliminar('horasExtra', id, 'este registro de horas extra'); }
+function hxRenderLista(t, r){
+  const list=[...r.hx.items].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(!list.length){ $('hx-lista').innerHTML=`<div class="pg-vacio">Sin horas extra en ${pgMesLabel(r.mes)}.</div>`; return; }
+  $('hx-lista').innerHTML=pgTabla([{t:'Fecha'},{t:'Horas',r:1},{t:'Valor hora',r:1},{t:'Base'},{t:'Monto',r:1},{t:'Nota'}],
+    list.map(h=>`<tr>${pgTd(fmtFecha(h.fecha))}${pgTd(pgNum(h.horas),'text-align:right;font-weight:600')}${pgTd(fmt(h.valorHora),'text-align:right')}
+      ${pgTd(`<span class="pg-tag ${h.base==='base'?'warn':'now'}">${h.base==='base'?'Base':'Líquido'}</span>`)}
+      ${pgTd(fmt(h.monto),'text-align:right;font-weight:700;color:var(--teal)')}${pgTd(pgEsc(h.nota),'color:var(--text3);font-size:12px')}${pgDel(`hxEliminar('${h.id}')`)}</tr>`).join(''),
+    pgPie([{v:'Total'},{v:pgNum(r.hx.horas),r:1},{},{},{v:fmt(r.hx.monto),r:1,c:'var(--teal)'},{}]));
 }
-function hxRenderLista(){
-  const t=hxTrabActual(), box=$('hx-lista'); if(!t||!box) return;
-  const mes=$('hx_mes').value;
-  const list=(t.horasExtra||[]).filter(h=>!mes||hxMesKey(h.fecha)===mes).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  if(!list.length){ box.innerHTML='<div style="color:var(--text3);font-size:12.5px;padding:10px 0">Sin horas extra registradas en este período.</div>'; return; }
-  const th=list.reduce((s,h)=>s+(Number(h.horas)||0),0), tm=list.reduce((s,h)=>s+(Number(h.monto)||0),0);
-  box.innerHTML=`<table class="tbl"><thead><tr><th>Fecha</th><th style="text-align:right">Horas</th><th style="text-align:right">Valor hora</th><th>Base</th><th style="text-align:right">Monto</th><th>Nota</th><th></th></tr></thead><tbody>
-    ${list.map(h=>`<tr>
-      <td>${fmtFecha(h.fecha)}</td>
-      <td style="text-align:right;font-weight:600">${h.horas}</td>
-      <td style="text-align:right">${fmt(h.valorHora)}</td>
-      <td><span class="cbadge" style="background:${h.base==='base'?'#fff0dc;color:#c46a00':'#e9efff;color:#2d2aea'}">${h.base==='base'?'Base':'Líquido'}</span></td>
-      <td style="text-align:right;font-weight:700;color:var(--teal)">${fmt(h.monto)}</td>
-      <td style="color:var(--text3);font-size:12px">${(h.nota||'').replace(/</g,'&lt;')}</td>
-      <td><button class="btn-del" title="Eliminar" onclick="hxEliminar('${h.id}')">✕</button></td></tr>`).join('')}
-  </tbody><tfoot><tr style="background:var(--bg3)"><td style="padding:10px 12px;font-weight:700">Total</td><td style="padding:10px 12px;text-align:right;font-weight:700">${th}</td><td colspan="2"></td><td style="padding:10px 12px;text-align:right;font-weight:700;color:var(--teal)">${fmt(tm)}</td><td colspan="2"></td></tr></tfoot></table>`;
+
+// ── Días extra y ausencias (valor día = líquido ÷ 20) ──
+function pgInfoDia(t){
+  const liq=rrhhLiquidoDe(t), vd=pgValorDia(t), est=!(Number(t.liquido)>0);
+  const txt = liq
+    ? `Valor día: <b style="color:var(--teal);font-size:14px">${fmt(vd)}</b> = sueldo líquido ${est?'estimado ':''}${fmt(liq)} ÷ ${PG_DIAS_MES} días${est?'<div style="color:var(--amber);font-size:11.5px;margin-top:4px">⚠ El líquido es estimado. Regístralo en la pestaña Contrato para un cálculo exacto.</div>':''}`
+    : `<span style="color:var(--red)">Registra el sueldo líquido en la pestaña Contrato para calcular el valor día.</span>`;
+  $('dx-info').innerHTML=txt;
+  $('au-info').innerHTML=txt.replace('Valor día:','Descuento por día:');
 }
+function dxPreview(){
+  const t=hxTrabActual(), box=$('dx-preview'); if(!t) return;
+  const d=parseFloat($('dx_dias').value)||0, vd=pgValorDia(t);
+  if(!d||!vd){ box.style.display='none'; return; }
+  box.style.display='block';
+  box.innerHTML=`${pgDias(d)} × ${fmt(vd)} = <b style="color:var(--green);font-size:15px">+${fmt(Math.round(d*vd))}</b>`;
+}
+async function dxRegistrar(){
+  const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
+  const fecha=$('dx_fecha').value, dias=parseFloat($('dx_dias').value)||0, vd=pgValorDia(t);
+  if(!fecha||dias<=0){ showToast('Ingresa fecha y días',true); return; }
+  if(!vd){ showToast('Registra el sueldo líquido en Contrato',true); return; }
+  (t.diasExtra=t.diasExtra||[]).push({ id:'dx_'+Date.now(), fecha, dias, valorDia:vd, monto:Math.round(dias*vd), nota:($('dx_nota').value||'').trim(), creado:new Date().toISOString() });
+  if(await pgGuardar(t,'Días extra registrados',hxMesKey(fecha))){ $('dx_dias').value=''; $('dx_nota').value=''; dxPreview(); }
+}
+function dxRenderLista(r){
+  const list=[...r.dx.items].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(!list.length){ $('dx-lista').innerHTML=`<div class="pg-vacio">Sin días extra en ${pgMesLabel(r.mes)}.</div>`; return; }
+  $('dx-lista').innerHTML=pgTabla([{t:'Fecha'},{t:'Días',r:1},{t:'Valor día',r:1},{t:'Monto',r:1},{t:'Nota'}],
+    list.map(d=>`<tr>${pgTd(fmtFecha(d.fecha))}${pgTd(pgNum(d.dias),'text-align:right;font-weight:600')}${pgTd(fmt(d.valorDia),'text-align:right')}
+      ${pgTd('+'+fmt(d.monto),'text-align:right;font-weight:700;color:var(--green)')}${pgTd(pgEsc(d.nota),'color:var(--text3);font-size:12px')}${pgDel(`pgEliminar('diasExtra','${d.id}','este registro de días extra')`)}</tr>`).join(''),
+    pgPie([{v:'Total'},{v:pgNum(r.dx.dias),r:1},{},{v:'+'+fmt(r.dx.monto),r:1,c:'var(--green)'},{}]));
+}
+function auMotivo(){ $('au_desc').checked = $('au_motivo').value!=='Permiso con goce de sueldo'; auPreview(); }
+function auPreview(){
+  const t=hxTrabActual(), box=$('au-preview'); if(!t) return;
+  const d=parseFloat($('au_dias').value)||0, vd=pgValorDia(t), desc=$('au_desc').checked;
+  if(!d){ box.style.display='none'; return; }
+  box.style.display='block';
+  box.innerHTML = !desc ? `${pgDias(d)} · <b>sin descuento</b> (se registra solo como control)`
+    : vd ? `${pgDias(d)} × ${fmt(vd)} = <b style="color:var(--red);font-size:15px">−${fmt(Math.round(d*vd))}</b>` : '<span style="color:var(--red)">Registra el sueldo líquido en Contrato.</span>';
+  if($('au_motivo').value==='Licencia médica' && desc) box.innerHTML+=`<div style="font-size:11.5px;color:var(--text3);margin-top:4px">Los días de licencia los paga el subsidio de salud (Fonasa/Isapre), por eso se descuentan del pago del empleador.</div>`;
+}
+async function auRegistrar(){
+  const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
+  const fecha=$('au_fecha').value, dias=parseFloat($('au_dias').value)||0, desc=$('au_desc').checked, vd=pgValorDia(t);
+  if(!fecha||dias<=0){ showToast('Ingresa fecha y días',true); return; }
+  if(desc && !vd){ showToast('Registra el sueldo líquido en Contrato',true); return; }
+  (t.ausencias=t.ausencias||[]).push({ id:'au_'+Date.now(), fecha, dias, motivo:$('au_motivo').value, descuenta:desc, valorDia:vd, monto: desc?Math.round(dias*vd):0, nota:($('au_nota').value||'').trim(), creado:new Date().toISOString() });
+  if(await pgGuardar(t,'Ausencia registrada',hxMesKey(fecha))){ $('au_dias').value=''; $('au_nota').value=''; auPreview(); }
+}
+function auRenderLista(r){
+  const list=[...r.au.todas].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(!list.length){ $('au-lista').innerHTML=`<div class="pg-vacio">Sin ausencias en ${pgMesLabel(r.mes)}.</div>`; return; }
+  const totDias=list.reduce((s,a)=>s+(Number(a.dias)||0),0);
+  $('au-lista').innerHTML=pgTabla([{t:'Fecha'},{t:'Días',r:1},{t:'Motivo'},{t:'Descuento',r:1},{t:'Nota'}],
+    list.map(a=>`<tr>${pgTd(fmtFecha(a.fecha))}${pgTd(pgNum(a.dias),'text-align:right;font-weight:600')}${pgTd(pgEsc(a.motivo))}
+      ${pgTd(a.descuenta===false?'<span class="pg-tag pend">Sin descuento</span>':'−'+fmt(a.monto),'text-align:right;font-weight:700;color:var(--red)')}
+      ${pgTd(pgEsc(a.nota),'color:var(--text3);font-size:12px')}${pgDel(`pgEliminar('ausencias','${a.id}','esta ausencia')`)}</tr>`).join(''),
+    pgPie([{v:'Total'},{v:pgNum(totDias),r:1},{},{v:r.au.monto?'−'+fmt(r.au.monto):'$0',r:1,c:'var(--red)'},{}]));
+}
+
+// ── Bonos ──
+async function boRegistrar(){
+  const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
+  const concepto=($('bo_concepto').value||'').trim(), monto=clpVal('bo_monto');
+  if(!concepto||monto<=0){ showToast('Ingresa concepto y monto del bono',true); return; }
+  (t.bonos=t.bonos||[]).push({ id:'bo_'+Date.now(), mes:pgMes(), concepto, monto, creado:new Date().toISOString() });
+  if(await pgGuardar(t,'Bono agregado')){ $('bo_concepto').value=''; $('bo_monto').value=''; }
+}
+function boRenderLista(r){
+  if(!r.bonos.items.length){ $('bo-lista').innerHTML=`<div class="pg-vacio">Sin bonos en ${pgMesLabel(r.mes)}.</div>`; return; }
+  $('bo-lista').innerHTML=pgTabla([{t:'Concepto'},{t:'Monto',r:1}],
+    r.bonos.items.map(b=>`<tr>${pgTd(pgEsc(b.concepto),'font-weight:500')}${pgTd('+'+fmt(b.monto),'text-align:right;font-weight:700;color:var(--green)')}${pgDel(`pgEliminar('bonos','${b.id}','este bono')`)}</tr>`).join(''),
+    pgPie([{v:'Total'},{v:'+'+fmt(r.bonos.monto),r:1,c:'var(--green)'}]));
+}
+
+// ── Créditos ──
+function crAutoInicio(){
+  const el=$('cr_inicio'); if(el.dataset.t) { crPreview(); return; }
+  const f=$('cr_fecha').value || pgHoy();
+  el.value=pgMesSum(hxMesKey(f),1);   // por defecto la primera cuota se descuenta el mes siguiente al crédito
+  crPreview();
+}
+function crPreview(){
+  const box=$('cr-preview'); if(!box) return;
+  const monto=clpVal('cr_monto'), n=Math.max(1,parseInt($('cr_cuotas').value)||1), ini=$('cr_inicio').value;
+  if(!monto||!ini){ box.style.display='none'; return; }
+  const q=crCuotas({monto,cuotas:n,mesInicio:ini}), ult=q[q.length-1];
+  box.style.display='block';
+  box.innerHTML=`<div style="font-size:14px">${n} cuota${n>1?'s':''} de <b style="color:var(--teal)">${fmt(q[0].monto)}</b>${ult.monto!==q[0].monto?` <span style="color:var(--text3);font-size:12px">(última ${fmt(ult.monto)})</span>`:''}</div>
+    <div style="margin-top:4px">Primera cuota: <b>${pgMesLabel(ini)}</b>${n>1?` · Última: <b>${pgMesLabel(ult.mes)}</b>`:''}</div>
+    <div style="font-size:11.5px;color:var(--text3);margin-top:4px">Cada cuota se descuenta automáticamente del pago de su mes.</div>`;
+}
+async function crRegistrar(){
+  const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
+  const concepto=($('cr_concepto').value||'').trim(), monto=clpVal('cr_monto'), cuotas=parseInt($('cr_cuotas').value)||0, mesInicio=$('cr_inicio').value, fecha=$('cr_fecha').value||pgHoy();
+  if(!concepto||monto<=0||cuotas<1||!mesInicio){ showToast('Completa concepto, monto, cuotas y mes de la primera cuota',true); return; }
+  if(cuotas>60){ showToast('Máximo 60 cuotas',true); return; }
+  (t.creditos=t.creditos||[]).push({ id:'cr_'+Date.now(), concepto, monto, cuotas, fecha, mesInicio, creado:new Date().toISOString() });
+  if(await pgGuardar(t,`Crédito registrado · primera cuota ${pgMesLabel(mesInicio)}`)){
+    $('cr_concepto').value=''; $('cr_monto').value=''; $('cr_cuotas').value=1; delete $('cr_inicio').dataset.t; crAutoInicio();
+  }
+}
+function crToggle(id){ const el=$('crs-'+id); if(el) el.style.display = el.style.display==='none' ? 'block' : 'none'; }
+function crRenderLista(t, mes){
+  const list=[...(t.creditos||[])].map(c=>({c, e:crEstado(c)})).sort((a,b)=>(a.e.terminado-b.e.terminado)||b.c.fecha.localeCompare(a.c.fecha));
+  if(!list.length){ $('cr-lista').innerHTML='<div class="pg-vacio">Sin créditos registrados.</div>'; return; }
+  const ref=hxMesActual();
+  $('cr-lista').innerHTML=list.map(({c,e})=>{
+    const qm=crCuotaDelMes(c,mes), pct=Math.round(100*(e.pagadas+(e.enCurso?1:0))/e.cuotas.length);
+    const estado = e.terminado ? '<span class="pg-tag ok">Pagado</span>' : e.pagadas===0 && !e.enCurso ? '<span class="pg-tag pend">Por comenzar</span>' : '<span class="pg-tag now">Vigente</span>';
+    return `<div class="cr-card${e.terminado?' fin':''}">
+      <div class="cr-top">
+        <div><div class="cr-tit">${pgEsc(c.concepto)} · ${fmt(c.monto)} ${estado}</div>
+          <div class="cr-sub">Otorgado el ${fmtFecha(c.fecha)} · ${c.cuotas} cuota${c.cuotas>1?'s':''} · ${pgMesLabel(c.mesInicio)} → ${pgMesLabel(e.ultima.mes)}</div></div>
+        <button class="btn-del" title="Eliminar crédito" onclick="pgEliminar('creditos','${c.id}','este crédito y todas sus cuotas')">✕</button>
+      </div>
+      <div class="cr-bar"><i style="width:${pct}%"></i></div>
+      <div class="cr-stats">
+        <span>Descontadas: <b>${e.pagadas} de ${e.cuotas.length}</b></span>
+        ${e.enCurso?`<span>Este mes: <b>cuota ${e.enCurso.k} · ${fmt(e.enCurso.monto)}</b></span>`:''}
+        <span>Saldo pendiente: <b>${fmt(e.saldo)}</b></span>
+        ${!e.terminado && e.proxima && e.proxima!==e.enCurso?`<span>Próxima cuota: <b>${pgMesLabel(e.proxima.mes)}</b></span>`:''}
+        ${mes!==ref?`<span>En ${pgMesLabel(mes)}: <b>${qm?`cuota ${qm.k} · ${fmt(qm.monto)}`:'sin cuota'}</b></span>`:''}
+      </div>
+      <button class="cr-tog" onclick="crToggle('${c.id}')">Ver calendario de cuotas</button>
+      <div class="cr-sched" id="crs-${c.id}" style="display:none">${pgTabla([{t:'Cuota'},{t:'Mes'},{t:'Monto',r:1},{t:'Estado'}],
+        e.cuotas.map(q=>`<tr${q.mes===mes?' style="background:#f5f7ff"':''}>${pgTd(q.k+' de '+q.n)}${pgTd(pgMesLabel(q.mes))}${pgTd(fmt(q.monto),'text-align:right;font-weight:600')}
+          ${pgTd(q.mes<ref?'<span class="pg-tag ok">Descontada</span>':q.mes===ref?'<span class="pg-tag now">Este mes</span>':'<span class="pg-tag pend">Pendiente</span>')}<td></td></tr>`).join(''))}</div>
+    </div>`;
+  }).join('');
+}
+
 function rrhhRefrescarListas(){
   try{ renderRRHH(); }catch(e){}
   try{ if($('app-rrhh') && $('app-rrhh').style.display!=='none') renderRRHHSA(); }catch(e){}
@@ -7220,18 +7583,17 @@ function rrhhRefrescarListas(){
 // ── Totales de remuneraciones (RRHH) ──
 function rrhhLiquidoDe(t){ return Number(t.liquido)>0 ? Number(t.liquido) : rrhhEstimarLiquido(t); }
 function rrhhKpiHorasExtra(){
-  const mes=hxMesActual(), [y,m]=mes.split('-');
+  const mes=rrhhMesPago(), [y,m]=mes.split("-");
   const vig = rrhhState.trabajadores.filter(t=>t.estado!=='inactivo');
   let horas=0, monto=0, personas=0;
   vig.forEach(t=>{ const r=hxTotalMes(t,mes); if(r.monto>0){ personas++; horas+=r.horas; monto+=r.monto; } });
   return `<div class="kpi-card camber"><div class="kpi-label">Horas extras del mes</div><div class="kpi-val" style="color:var(--amber)">${fmt(monto)}</div><div class="kpi-sub">${horas} h · ${personas} trabajador${personas!==1?'es':''} · ${MESES[+m-1]} ${y}</div></div>`;
 }
 function rrhhKpiRemuneraciones(){
-  const vig = rrhhState.trabajadores.filter(t=>t.estado!=='inactivo');
-  const base = vig.reduce((s,t)=>s+(Number(t.sueldo)||0),0);
-  const liq  = vig.reduce((s,t)=>s+rrhhLiquidoDe(t),0);
-  const hx   = vig.reduce((s,t)=>s+hxTotalMes(t, hxMesActual()).monto,0);
-  return `<div class="kpi-card cteal"><div class="kpi-label">Remuneraciones del mes</div><div class="kpi-val" style="color:var(--teal)">${fmt(liq+hx)}</div><div class="kpi-sub">Líquido${hx?` + HH.EE. ${fmt(hx)}`:''} · Base: ${fmt(base)} · ${vig.length} trabajador${vig.length!==1?'es':''} vigente${vig.length!==1?'s':''}</div></div>`;
+  const mes=rrhhMesPago(), vig = rrhhState.trabajadores.filter(t=>t.estado!=='inactivo');
+  const rs = vig.map(t=>rrhhPagoMes(t,mes));
+  const liq=rs.reduce((s,r)=>s+r.liquido,0), ext=rs.reduce((s,r)=>s+r.extras,0), des=rs.reduce((s,r)=>s+r.descuentos,0), tot=rs.reduce((s,r)=>s+r.total,0);
+  return `<div class="kpi-card cteal"><div class="kpi-label">Total a pagar · ${pgMesLabel(mes)}</div><div class="kpi-val" style="color:var(--teal)">${fmt(tot)}</div><div class="kpi-sub">Líquido ${fmt(liq)}${ext?` · +${fmt(ext)} extras`:''}${des?` · −${fmt(des)} descuentos`:''} · ${vig.length} trabajador${vig.length!==1?'es':''}</div></div>`;
 }
 function rrhhRenderTotales(list, tbody){
   const table = tbody.closest('table'); if(!table) return;
@@ -7239,17 +7601,108 @@ function rrhhRenderTotales(list, tbody){
   if(!tf){ tf=document.createElement('tfoot'); table.appendChild(tf); }
   const vig = list.filter(t=>t.estado!=='inactivo');
   if(!list.length){ tf.innerHTML=''; return; }
+  const mes=rrhhMesPago(), rs=vig.map(t=>rrhhPagoMes(t,mes));
   const base = vig.reduce((s,t)=>s+(Number(t.sueldo)||0),0);
-  const liq  = vig.reduce((s,t)=>s+rrhhLiquidoDe(t),0);
-  const est  = vig.some(t=>!(Number(t.liquido)>0) && Number(t.sueldo)>0);
-  const hx   = vig.reduce((s,t)=>s+hxTotalMes(t, hxMesActual()).monto,0);
+  const liq=rs.reduce((s,r)=>s+r.liquido,0), ext=rs.reduce((s,r)=>s+r.extras,0), des=rs.reduce((s,r)=>s+r.descuentos,0), tot=rs.reduce((s,r)=>s+r.total,0);
+  const est = rs.some(r=>r.liquidoEstimado && r.liquido);
   const excl = list.length - vig.length;
   tf.innerHTML = `<tr style="background:var(--bg3)">
-    <td colspan="6" style="padding:12px;font-weight:700;color:var(--text)">Total remuneraciones
-      <div style="font-weight:400;font-size:11.5px;color:var(--text3);margin-top:2px">Sueldo base: ${fmt(base)} · ${vig.length} trabajador${vig.length!==1?'es':''}${excl?` · ${excl} inactivo${excl!==1?'s':''} excluido${excl!==1?'s':''}`:''}${est?' · incluye montos estimados (~)':''}${hx?` · Horas extra del mes: ${fmt(hx)}`:''}</div></td>
+    <td colspan="6" style="padding:12px;font-weight:700;color:var(--text)">Total remuneraciones · ${pgMesLabel(mes)}
+      <div style="font-weight:400;font-size:11.5px;color:var(--text3);margin-top:2px">Sueldo base: ${fmt(base)} · ${vig.length} trabajador${vig.length!==1?'es':''}${excl?` · ${excl} inactivo${excl!==1?'s':''} excluido${excl!==1?'s':''}`:''}${est?' · incluye montos estimados (~)':''}</div></td>
     <td style="padding:12px;text-align:right;font-weight:700;color:var(--green);white-space:nowrap">${fmt(liq)}<div style="font-weight:400;font-size:11px;color:var(--text3)">líquido</div></td>
-    <td style="padding:12px;text-align:right;font-weight:700;font-size:15px;color:var(--teal);white-space:nowrap">${fmt(liq+hx)}<div style="font-weight:400;font-size:11px;color:var(--text3)">${hx?'incl. '+fmt(hx)+' HH.EE.':'total a pagar'}</div></td>
+    <td style="padding:12px;text-align:right;font-weight:700;font-size:15px;color:var(--teal);white-space:nowrap">${fmt(tot)}<div style="font-weight:400;font-size:11px;color:var(--text3)">${ext?`<span style="color:var(--green)">+${fmt(ext)}</span> `:''}${des?`<span style="color:var(--red)">−${fmt(des)}</span>`:''}${!ext&&!des?'total a pagar':''}</div></td>
     <td colspan="3"></td></tr>`;
+}
+
+// ══ COMPROBANTE DE PAGO (PDF vía impresión) ══
+function pgEnPalabras(n){
+  n=Math.round(Math.abs(n||0)); if(!n) return 'cero pesos';
+  const U=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'];
+  const D=['','','','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
+  const C=['','ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'];
+  const m1000=x=>{ if(!x) return ''; if(x===100) return 'cien'; const c=Math.floor(x/100), r=x%100; const rs = r<30 ? U[r] : D[Math.floor(r/10)]+(r%10?' y '+U[r%10]:''); return [C[c],rs].filter(Boolean).join(' '); };
+  const apoc=s=>s.replace(/veintiuno$/,'veintiún').replace(/uno$/,'un');
+  const mill=Math.floor(n/1e6), mil=Math.floor(n%1e6/1000), res=n%1000, out=[];
+  if(mill) out.push(mill===1 ? 'un millón' : apoc(m1000(mill))+' millones');
+  if(mil) out.push(mil===1 ? 'mil' : apoc(m1000(mil))+' mil');
+  if(res) out.push(m1000(res));
+  return apoc(out.join(' ')) + (!mil && !res ? ' de pesos' : ' pesos');
+}
+function pgComprobanteHTML(t, mes){
+  const r=rrhhPagoMes(t,mes), e=pgEsc;
+  const fechas=(items,f)=>items.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(f).join(' · ');
+  const fila=(c,d,m,cls)=>`<tr><td>${c}</td><td class="d">${d||''}</td><td class="r ${cls||''}">${m}</td></tr>`;
+  let pagos=fila('Sueldo líquido', r.liquidoEstimado?'Monto mensual (estimado)':'Monto mensual', fmt(r.liquido));
+  if(r.hx.monto) pagos+=fila('Horas extra', `${pgNum(r.hx.horas)} h con recargo 50% · `+fechas(r.hx.items,h=>`${fmtFecha(h.fecha).slice(0,5)}: ${pgNum(h.horas)} h`), fmt(r.hx.monto));
+  if(r.dx.monto) pagos+=fila('Días extra', `${pgDias(r.dx.dias)} × ${fmt(r.dx.items[0].valorDia)} · `+fechas(r.dx.items,d=>`${fmtFecha(d.fecha).slice(0,5)}${d.nota?' '+e(d.nota):''}`), fmt(r.dx.monto));
+  r.bonos.items.forEach(b=>{ pagos+=fila('Bono', e(b.concepto), fmt(b.monto)); });
+  let desc='';
+  if(r.au.monto) desc+=fila('Ausencias', `${pgDias(r.au.dias)} × ${fmt(r.au.items[0].valorDia)} · `+fechas(r.au.items,a=>`${fmtFecha(a.fecha).slice(0,5)} ${e(a.motivo)}`), '−'+fmt(r.au.monto),'neg');
+  r.cr.items.forEach(({c,q})=>{ const saldo=crSaldoTras(c,mes); desc+=fila('Crédito · '+e(c.concepto), `Cuota ${q.k} de ${q.n} · monto original ${fmt(c.monto)} · saldo después de este pago ${fmt(saldo)}`, '−'+fmt(q.monto),'neg'); });
+  const sinDesc=r.au.todas.filter(a=>a.descuenta===false);
+  const notas=[];
+  if(sinDesc.length) notas.push('Ausencias sin descuento: '+sinDesc.map(a=>`${fmtFecha(a.fecha)} · ${pgDias(a.dias)} · ${e(a.motivo)}`).join('; '));
+  if(r.liquidoEstimado && r.liquido) notas.push('El sueldo líquido es un monto estimado; registre el valor real en la ficha del trabajador.');
+  const folio='CP-'+mes.replace('-','')+'-'+String(t._id||'').replace(/[^a-z0-9]/gi,'').slice(-5).toUpperCase();
+  const dato=(l,v)=>v?`<div><span>${l}</span><b>${e(v)}</b></div>`:'';
+  return `<section class="cp">
+    <header><div><div class="emp">${e(t.empresa||'')}</div><h1>Comprobante de pago</h1></div>
+      <div class="per"><span>Período</span><b>${pgMesLabel(mes)}</b><small>N° ${folio}</small></div></header>
+    <div class="trab">
+      ${dato('Trabajador',`${t.nombres||''} ${t.apellidos||''}`)}${dato('RUT',t.rut)}${dato('Cargo',t.cargo)}
+      ${dato('Fecha de ingreso',fmtFecha(t.ingreso))}${dato('Jornada semanal',hxJornada(t)+' horas')}${dato('Contrato',t.tipo_contrato)}
+      ${dato('Banco',t.banco)}${dato('Cuenta',t.cuenta)}
+    </div>
+    <table><thead><tr><th>Concepto</th><th>Detalle</th><th class="r">Monto</th></tr></thead>
+      <tbody><tr class="sec"><td colspan="3">Pagos</td></tr>${pagos}<tr class="sub"><td colspan="2">Total pagos</td><td class="r">${fmt(r.haberes)}</td></tr>
+      ${desc?`<tr class="sec"><td colspan="3">Descuentos</td></tr>${desc}<tr class="sub"><td colspan="2">Total descuentos</td><td class="r neg">−${fmt(r.descuentos)}</td></tr>`:''}</tbody></table>
+    <div class="tot"><div><span>Total a pagar</span><small>Son: ${r.total<0?'menos ':''}${pgEnPalabras(r.total)}</small></div><b>${r.total<0?'−':''}${fmt(Math.abs(r.total))}</b></div>
+    ${notas.length?`<div class="notas">${notas.map(n=>`<p>${n}</p>`).join('')}</div>`:''}
+    <div class="firmas"><div><i></i>Firma empleador<small>${e(t.empresa||'')}</small></div><div><i></i>Recibí conforme<small>${e((t.nombres||'')+' '+(t.apellidos||''))} · ${e(t.rut||'')}</small></div></div>
+    <footer>Emitido el ${fmtFecha(pgHoy())} · Montos en pesos chilenos</footer>
+  </section>`;
+}
+const PG_CP_CSS=`@page{size:A4;margin:14mm}*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',system-ui,sans-serif;color:#1c1c30;background:#eef2ff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-variant-numeric:tabular-nums}
+.cp{background:#fff;max-width:780px;margin:24px auto;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(45,42,234,.1);page-break-after:always;break-after:page}
+.cp:last-child{page-break-after:auto;break-after:auto}
+header{background:#2d2aea;color:#fff;padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+.emp{font-size:12px;opacity:.8;font-weight:500}h1{font-size:24px;font-weight:700;letter-spacing:-.3px;margin-top:2px}
+.per{text-align:right}.per span{display:block;font-size:11px;opacity:.75}.per b{display:block;font-size:20px;font-weight:700}.per small{font-size:10.5px;opacity:.75}
+.trab{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 18px;padding:20px 28px;background:#f6f8ff;border-bottom:1px solid #e3e6ef}
+.trab span{display:block;font-size:10.5px;color:#6e7189}.trab b{font-size:13px;font-weight:600}
+table{width:calc(100% - 56px);margin:18px 28px 0;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:11px;color:#6e7189;font-weight:600;padding:8px 10px;border-bottom:1px solid #e3e6ef}
+td{padding:9px 10px;border-bottom:1px solid #eef0f5;vertical-align:top}td:first-child{font-weight:500;white-space:nowrap}
+td.d{color:#6e7189;font-size:11.5px}.r{text-align:right;white-space:nowrap;font-weight:600}.neg{color:#d13a3a}
+tr.sec td{background:#e9efff;color:#2d2aea;font-weight:700;font-size:11.5px;padding:7px 10px;border:none}
+tr.sub td{font-weight:700;background:#fbfcff}
+.tot{margin:18px 28px 0;background:#2d2aea;color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.tot span{display:block;font-size:13px;font-weight:600}.tot small{display:block;font-size:11px;opacity:.85;margin-top:2px}.tot b{font-size:26px;font-weight:700;white-space:nowrap}
+.notas{margin:12px 28px 0;font-size:11px;color:#6e7189}.notas p{margin-top:3px}
+.firmas{display:grid;grid-template-columns:1fr 1fr;gap:48px;padding:56px 56px 8px}
+.firmas div{text-align:center;font-size:12px;font-weight:600}.firmas i{display:block;border-top:1px solid #1c1c30;margin-bottom:6px}.firmas small{display:block;font-weight:400;color:#6e7189;font-size:11px}
+footer{padding:14px 28px 20px;font-size:10.5px;color:#6e7189;text-align:center}
+@media print{body{background:#fff}.cp{margin:0;box-shadow:none;border-radius:0;max-width:none}}`;
+function pgAbrirComprobantes(lista, mes){
+  const win=window.open('','_blank');
+  if(!win){ showToast('Permite las ventanas emergentes para exportar el comprobante',true); return; }
+  const titulo = lista.length===1 ? `Comprobante de pago ${pgMesLabel(mes)} - ${lista[0].nombres||''} ${lista[0].apellidos||''}` : `Comprobantes de pago ${pgMesLabel(mes)}`;
+  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${pgEsc(titulo)}</title>`
+    + `<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${PG_CP_CSS}</style></head><body>`
+    + lista.map(t=>pgComprobanteHTML(t,mes)).join('')
+    + '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},500);}</scr'+'ipt></body></html>');
+  win.document.close();
+}
+function pgExportarComprobante(){
+  const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
+  pgAbrirComprobantes([t], pgMes());
+}
+function rrhhComprobantesMes(){
+  const lista=rrhhState.trabajadores.filter(t=>t.estado!=='inactivo')
+    .sort((a,b)=>((a.apellidos||'')+(a.nombres||'')).localeCompare((b.apellidos||'')+(b.nombres||'')));
+  if(!lista.length){ showToast('No hay trabajadores vigentes',true); return; }
+  pgAbrirComprobantes(lista, rrhhMesPago());
 }
 function calcVaccLegal(fechaIngreso) {
   if(!fechaIngreso) return {meses:0,anos:0,diasBase:0,diasAcumulados:0,esZona:false};
