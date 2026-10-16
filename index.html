@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GBisness — Cybernetic SpA</title>
 <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -22,21 +23,7 @@
   --sidebar-bg:var(--bg2);
   --loader-bg:rgba(7,8,15,0.88);
 }
-/* LIGHT MODE */
-body.light-mode{
-  --bg:#f0f2f8;--bg2:#e4e7f0;--bg3:#dce0ec;--card:#ffffff;
-  --green:#00a372;--green-dim:rgba(0,163,114,0.08);
-  --blue:#2563eb;--amber:#d97706;--red:#dc2626;--teal:#0891b2;
-  --text:#1a1d2e;--text2:#4a5068;--text3:#8890aa;
-  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
-  --topbar-bg:rgba(240,242,248,0.97);
-  --sidebar-bg:#e4e7f0;
-  --loader-bg:rgba(240,242,248,0.88);
-}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;transition:background .25s,color .25s}
-/* THEME TOGGLE BTN */
-.btn-theme{font-family:var(--font-mono);font-size:13px;padding:6px 10px;background:none;border:1px solid var(--border2);color:var(--text2);cursor:pointer;border-radius:2px;transition:all .15s;line-height:1}
-.btn-theme:hover{border-color:var(--teal);color:var(--teal)}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh}
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);padding:0 24px;display:flex;align-items:center;gap:12px;height:54px}
 .topbar-logo{font-family:var(--font-display);font-size:20px;letter-spacing:3px;color:var(--teal);flex-shrink:0}
@@ -752,6 +739,561 @@ input.fi-money{padding-left:58px!important;width:100%}
 .cg-analysis-subtitle { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#aaa; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid #e5e3dd; }
 
 </style>
+<style>
+#app-proveedores{min-height:100vh;background:var(--bg);display:none}
+#app-proveedores .pv-topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);padding:0 22px;display:flex;align-items:center;gap:10px;height:54px}
+#app-proveedores .pv-logo{font-family:var(--font-display);font-size:20px;letter-spacing:3px;color:var(--teal)}
+#app-proveedores .pv-layout{display:flex;min-height:calc(100vh - 54px)}
+#app-proveedores .pv-sidebar{width:190px;flex-shrink:0;background:var(--sidebar-bg);border-right:1px solid var(--border);padding:10px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
+#app-proveedores .pv-main{flex:1;padding:22px 26px;overflow-x:auto;min-width:0}
+#app-proveedores .pv-nav-group{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);padding:14px 16px 5px;text-transform:uppercase}
+#app-proveedores .pv-nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border-left:2px solid transparent}
+#app-proveedores .pv-nav-item:hover{background:rgba(255,255,255,0.02);color:var(--text)}
+#app-proveedores .pv-nav-item.active{background:var(--green-dim);color:var(--teal);border-left-color:var(--teal)}
+#app-proveedores .pv-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+#app-proveedores .pv-kpi{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:14px 16px;position:relative;overflow:hidden}
+#app-proveedores .pv-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+#app-proveedores .pv-kpi.ct::before{background:var(--teal)}
+#app-proveedores .pv-kpi.cg::before{background:var(--green)}
+#app-proveedores .pv-kpi.ca::before{background:var(--amber)}
+#app-proveedores .pv-kpi.cr::before{background:var(--blue)}
+#app-proveedores .pv-kpi.cp::before{background:#a064ff}
+#app-proveedores .pv-kpi-lbl{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px}
+#app-proveedores .pv-kpi-val{font-family:var(--font-display);font-size:24px;letter-spacing:1px;line-height:1}
+#app-proveedores .pv-kpi-sub{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:4px}
+#app-proveedores .pv-section{background:var(--card);border:1px solid var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden}
+#app-proveedores .pv-sec-hdr{padding:11px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+#app-proveedores .pv-sec-title{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase}
+#app-proveedores .pv-tbl{width:100%;border-collapse:collapse}
+#app-proveedores .pv-tbl th{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+#app-proveedores .pv-tbl td{padding:7px 10px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
+#app-proveedores .pv-tbl tr:last-child td{border-bottom:none}
+#app-proveedores .pv-tbl tr:hover td{background:rgba(255,255,255,0.015);cursor:pointer}
+#app-proveedores .pv-badge{display:inline-block;font-family:var(--font-mono);font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px;letter-spacing:1px;white-space:nowrap}
+#app-proveedores .badge-hol{background:rgba(91,79,207,0.2);color:#a090ff;border:1px solid rgba(91,79,207,0.3)}
+#app-proveedores .badge-nav{background:rgba(0,114,188,0.2);color:#60b0ff;border:1px solid rgba(0,114,188,0.3)}
+#app-proveedores .badge-poc{background:rgba(196,89,17,0.2);color:#f09060;border:1px solid rgba(196,89,17,0.3)}
+#app-proveedores .uso-com{background:rgba(0,180,100,0.18);color:#00c87a;border:1px solid rgba(0,180,100,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
+#app-proveedores .uso-fab{background:rgba(74,158,255,0.18);color:var(--blue);border:1px solid rgba(74,158,255,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
+#app-proveedores .uso-inf{background:rgba(255,71,87,0.18);color:var(--red);border:1px solid rgba(255,71,87,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
+#app-proveedores .uso-rev{background:rgba(245,166,35,0.18);color:var(--amber);border:1px solid rgba(245,166,35,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
+#app-proveedores .pv-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 18px;border-bottom:1px solid var(--border)}
+#app-proveedores .pv-fi{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:7px 11px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;transition:border-color .2s}
+#app-proveedores .pv-fi:focus{border-color:var(--teal)}
+#app-proveedores .pv-search-wrap{position:relative;flex:1;min-width:200px}
+#app-proveedores .pv-search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none}
+#app-proveedores .pv-search{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:7px 11px 7px 32px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none}
+#app-proveedores .pv-search:focus{border-color:var(--teal)}
+#app-proveedores .pv-btn{padding:7px 14px;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;border-radius:2px;cursor:pointer;transition:all .15s}
+#app-proveedores .pv-btn-teal{background:var(--teal);color:#fff;border:none}
+#app-proveedores .pv-btn-teal:hover{opacity:.85}
+#app-proveedores .pv-btn-sec{background:none;border:1px solid var(--border2);color:var(--text2)}
+#app-proveedores .pv-btn-sec:hover{border-color:var(--teal);color:var(--teal)}
+#app-proveedores .pv-btn-amber{background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);color:var(--amber)}
+#app-proveedores .pv-btn-amber:hover{background:rgba(245,166,35,0.18)}
+#app-proveedores .oc-draft{background:rgba(160,168,200,0.15);color:var(--text3);border:1px solid rgba(160,168,200,0.25)}
+#app-proveedores .oc-sent{background:rgba(74,158,255,0.15);color:var(--blue);border:1px solid rgba(74,158,255,0.25)}
+#app-proveedores .oc-confirmed{background:rgba(23,134,79,0.15);color:var(--green);border:1px solid rgba(23,134,79,0.25)}
+#app-proveedores .oc-received{background:rgba(45,42,234,0.15);color:var(--teal);border:1px solid rgba(45,42,234,0.25)}
+#app-proveedores .oc-cancelled{background:rgba(255,71,87,0.15);color:var(--red);border:1px solid rgba(255,71,87,0.25)}
+#pv-oc-modal{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
+#pv-oc-modal.open{display:flex}
+#pv-oc-modal .pv-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;width:100%;max-width:820px;overflow:hidden}
+#pv-oc-modal .pv-modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+#pv-oc-modal .pv-modal-title{font-family:var(--font-display);font-size:18px;letter-spacing:2px}
+#pv-oc-modal .pv-modal-body{padding:20px;max-height:70vh;overflow-y:auto}
+#pv-edit-modal{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px}
+#pv-edit-modal.open{display:flex}
+#pv-edit-modal .pv-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;width:100%;max-width:560px;overflow:hidden;max-height:90vh;overflow-y:auto}
+@media print{body>*:not(#pv-print-area){display:none!important}#pv-print-area{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999;padding:24px}}
+#pv-print-area{display:none}
+#app-proveedores .pv-prov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;padding:16px 18px}
+#app-proveedores .pv-prov-card{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:14px 16px;position:relative;transition:all .15s}
+#app-proveedores .pv-prov-card:hover{border-color:var(--teal)}
+#app-proveedores .pv-prov-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .15s}
+#app-proveedores .pv-prov-card:hover::before{opacity:1}
+#app-proveedores .pv-prov-card.hol::before{background:#a090ff}
+#app-proveedores .pv-prov-card.nav::before{background:#60b0ff}
+#app-proveedores .pv-prov-card.poc::before{background:#f09060}
+#app-proveedores .pv-prov-name{font-family:var(--font-display);font-size:15px;letter-spacing:1px;margin-bottom:3px}
+#app-proveedores .pv-prov-contact{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:8px}
+#app-proveedores .pv-prov-stats{display:flex;gap:14px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+#app-proveedores .pv-prov-stat{font-family:var(--font-mono);font-size:9px;color:var(--text3)}
+#app-proveedores .pv-prov-stat b{color:var(--text);display:block;font-size:14px;font-family:var(--font-display);letter-spacing:1px}
+
+#app-proveedores .pv-import-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#app-proveedores .pv-mini-note{font-family:var(--font-mono);font-size:9px;color:var(--text3);line-height:1.45}
+#pv-product-modal{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px}
+#pv-product-modal.open{display:flex}
+#pv-product-modal .pv-modal-box{background:var(--card);border:1px solid var(--border2);border-radius:2px;width:100%;max-width:560px;overflow:hidden;max-height:90vh;overflow-y:auto}
+#app-proveedores .pv-check-row{display:flex;gap:12px;flex-wrap:wrap;background:var(--bg3);border:1px solid var(--border2);padding:8px 10px;border-radius:2px}
+#app-proveedores .pv-check-row label{font-family:var(--font-mono);font-size:10px;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer}
+#app-proveedores .oc-item-row{display:grid;grid-template-columns:1fr 70px 100px 110px 80px 28px;gap:8px;align-items:center;margin-bottom:6px}
+#app-proveedores .oc-item-row input,#app-proveedores .oc-item-row select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 9px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;width:100%}
+#app-proveedores .oc-item-row input:focus,#app-proveedores .oc-item-row select:focus{border-color:var(--teal)}
+#app-proveedores .pv-page-title{font-family:var(--font-display);font-size:26px;letter-spacing:2px;margin-bottom:2px}
+#app-proveedores .pv-page-title span{color:var(--teal)}
+#app-proveedores .pv-page-sub{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:18px}
+#app-proveedores .oc-num{font-family:var(--font-mono);font-size:11px;color:var(--teal)}
+#app-proveedores .precio-val{font-family:var(--font-mono);font-size:11px;color:var(--green)}
+#app-proveedores .precio-vacio{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+/* Pills filtro uso */
+#app-proveedores .uso-pill{padding:4px 10px;border-radius:2px;border:1px solid var(--border2);background:none;font-family:var(--font-mono);font-size:9px;cursor:pointer;color:var(--text3);letter-spacing:.5px;transition:all .1s}
+#app-proveedores .uso-pill.on{color:#000!important;border-color:transparent}
+#app-proveedores .uso-pill.on-com{background:#00c87a}
+#app-proveedores .uso-pill.on-fab{background:var(--blue)}
+#app-proveedores .uso-pill.on-inf{background:var(--red)}
+#app-proveedores .uso-pill.on-rev{background:var(--amber)}
+#app-proveedores .uso-pill.on-all{background:var(--teal)}
+/* Price input inline */
+#app-proveedores .pv-price-inp{background:var(--bg3);border:1px solid var(--border2);color:var(--green);padding:3px 7px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;width:90px;text-align:right}
+#app-proveedores .pv-price-inp:focus{border-color:var(--teal)}
+</style>
+<style>
+#app-proveedores .pv-rank{display:inline-block;font-family:var(--font-mono);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px;letter-spacing:.7px;white-space:nowrap}
+#app-proveedores .pv-rank-low{background:rgba(23,134,79,.12);color:var(--green);border:1px solid rgba(23,134,79,.28)}
+#app-proveedores .pv-rank-high{background:rgba(255,71,87,.12);color:var(--red);border:1px solid rgba(255,71,87,.30)}
+</style>
+<style>
+#app-proveedores .badge-ins{background:rgba(5,150,105,0.18);color:#34d399;border:1px solid rgba(5,150,105,0.35)}
+#app-proveedores .pv-prov-card.ins::before{background:#34d399}
+</style>
+<style>
+/* ══ AUTOMATIK MODALS · diseño moderno modo claro ══ */
+
+/* Overlay */
+#pv-edit-modal, #pv-product-modal, #pv-oc-modal {
+  background: rgba(15,20,40,0.5) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+/* Caja principal */
+#pv-edit-modal .pv-modal-box,
+#pv-product-modal .pv-modal-box {
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08) !important;
+  overflow: hidden !important;
+  animation: modalIn .18s cubic-bezier(.2,.8,.4,1);
+}
+@keyframes modalIn {
+  from { transform: translateY(10px) scale(0.98); opacity:0; }
+  to   { transform: translateY(0) scale(1); opacity:1; }
+}
+
+/* Header */
+#pv-edit-modal .pv-modal-box > div:first-child,
+#pv-product-modal .pv-modal-box > div:first-child {
+  background: #f6f8fa !important;
+  border-bottom: 1px solid #e8ecf0 !important;
+  padding: 18px 22px !important;
+  position: relative !important;
+}
+#pv-edit-modal .pv-modal-box > div:first-child::after,
+#pv-product-modal .pv-modal-box > div:first-child::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00d4aa, #0078d4);
+}
+
+/* Título header */
+#pv-edit-modal [style*="font-family:var(--font-display)"],
+#pv-product-modal [style*="font-family:var(--font-display)"],
+#pv-prod-modal-title {
+  color: #1a2035 !important;
+  letter-spacing: 3px !important;
+  font-size: 15px !important;
+}
+#edit-cod-label { color: #00b894 !important; }
+
+/* Body */
+#pv-edit-modal .pv-modal-box > div:last-child,
+#pv-product-modal .pv-modal-box > div:last-child {
+  background: #ffffff !important;
+  padding: 22px !important;
+}
+
+/* Labels */
+#pv-edit-modal [style*="letter-spacing:1.5px"],
+#pv-product-modal [style*="letter-spacing:1.5px"] {
+  color: #8892a4 !important;
+  font-size: 9px !important;
+  letter-spacing: 2px !important;
+  font-weight: 600 !important;
+}
+
+/* Inputs */
+#pv-edit-modal input:not([type=hidden]), #pv-edit-modal select, #pv-edit-modal textarea,
+#pv-product-modal input:not([type=hidden]), #pv-product-modal select, #pv-product-modal textarea,
+#pv-edit-modal .pv-fi, #pv-product-modal .pv-fi {
+  background: #f6f8fa !important;
+  border: 1.5px solid #e1e6ed !important;
+  color: #1a2035 !important;
+  border-radius: 6px !important;
+  padding: 9px 13px !important;
+  font-size: 13px !important;
+  transition: border-color .15s, box-shadow .15s !important;
+}
+#pv-edit-modal input:focus, #pv-edit-modal select:focus,
+#pv-product-modal input:focus, #pv-product-modal select:focus {
+  border-color: #00d4aa !important;
+  box-shadow: 0 0 0 3px rgba(45,42,234,0.12) !important;
+  background: #fff !important;
+  outline: none !important;
+}
+#pv-edit-modal input::placeholder, #pv-product-modal input::placeholder {
+  color: #b0bac8 !important;
+}
+
+/* Filas de precios por proveedor */
+#edit-prov-prices > div {
+  background: #f9fafb !important;
+  border: 1.5px solid #e8ecf2 !important;
+  border-radius: 8px !important;
+  padding: 10px 12px !important;
+  margin-bottom: 8px !important;
+  transition: border-color .15s, box-shadow .15s !important;
+}
+#edit-prov-prices > div:hover {
+  border-color: #c8d4e0 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+
+/* Footer */
+#pv-edit-modal [style*="border-top:1px solid var(--border)"],
+#pv-product-modal [style*="border-top:1px solid var(--border)"] {
+  border-top: 1px solid #edf0f5 !important;
+  margin-top: 4px !important;
+  padding-top: 16px !important;
+}
+
+/* Botón cancelar */
+#pv-edit-modal .pv-btn-sec, #pv-product-modal .pv-btn-sec {
+  background: #f0f3f7 !important;
+  border: 1.5px solid #dde2ea !important;
+  color: #6b7585 !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+}
+#pv-edit-modal .pv-btn-sec:hover, #pv-product-modal .pv-btn-sec:hover {
+  background: #e4e9f0 !important;
+  color: #3a4254 !important;
+}
+
+/* Botón guardar */
+#pv-edit-modal .pv-btn-teal, #pv-product-modal .pv-btn-teal {
+  background: #00d4aa !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  box-shadow: 0 2px 8px rgba(45,42,234,0.35) !important;
+}
+#pv-edit-modal .pv-btn-teal:hover, #pv-product-modal .pv-btn-teal:hover {
+  background: #00bfa0 !important;
+  box-shadow: 0 4px 12px rgba(45,42,234,0.45) !important;
+}
+
+/* Modal OC */
+#pv-oc-modal .pv-modal-box {
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18) !important;
+}
+#pv-oc-modal .pv-modal-hdr {
+  background: #f6f8fa !important;
+  border-bottom: 1px solid #e8ecf0 !important;
+  position: relative !important;
+}
+#pv-oc-modal .pv-modal-hdr::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00d4aa, #0078d4);
+}
+#pv-oc-modal .pv-modal-title { color: #1a2035 !important; }
+#pv-oc-modal .pv-modal-body { background: #fff !important; color: #1a2035 !important; }
+</style>
+<style id="automatik-ui-v3">
+:root, body.light-mode{
+  color-scheme:light;
+  --bg:#eef2ff; --bg2:#ffffff; --bg3:#f6f8ff; --card:#ffffff;
+  --teal:#2d2aea; --green:#17864f; --green-dim:#e9efff;
+  --blue:#2563eb; --amber:#c46a00; --red:#d13a3a;
+  --text:#1c1c30; --text2:#3a3a55; --text3:#6e7189;
+  --border:#e3e6ef; --border2:#d4d8e4;
+  --topbar-bg:#2d2aea; --sidebar-bg:#ffffff; --loader-bg:rgba(238,242,255,.88);
+  --font-display:'Poppins',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'Poppins',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-body:'Poppins',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --ui-primary:#2d2aea; --ui-primary-2:#e9efff; --ui-primary-3:#dce6ff; --ui-primary-ink:#1b2d55;
+  --ui-ok-2:#d7f9e7; --ui-late-2:#ffe6e6; --ui-soon-2:#fff0dc;
+  --ui-r-s:8px; --ui-r-m:12px; --ui-r-l:16px;
+  --ui-shadow:0 1px 2px rgba(28,28,48,.04),0 4px 14px rgba(45,42,234,.06);
+  --ui-shadow-lg:0 24px 64px rgba(27,45,85,.22);
+}
+html,body{background:var(--bg)!important}
+body{font-family:var(--font-body)!important;color:var(--text);font-size:14px;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.btn-theme{display:none!important}
+::selection{background:var(--ui-primary-3)}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-thumb{background:#c9cfe2;border-radius:99px}
+*::-webkit-scrollbar-track{background:transparent}
+
+/* ── LOGIN ─────────────────────────────────────────── */
+#loginScreen{background:radial-gradient(1200px 600px at 10% -10%,#dce6ff 0,transparent 60%),radial-gradient(900px 500px at 110% 110%,#e8e4ff 0,transparent 55%),var(--bg)!important;padding:30px 0}
+.login-wrap{max-width:480px!important;width:100%!important}
+.login-logo{font-family:var(--font-display)!important;font-weight:700!important;font-size:30px!important;letter-spacing:-.5px!important;color:var(--teal)!important;margin-bottom:2px!important}
+.login-sub{font-size:12px!important;letter-spacing:.3px!important;margin-bottom:20px!important;color:var(--text3)!important}
+#mod-list{display:grid!important;grid-template-columns:1fr 1fr;gap:8px!important}
+#mod-list button{background:#fff!important;border-radius:var(--ui-r-m)!important;font-family:var(--font-body)!important;font-weight:500!important;font-size:13px!important;letter-spacing:0!important;padding:12px 14px!important;box-shadow:var(--ui-shadow);transition:transform .12s,box-shadow .12s}
+#mod-list button:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(45,42,234,.12)}
+#mod-list button[style*="var(--teal)"]{background:var(--ui-primary-2)!important;font-weight:600!important}
+.login-card{border:none!important;border-radius:var(--ui-r-l)!important;padding:26px!important;box-shadow:var(--ui-shadow-lg)!important}
+.login-card::before{height:4px!important;background:linear-gradient(90deg,#2d2aea,#7c6cff)!important}
+.login-field label{font-size:11.5px!important;letter-spacing:0!important;text-transform:none!important;font-weight:500;color:var(--text2)!important}
+.login-field input{background:#fff!important;border:1px solid var(--border2)!important;border-radius:var(--ui-r-s)!important;padding:11px 13px!important;font-family:var(--font-body)!important;font-size:14px!important}
+.login-field input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px var(--ui-primary-3)}
+.btn-login{background:var(--teal)!important;color:#fff!important;font-family:var(--font-body)!important;font-weight:600!important;font-size:15px!important;letter-spacing:.3px!important;border-radius:var(--ui-r-s)!important;padding:12px!important;box-shadow:0 6px 16px rgba(45,42,234,.3)}
+.btn-login:hover{filter:brightness(1.08)}
+.btn-login:disabled{opacity:.7}
+
+/* ── TOPBARS ───────────────────────────────────────── */
+.topbar,#app-proveedores .pv-topbar{background:var(--topbar-bg)!important;border-bottom:none!important;height:60px!important;box-shadow:0 2px 14px rgba(45,42,234,.25);color:#fff}
+.topbar-logo,#app-proveedores .pv-logo{font-family:var(--font-display)!important;font-weight:700!important;font-size:17px!important;letter-spacing:.2px!important;color:#fff!important}
+#app-proveedores .pv-topbar > span{color:#c9d2ff!important;letter-spacing:.5px!important;font-size:11px!important}
+.topbar .month-select{background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.25)!important;color:#fff!important;border-radius:var(--ui-r-s)!important;font-family:var(--font-body)!important;font-size:13px!important;padding:8px 12px!important}
+.topbar .month-select option{color:#1c1c30}
+.topbar .btn-primary{background:#cfe0fa!important;color:var(--ui-primary-ink)!important}
+.topbar .btn-secondary{background:rgba(255,255,255,.12)!important;border-color:rgba(255,255,255,.3)!important;color:#fff!important}
+.btn-logout{background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.3)!important;color:#fff!important;border-radius:var(--ui-r-s)!important;font-family:var(--font-body)!important;font-weight:500!important;font-size:12px!important;letter-spacing:.3px!important;padding:8px 14px!important}
+.btn-logout:hover{background:#fff!important;color:var(--teal)!important}
+
+/* ticker */
+#tickerBanner,#tickerBanner2,#tickerBanner3{background:#fff!important;border-bottom:1px solid var(--border)!important;height:34px!important}
+.ticker-prefix{background:var(--ui-primary-2)!important;color:var(--teal)!important;height:34px!important;font-family:var(--font-body)!important;font-size:11px!important;letter-spacing:.3px!important;font-weight:600!important}
+.ticker-item{font-family:var(--font-body)!important;font-size:12.5px!important;color:var(--text2)!important}
+.ticker-item::before{color:var(--teal)!important}
+
+/* ── LAYOUT / SIDEBAR ─────────────────────────────── */
+.app-layout,#app-proveedores .pv-layout{min-height:calc(100vh - 60px)!important}
+.sidebar,#app-proveedores .pv-sidebar{width:220px!important;background:#fff!important;border-right:1px solid var(--border)!important;padding:14px 10px!important;top:60px!important;height:calc(100vh - 60px)!important}
+.nav-group,#app-proveedores .pv-nav-group{font-family:var(--font-body)!important;font-size:11px!important;letter-spacing:.6px!important;font-weight:600;color:var(--text3)!important;padding:14px 12px 6px!important}
+.nav-item,#app-proveedores .pv-nav-item{border-left:none!important;border-radius:var(--ui-r-s);padding:10px 12px!important;margin:2px 0;font-size:13.5px!important;font-weight:500;color:var(--text2)!important;transition:background .12s,color .12s}
+.nav-item:hover,#app-proveedores .pv-nav-item:hover{background:var(--bg3)!important;color:var(--text)!important}
+.nav-item.active,#app-proveedores .pv-nav-item.active{background:var(--ui-primary-2)!important;color:var(--teal)!important;font-weight:600}
+.main,#app-proveedores .pv-main{padding:26px 32px!important}
+
+/* ── TÍTULOS ──────────────────────────────────────── */
+.page-title,#app-proveedores .pv-page-title{font-family:var(--font-display)!important;font-weight:700!important;font-size:24px!important;letter-spacing:-.3px!important;text-transform:none;color:var(--text)!important;margin-bottom:4px!important}
+.page-title span,#app-proveedores .pv-page-title span{color:var(--teal)!important}
+.page-sub,#app-proveedores .pv-page-sub{font-family:var(--font-body)!important;font-size:12.5px!important;letter-spacing:0!important;color:var(--text3)!important;margin-bottom:22px!important}
+.mes-label{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display)!important;font-size:12.5px!important;font-weight:600!important;letter-spacing:.4px!important;color:var(--teal)!important;background:var(--ui-primary-2);padding:6px 14px;border-radius:99px;margin-bottom:16px!important}
+.mes-label:empty{display:none}
+
+/* ── KPI ──────────────────────────────────────────── */
+.kpi-grid,#app-proveedores .pv-kpi-grid{gap:14px!important}
+.kpi-card,#app-proveedores .pv-kpi{background:#fff!important;border:1px solid var(--border)!important;border-radius:var(--ui-r-m)!important;padding:18px 20px!important;box-shadow:var(--ui-shadow)}
+.kpi-card::before,#app-proveedores .pv-kpi::before{top:16px!important;bottom:16px!important;left:0!important;right:auto!important;width:4px!important;height:auto!important;border-radius:0 4px 4px 0}
+.kpi-card[style*="border-top:2px"]{border-top:1px solid var(--border)!important}
+.kpi-label,#app-proveedores .pv-kpi-lbl{font-family:var(--font-body)!important;font-size:12px!important;letter-spacing:0!important;text-transform:none!important;font-weight:500;color:var(--text3)!important;margin-bottom:8px!important}
+.kpi-val,#app-proveedores .pv-kpi-val{font-family:var(--font-display)!important;font-weight:700!important;font-size:24px!important;letter-spacing:-.4px!important}
+.kpi-sub,#app-proveedores .pv-kpi-sub{font-family:var(--font-body)!important;font-size:11.5px!important;color:var(--text3)!important;margin-top:6px!important;line-height:1.45}
+
+/* ── CARDS / SECCIONES ────────────────────────────── */
+.section-card,#app-proveedores .pv-section{background:#fff!important;border:1px solid var(--border)!important;border-radius:var(--ui-r-m)!important;box-shadow:var(--ui-shadow);margin-bottom:18px!important}
+.card-hdr,#app-proveedores .pv-sec-hdr{padding:14px 20px!important;border-bottom:1px solid var(--border)!important;background:#fff!important}
+.card-title,#app-proveedores .pv-sec-title{font-family:var(--font-body)!important;font-size:13.5px!important;letter-spacing:0!important;text-transform:none!important;font-weight:600!important;color:var(--text)!important}
+.card-body{padding:16px 20px!important}
+.total-bar{background:var(--bg3);border-top:1px solid var(--border)!important;padding:12px 20px!important}
+.total-lbl{font-family:var(--font-body)!important;font-size:12px!important;color:var(--text3)!important}
+.total-val{font-family:var(--font-display)!important;font-weight:700!important;font-size:18px!important}
+
+/* ── TABLAS ───────────────────────────────────────── */
+.tbl,#app-proveedores .pv-tbl{border-collapse:separate!important;border-spacing:0}
+.tbl th,#app-proveedores .pv-tbl th{font-family:var(--font-body)!important;font-size:11.5px!important;letter-spacing:.2px!important;text-transform:none!important;font-weight:600!important;color:var(--text3)!important;background:var(--bg3);padding:10px 12px!important;border-bottom:1px solid var(--border)!important}
+.tbl th:first-child,#app-proveedores .pv-tbl th:first-child{border-top-left-radius:8px}
+.tbl th:last-child,#app-proveedores .pv-tbl th:last-child{border-top-right-radius:8px}
+.tbl td,#app-proveedores .pv-tbl td{padding:11px 12px!important;font-size:13px!important;border-bottom:1px solid #eef0f6!important}
+.tbl tr:hover td,#app-proveedores .pv-tbl tr:hover td{background:#f4f7ff!important}
+.tbl td[style*="font-family:var(--font-mono)"]{font-variant-numeric:tabular-nums}
+
+/* badges */
+.cbadge,#app-proveedores .pv-badge{font-family:var(--font-body)!important;font-size:10.5px!important;font-weight:600!important;letter-spacing:.2px!important;padding:3px 9px!important;border-radius:99px!important}
+.ep{color:var(--green)!important;background:var(--ui-ok-2);padding:2px 9px;border-radius:99px;font-family:var(--font-body)!important;font-size:11px!important;font-weight:600}
+.ea{color:var(--amber)!important;background:var(--ui-soon-2);padding:2px 9px;border-radius:99px;font-family:var(--font-body)!important;font-size:11px!important;font-weight:600}
+.etiqueta-excede{border-radius:99px!important;font-family:var(--font-body)!important;font-weight:600}
+
+/* ── BOTONES ──────────────────────────────────────── */
+.btn-primary{background:var(--teal)!important;color:#fff!important;font-family:var(--font-body)!important;font-weight:600!important;font-size:13px!important;letter-spacing:.2px!important;border-radius:var(--ui-r-s)!important;padding:9px 16px!important;border:none!important;box-shadow:0 4px 12px rgba(45,42,234,.22);transition:filter .12s,transform .12s}
+.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-secondary{background:#fff!important;border:1px solid var(--border2)!important;color:var(--text2)!important;font-family:var(--font-body)!important;font-weight:500!important;font-size:12.5px!important;letter-spacing:0!important;border-radius:var(--ui-r-s)!important;padding:8px 14px!important}
+.btn-secondary:hover{border-color:var(--teal)!important;color:var(--teal)!important;background:var(--ui-primary-2)!important}
+.btn-add{background:var(--bg3)!important;border:1.5px dashed #c6cdf3!important;color:var(--teal)!important;font-family:var(--font-body)!important;font-size:12.5px!important;font-weight:500;letter-spacing:0!important;border-radius:var(--ui-r-s)!important;padding:10px 12px!important}
+.btn-add:hover{background:var(--ui-primary-2)!important}
+.btn-del{border-radius:6px!important;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0!important}
+.btn-del:hover{background:var(--ui-late-2)!important}
+button[style*="background:var(--teal)"]{color:#fff!important}
+
+/* ── PESTAÑAS ─────────────────────────────────────── */
+.ptab,#cierreTabBar .ptab,#rendTabBar .ptab{font-family:var(--font-body)!important;font-size:13px!important;letter-spacing:0!important;font-weight:500;color:var(--text3)!important;border:none!important;border-radius:var(--ui-r-s)!important;padding:8px 14px!important;margin:0 2px 0 0!important}
+.ptab:hover{color:var(--text)!important;background:var(--bg3)!important}
+.ptab.active{background:var(--ui-primary-2)!important;color:var(--teal)!important;font-weight:600}
+div:has(> .ptab){border-bottom:none!important;gap:4px!important;padding:4px;background:#fff;border:1px solid var(--border)!important;border-radius:var(--ui-r-m);display:inline-flex!important;flex-wrap:wrap;margin-bottom:20px!important;box-shadow:var(--ui-shadow)}
+
+/* ── FORMULARIOS ──────────────────────────────────── */
+.fi,#app-proveedores .pv-fi,#app-proveedores .pv-search,.oc-item-row input,.oc-item-row select{background:#fff!important;border:1px solid var(--border2)!important;color:var(--text)!important;border-radius:var(--ui-r-s)!important;font-family:var(--font-body)!important;font-size:13px!important;padding:9px 12px!important;transition:border-color .12s,box-shadow .12s}
+#app-proveedores .pv-search{padding-left:34px!important}
+.fi:focus,#app-proveedores .pv-fi:focus,#app-proveedores .pv-search:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px var(--ui-primary-3)!important;outline:none}
+.fl{font-family:var(--font-body)!important;font-size:11.5px!important;letter-spacing:0!important;text-transform:none!important;font-weight:500;color:var(--text2)!important}
+.fi-clp-prefix{font-family:var(--font-body)!important;font-size:10.5px!important;font-weight:600;color:var(--teal)!important;background:var(--ui-primary-2)!important;border-right:1px solid var(--ui-primary-3)!important;border-radius:var(--ui-r-s) 0 0 var(--ui-r-s)!important}
+input.fi-money{padding-left:62px!important}
+.annual-locked{background:var(--bg3)!important;color:var(--teal)!important}
+
+/* ── MODALES ──────────────────────────────────────── */
+.overlay{background:rgba(20,24,52,.42)!important;backdrop-filter:blur(6px)!important}
+.modal{background:#fff!important;border:none!important;border-radius:var(--ui-r-l)!important;padding:26px!important;box-shadow:var(--ui-shadow-lg)!important}
+.overlay.open .modal{animation:uiModalIn .18s cubic-bezier(.2,.8,.4,1)}
+@keyframes uiModalIn{from{transform:translateY(10px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.modal-title{font-family:var(--font-display)!important;font-weight:700!important;font-size:19px!important;letter-spacing:-.2px!important;color:var(--text)!important}
+.modal-sub{font-family:var(--font-body)!important;font-size:12.5px!important;color:var(--text3)!important;margin-bottom:20px!important}
+.close-btn{width:32px;height:32px;border-radius:50%!important;display:flex;align-items:center;justify-content:center;top:14px!important;right:14px!important}
+.close-btn:hover{background:var(--bg3)!important}
+.modal-actions{padding-top:14px;border-top:1px solid var(--border);margin-top:20px!important}
+
+/* toast */
+.toast-item{font-family:var(--font-body)!important;font-size:13px!important;font-weight:500;padding:11px 16px!important;border-radius:var(--ui-r-s)!important;box-shadow:0 10px 26px rgba(27,45,85,.22)}
+.toast-item.ok{background:#1c1c30!important;color:#fff!important}
+.toast-item.ok::first-letter{color:#7ee2b0}
+#_ldr{font-family:var(--font-body)!important;font-size:13px!important;font-weight:600;letter-spacing:.5px!important;color:var(--teal)!important}
+
+/* footer */
+#footer-ai{font-family:var(--font-body)!important;font-size:11px!important;opacity:1!important;background:#fff;border-top:1px solid var(--border);padding:10px 20px!important}
+
+/* listas config / historial */
+.cat-item{font-family:var(--font-body)!important;font-size:13px!important;letter-spacing:0!important;padding:9px 14px!important;color:var(--text2)!important}
+.cat-item:hover{background:var(--bg3)!important}
+.hist-row{padding:14px 4px!important}
+.hist-row:hover{background:var(--bg3);border-radius:var(--ui-r-s)}
+.module-card{border-radius:var(--ui-r-m)!important}
+
+/* ── PROVEEDORES ──────────────────────────────────── */
+#app-proveedores{background:var(--bg)!important}
+#app-proveedores .pv-btn{font-family:var(--font-body)!important;font-size:12.5px!important;letter-spacing:0!important;font-weight:500;border-radius:var(--ui-r-s)!important;padding:8px 13px!important}
+#app-proveedores .pv-btn-teal{background:var(--teal)!important;color:#fff!important;box-shadow:0 4px 12px rgba(45,42,234,.2)}
+#app-proveedores .pv-btn-sec{background:#fff!important;border:1px solid var(--border2)!important;color:var(--text2)!important}
+#app-proveedores .pv-btn-sec:hover{border-color:var(--teal)!important;color:var(--teal)!important;background:var(--ui-primary-2)!important}
+#app-proveedores .pv-btn-amber{background:var(--ui-soon-2)!important;border:1px solid #f4d3a6!important;color:var(--amber)!important}
+#app-proveedores .pv-filters{padding:14px 20px!important;gap:10px!important;background:#fff}
+#app-proveedores .uso-pill{font-family:var(--font-body)!important;font-size:12px!important;letter-spacing:0!important;border-radius:99px!important;padding:5px 12px!important;background:#fff}
+#app-proveedores .pv-prov-grid{padding:4px 0!important;gap:16px!important}
+#app-proveedores .pv-prov-card{background:#fff!important;border:1px solid var(--border)!important;border-radius:var(--ui-r-m)!important;padding:18px!important;box-shadow:var(--ui-shadow)}
+#app-proveedores .pv-prov-name{font-family:var(--font-display)!important;font-weight:700!important;font-size:16px!important;letter-spacing:-.2px!important}
+#app-proveedores .pv-prov-contact,#app-proveedores .pv-prov-stat{font-family:var(--font-body)!important;font-size:12px!important}
+#app-proveedores .pv-prov-stat b{font-family:var(--font-display)!important;font-weight:700!important;font-size:18px!important;letter-spacing:-.3px!important}
+#app-proveedores .oc-num{font-family:var(--font-body)!important;font-weight:600;color:var(--teal)!important}
+#app-proveedores .precio-val{color:var(--green)!important;font-weight:600}
+#app-proveedores .uso-com,#app-proveedores .uso-fab,#app-proveedores .uso-inf,#app-proveedores .uso-rev{border-radius:99px!important;font-family:var(--font-body)!important;font-size:10.5px!important;padding:3px 9px!important}
+#pv-oc-modal .pv-modal-box,#pv-edit-modal .pv-modal-box,#pv-product-modal .pv-modal-box{border-radius:var(--ui-r-l)!important}
+#pv-oc-modal .pv-modal-title{font-family:var(--font-display)!important;font-weight:700!important;letter-spacing:-.2px!important;font-size:18px!important}
+
+/* ── MERCADOLIBRE ANALYZER ────────────────────────── */
+#app-analyzer{--anl-bg:#eef2ff;--anl-accent:#2d2aea;--anl-border:#e3e6ef;--anl-border2:#d4d8e4;--anl-surface2:#f6f8ff;--anl-surface3:#eef1f9;--anl-text:#1c1c30;--anl-text2:#3a3a55;--anl-text3:#6e7189;--anl-green:#17864f;--font-head:'Poppins',sans-serif;--font-mono:'Poppins',sans-serif;--font-body:'Poppins',sans-serif;font-family:'Poppins',sans-serif;background:#eef2ff!important}
+#app-analyzer header.anl-header{min-height:60px!important;border-bottom:1px solid var(--anl-border)!important;box-shadow:0 1px 10px rgba(45,42,234,.06)!important}
+#app-analyzer .btn,#app-analyzer .vbtn,#app-analyzer .cpill,#app-analyzer select.filter-sel,#app-analyzer .search-wrap input{font-family:'Poppins',sans-serif!important;border-radius:var(--ui-r-s)!important}
+#app-analyzer .cpill{border-radius:99px!important;font-size:11.5px!important;letter-spacing:0!important;text-transform:none!important}
+#app-analyzer .cpill.active{background:#2d2aea!important;border-color:#2d2aea!important;color:#fff!important}
+#app-analyzer .stat-card{border-radius:var(--ui-r-m)!important;box-shadow:var(--ui-shadow)!important}
+#app-analyzer .stat-card.accent{background:linear-gradient(135deg,#2d2aea,#5b4dff)!important}
+#app-analyzer .stat-label{text-transform:none!important;letter-spacing:0!important;font-size:12px!important}
+#app-analyzer .pcard{border-radius:var(--ui-r-m)!important}
+#app-analyzer #anl-dropZone{border-radius:var(--ui-r-l)!important;border-color:#c6cdf3!important;background:#fff!important;padding:70px 32px;text-align:center;cursor:pointer}
+#app-analyzer .drop-title{font-family:'Poppins',sans-serif!important;font-weight:700}
+
+/* ── CALCULADORA ──────────────────────────────────── */
+#app-calc{--cg-paper:#eef2ff;--cg-line:#e3e6ef;--cg-line2:#d4d8e4;--cg-ink:#1c1c30;--cg-ink3:#6e7189;--cg-gold:#ffd166;font-family:'Poppins',sans-serif!important;background:#eef2ff!important}
+#app-calc .cg-nav{background:#2d2aea!important;min-height:60px!important;box-shadow:0 2px 14px rgba(45,42,234,.25)}
+#app-calc .cg-logo,#app-calc .cg-hero-title,#app-calc .cg-analysis-title{font-family:'Poppins',sans-serif!important;font-weight:700!important}
+#app-calc .cg-nav-right{color:#c9d2ff!important;font-family:'Poppins',sans-serif!important}
+#app-calc .cg-hero{background:linear-gradient(135deg,#2d2aea 0%,#4b3fff 55%,#7c6cff 100%)!important;border-radius:var(--ui-r-l)!important;box-shadow:0 12px 32px rgba(45,42,234,.25)}
+#app-calc .cg-search-wrap input{background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important;font-family:'Poppins',sans-serif!important}
+#app-calc .cg-search-wrap input::placeholder,#app-calc .cg-search-ico,#app-calc .cg-search-hint{color:#d6dcff!important}
+#app-calc .cg-strip-card,#app-calc .cg-card{border-radius:var(--ui-r-m)!important;border-color:var(--cg-line)!important;box-shadow:var(--ui-shadow)}
+#app-calc .cg-card.open{border-color:#2d2aea!important}
+#app-calc .cg-pill.on{background:#2d2aea!important;border-color:#2d2aea!important}
+#app-calc .cg-pill,#app-calc .cg-strip-label,#app-calc .cg-m-l,#app-calc .cg-m-v,#app-calc .cg-strip-val,#app-calc .cg-flabel,#app-calc .cg-rinfo,#app-calc .cg-card-sku,#app-calc .cg-row-lbl,#app-calc .cg-row-val,#app-calc select.cg-sel,#app-calc button{font-family:'Poppins',sans-serif!important;letter-spacing:0!important}
+#app-calc .cg-strip-label,#app-calc .cg-m-l{text-transform:none!important;font-size:11px!important}
+#app-calc .cg-dark-panel{background:#1b1a4a!important;border-color:#2c2a6b!important}
+#app-calc .cg-export-btn{background:#ffd166!important;color:#1c1c30!important}
+#app-calc .cg-analysis-btn{background:rgba(255,255,255,.16)!important}
+#app-calc .cg-logout-btn{background:rgba(255,255,255,.12)!important;border-color:rgba(255,255,255,.3)!important;color:#fff!important}
+#app-calc .cg-add-btn{background:#2d2aea!important;border-radius:var(--ui-r-s)!important}
+
+/* ── USUARIOS ─────────────────────────────────────── */
+#app-usuarios{background:var(--bg)!important;font-family:'Poppins',sans-serif!important}
+#app-usuarios > div:first-child{background:#2d2aea!important;height:60px;box-shadow:0 2px 14px rgba(45,42,234,.25)}
+#app-usuarios input:not([type=checkbox]){border-radius:var(--ui-r-s)!important;font-family:'Poppins',sans-serif!important}
+#app-usuarios > div:last-child > div > div{border-radius:var(--ui-r-m)!important;box-shadow:var(--ui-shadow)}
+#app-usuarios input[type=checkbox]{accent-color:#2d2aea}
+
+
+/* ── ajustes v3.1 ── */
+body{display:flex;flex-direction:column;min-height:100vh}
+body > *{flex-shrink:0}
+#footer-ai{order:99;margin-top:auto}
+#anl-listWrap{display:none}
+#annualKpiGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+@media(max-width:900px){#annualKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+#rrhh-kpis,#rrhh-sa-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+@media(max-width:1000px){#rrhh-kpis,#rrhh-sa-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+#app-proveedores .uso-pill.on{color:#fff!important}
+#rend-rpt-chart-wrap > div,#rendf-rpt-chart-wrap > div{border-radius:var(--ui-r-m)!important;box-shadow:var(--ui-shadow);padding:18px 20px!important}
+#app-calc *{font-family:'Poppins',sans-serif!important}
+#app-calc .cg-search-hint b{color:#ffd166!important}
+#app-calc .cg-prov-badge{border-radius:99px!important;letter-spacing:.2px!important}
+
+/* ── RESPONSIVE ───────────────────────────────────── */
+@media(max-width:768px){
+  .main,#app-proveedores .pv-main{padding:16px!important}
+  .topbar,#app-proveedores .pv-topbar{padding:0 12px!important;gap:8px!important;overflow-x:auto}
+  .topbar-logo{font-size:14px!important}
+  #mod-list{grid-template-columns:1fr}
+  div:has(> .ptab){display:flex!important}
+}
+</style>
+<style id="automatik-auth-hub">
+/* ── Login → hub de módulos ── */
+#loginScreen:not(.is-hub) #mod-list,#loginScreen:not(.is-hub) #hubHead,#loginScreen:not(.is-hub) #hubFoot{display:none!important}
+#loginScreen.is-hub .login-card{display:none!important}
+#loginScreen.is-checking .login-card,#loginScreen.is-checking #mod-list{display:none!important}
+#loginScreen.is-checking .login-wrap::after{content:'Verificando sesión…';display:block;text-align:center;color:var(--text3);font-size:13px;margin-top:18px}
+#loginScreen.is-hub .login-wrap{max-width:560px!important}
+#hubHead{text-align:center;margin:-6px 0 18px}
+#hubHello{font-size:20px;font-weight:700;color:var(--text)}
+#hubSub{font-size:13px;color:var(--text3);margin-top:2px}
+#loginScreen.is-hub #mod-list button{padding:18px 16px!important;font-size:14px!important;border:1px solid var(--border)!important;color:var(--text)!important;background:#fff!important}
+#loginScreen.is-hub #mod-list button:hover{border-color:var(--teal)!important;color:var(--teal)!important}
+#loginScreen.is-hub #mod-list button.last-used{border-color:var(--teal)!important;background:var(--ui-primary-2,#e9efff)!important}
+#hubFoot{display:flex;justify-content:center;gap:10px;align-items:center;margin-top:20px;font-size:12px;color:var(--text3)}
+#hubFoot button{background:#fff;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:8px 14px;font-family:inherit;font-size:12.5px;cursor:pointer}
+#hubFoot button:hover{border-color:var(--red);color:var(--red)}
+.btn-hub{font-family:var(--font-body,'Poppins',sans-serif)!important;font-size:12px!important;font-weight:500!important;padding:8px 14px!important;border-radius:8px!important;cursor:pointer;background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.3)!important;color:#fff!important;white-space:nowrap}
+.btn-hub:hover{background:#fff!important;color:#2d2aea!important}
+#app-analyzer .btn-hub{background:#f0f2f5!important;border:1px solid #dde1e8!important;color:#1c1c30!important}
+#app-proveedores .pv-topbar .btn-hub,#app-usuarios .btn-hub{margin-right:6px}
+.topbar .btn-hub{margin-left:auto}
+.topbar .btn-hub + .btn-logout{margin-left:0!important}
+</style>
+<style id="automatik-fonts">
+/* fuentes antiguas escritas a mano → Poppins */
+[style*="Bebas Neue"],[style*="Space Mono"],[style*="DM Sans"],[style*="DM Mono"],[style*="'Syne'"]{font-family:var(--font-body)!important}
+</style>
 </head>
 <body>
 
@@ -759,7 +1301,7 @@ input.fi-money{padding-left:58px!important;width:100%}
 <div id="loginScreen" class="is-checking">
   <div class="login-wrap" style="max-width:360px">
     <div class="login-logo" style="font-size:36px;letter-spacing:6px">⚡ AUTOMATIK</div>
-    <div class="login-sub">// Cybernetic SpA</div>
+    <div class="login-sub">Cybernetic SpA</div>
     <div id="hubHead">
       <div id="hubHello">Hola 👋</div>
       <div id="hubSub">Elige el módulo con el que quieres trabajar</div>
@@ -823,7 +1365,6 @@ input.fi-money{padding-left:58px!important;width:100%}
     <div class="topbar-logo">📊 GBISNESS</div>
     <select id="mesSel" class="month-select" onchange="onMesChange()"></select>
     <button class="btn-primary" onclick="openNewMes()">+ Nuevo Mes</button>
-    <button class="btn-theme" id="btnTheme" onclick="toggleTheme()" title="Cambiar tema">&#9789;</button>
     <button class="btn-logout" onclick="doLogout()">SALIR</button>
   </div>
   <div id="tickerBanner">
@@ -850,10 +1391,10 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- RESUMEN -->
       <div id="sec-resumen">
         <div class="page-title">RESUMEN <span>FINANCIERO</span></div>
-        <div class="page-sub">// Estado consolidado · se actualiza en tiempo real</div>
+        <div class="page-sub">Estado consolidado · se actualiza en tiempo real</div>
         <div class="kpi-grid" id="kpiGrid"></div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Desglose de gastos del mes</div></div>
+          <div class="card-hdr"><div class="card-title">Desglose de gastos del mes</div></div>
           <div class="card-body" id="desgloce"></div>
         </div>
       </div>
@@ -861,7 +1402,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- RRHH -->
       <div id="sec-rrhh" style="display:none">
         <div class="page-title">GESTIÓN <span>RRHH</span></div>
-        <div class="page-sub">// Trabajadores · vacaciones legales · fichas de personal</div>
+        <div class="page-sub">Trabajadores · vacaciones legales · fichas de personal</div>
         <!-- TABS -->
         <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px">
           <button class="ptab active" id="rrhh-tab-trabajadores" onclick="rrhhTab(this,'trabajadores')">👤 Trabajadores</button>
@@ -885,7 +1426,7 @@ input.fi-money{padding-left:58px!important;width:100%}
           </div>
           <div class="kpi-grid" id="rrhh-kpis" style="margin-bottom:18px"></div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Nómina de trabajadores</div></div>
+            <div class="card-hdr"><div class="card-title">Nómina de trabajadores</div></div>
             <div class="card-body" style="padding:0">
               <table class="tbl">
                 <thead><tr>
@@ -902,11 +1443,11 @@ input.fi-money{padding-left:58px!important;width:100%}
         <div id="rrhh-vacaciones" style="display:none">
           <div class="kpi-grid" id="rrhh-vacc-kpis" style="margin-bottom:18px"></div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Solicitudes de vacaciones pendientes</div></div>
+            <div class="card-hdr"><div class="card-title">Solicitudes de vacaciones pendientes</div></div>
             <div class="card-body" id="rrhh-vacc-pendientes"></div>
           </div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Historial de vacaciones tomadas</div></div>
+            <div class="card-hdr"><div class="card-title">Historial de vacaciones tomadas</div></div>
             <div class="card-body" id="rrhh-vacc-historial"></div>
           </div>
         </div>
@@ -915,7 +1456,7 @@ input.fi-money{padding-left:58px!important;width:100%}
           <div class="kpi-grid" id="rrhh-cumple-kpis" style="margin-bottom:18px"></div>
           <div class="section-card">
             <div class="card-hdr">
-              <div class="card-title">// Calendario de cumpleaños</div>
+              <div class="card-title">Calendario de cumpleaños</div>
               <div style="display:flex;gap:8px;align-items:center">
                 <button class="btn-secondary" onclick="cumpleNavMes(-1)">‹</button>
                 <span id="rrhh-cumple-mes-label" style="font-family:var(--font-mono);font-size:11px;color:var(--teal);min-width:140px;text-align:center"></span>
@@ -925,7 +1466,7 @@ input.fi-money{padding-left:58px!important;width:100%}
             <div class="card-body" id="rrhh-cumple-cal"></div>
           </div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Próximos cumpleaños (12 meses)</div></div>
+            <div class="card-hdr"><div class="card-title">Próximos cumpleaños (12 meses)</div></div>
             <div class="card-body" id="rrhh-cumple-lista"></div>
           </div>
         </div>
@@ -942,14 +1483,14 @@ input.fi-money{padding-left:58px!important;width:100%}
             <div>
               <div class="section-card" style="margin-bottom:14px">
                 <div class="card-hdr">
-                  <div class="card-title">// Áreas</div>
+                  <div class="card-title">Áreas</div>
                   <button class="btn-secondary" onclick="agregarOrgItemDirect('areas')">+ Área</button>
                 </div>
                 <div class="card-body" id="org-areas-list"></div>
               </div>
               <div class="section-card">
                 <div class="card-hdr">
-                  <div class="card-title">// Cargos</div>
+                  <div class="card-title">Cargos</div>
                   <button class="btn-secondary" onclick="agregarOrgItemDirect('cargos')">+ Cargo</button>
                 </div>
                 <div class="card-body" id="org-cargos-list"></div>
@@ -957,7 +1498,7 @@ input.fi-money{padding-left:58px!important;width:100%}
             </div>
             <!-- Panel derecho: organigrama -->
             <div class="section-card">
-              <div class="card-hdr"><div class="card-title">// Organigrama</div></div>
+              <div class="card-hdr"><div class="card-title">Organigrama</div></div>
               <div class="card-body" id="org-chart" style="overflow-x:auto;min-height:200px"></div>
             </div>
           </div>
@@ -967,7 +1508,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- CIERRE MENSUAL (tabs: Saldos, Bancos, Remuneraciones, Pendientes, Comisiones) -->
       <div id="sec-cierre" style="display:none">
         <div class="page-title">CIERRE <span>MENSUAL</span></div>
-        <div class="page-sub">// Registro de saldos, pagos, remuneraciones y comisiones del mes</div>
+        <div class="page-sub">Registro de saldos, pagos, remuneraciones y comisiones del mes</div>
 
         <!-- TABS -->
         <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap" id="cierreTabBar">
@@ -980,9 +1521,9 @@ input.fi-money{padding-left:58px!important;width:100%}
 
         <!-- TAB: SALDOS -->
         <div id="cierre-saldos">
-          <div class="page-sub" style="margin-bottom:14px">// Plataformas y cuentas bancarias por empresa</div>
+          <div class="page-sub" style="margin-bottom:14px">Plataformas y cuentas bancarias por empresa</div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Cuentas y plataformas</div><button class="btn-secondary" onclick="openAdd('saldos')">+ Agregar</button></div>
+            <div class="card-hdr"><div class="card-title">Cuentas y plataformas</div><button class="btn-secondary" onclick="openAdd('saldos')">+ Agregar</button></div>
             <div class="card-body">
               <table class="tbl"><thead><tr><th>Cuenta</th><th>Empresa</th><th style="text-align:right">Liberado</th><th style="text-align:right">Pendiente</th><th style="text-align:right">Total</th><th></th></tr></thead>
               <tbody id="saldosBody"></tbody></table>
@@ -994,9 +1535,9 @@ input.fi-money{padding-left:58px!important;width:100%}
 
         <!-- TAB: BANCOS -->
         <div id="cierre-bancos" style="display:none">
-          <div class="page-sub" style="margin-bottom:14px">// Pagos bancarios, tarjetas y gastos fijos</div>
+          <div class="page-sub" style="margin-bottom:14px">Pagos bancarios, tarjetas y gastos fijos</div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Pagos del mes</div><button class="btn-secondary" onclick="openAdd('bancos')">+ Agregar</button></div>
+            <div class="card-hdr"><div class="card-title">Pagos del mes</div><button class="btn-secondary" onclick="openAdd('bancos')">+ Agregar</button></div>
             <div class="card-body">
               <table class="tbl"><thead><tr><th>Categoría</th><th>Descripción</th><th style="text-align:right">Negativo</th><th style="text-align:right">Positivo</th><th>Estado</th><th></th></tr></thead>
               <tbody id="bancosBody"></tbody></table>
@@ -1008,9 +1549,9 @@ input.fi-money{padding-left:58px!important;width:100%}
 
         <!-- TAB: REMUNERACIONES -->
         <div id="cierre-remuneraciones" style="display:none">
-          <div class="page-sub" style="margin-bottom:14px">// Sueldos, bonos, Previred e impuestos</div>
+          <div class="page-sub" style="margin-bottom:14px">Sueldos, bonos, Previred e impuestos</div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Detalle</div><button class="btn-secondary" onclick="openAdd('remuneraciones')">+ Agregar</button></div>
+            <div class="card-hdr"><div class="card-title">Detalle</div><button class="btn-secondary" onclick="openAdd('remuneraciones')">+ Agregar</button></div>
             <div class="card-body">
               <table class="tbl"><thead><tr><th>Categoría</th><th>Nombre / Descripción</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
               <tbody id="remuBody"></tbody></table>
@@ -1022,9 +1563,9 @@ input.fi-money{padding-left:58px!important;width:100%}
 
         <!-- TAB: PENDIENTES -->
         <div id="cierre-pendientes" style="display:none">
-          <div class="page-sub" style="margin-bottom:14px">// Operadores logísticos y cuentas por pagar</div>
+          <div class="page-sub" style="margin-bottom:14px">Operadores logísticos y cuentas por pagar</div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Pendientes del mes</div><button class="btn-secondary" onclick="openAdd('pendientes')">+ Agregar</button></div>
+            <div class="card-hdr"><div class="card-title">Pendientes del mes</div><button class="btn-secondary" onclick="openAdd('pendientes')">+ Agregar</button></div>
             <div class="card-body">
               <table class="tbl"><thead><tr><th>Categoría</th><th>Descripción</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
               <tbody id="pendBody"></tbody></table>
@@ -1036,9 +1577,9 @@ input.fi-money{padding-left:58px!important;width:100%}
 
         <!-- TAB: COMISIONES -->
         <div id="cierre-comisiones" style="display:none">
-          <div class="page-sub" style="margin-bottom:14px">// Comisiones externas y gastos publicitarios</div>
+          <div class="page-sub" style="margin-bottom:14px">Comisiones externas y gastos publicitarios</div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Detalle de comisiones</div><button class="btn-secondary" onclick="openAdd('comisiones')">+ Agregar</button></div>
+            <div class="card-hdr"><div class="card-title">Detalle de comisiones</div><button class="btn-secondary" onclick="openAdd('comisiones')">+ Agregar</button></div>
             <div class="card-body">
               <table class="tbl"><thead><tr><th>Plataforma</th><th>Responsable</th><th style="text-align:right">Monto</th><th>Estado</th><th></th></tr></thead>
               <tbody id="comBody"></tbody></table>
@@ -1059,7 +1600,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- RENDIMIENTO -->
       <div id="sec-rendimiento" style="display:none">
         <div class="page-title">RENDIMIENTO <span>DE VENTAS</span></div>
-        <div class="page-sub">// Registro y análisis de ventas por empresa y plataforma</div>
+        <div class="page-sub">Registro y análisis de ventas por empresa y plataforma</div>
 
         <!-- CANAL SELECTOR -->
         <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center">
@@ -1094,7 +1635,7 @@ input.fi-money{padding-left:58px!important;width:100%}
           <div class="kpi-grid" id="rend-kpi" style="margin-bottom:18px"></div>
           <!-- Tabla -->
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Ventas del mes</div></div>
+            <div class="card-hdr"><div class="card-title">Ventas del mes</div></div>
             <div class="card-body">
               <table class="tbl">
                 <thead><tr>
@@ -1133,20 +1674,20 @@ input.fi-money{padding-left:58px!important;width:100%}
           </div>
           <div id="rend-rpt-chart-wrap" style="margin-bottom:24px"></div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title" id="rend-rpt-table-title">// Evolución mensual · Ventas Brutas</div></div>
+            <div class="card-hdr"><div class="card-title" id="rend-rpt-table-title">Evolución mensual · Ventas Brutas</div></div>
             <div class="card-body" id="rend-rpt-table"></div>
           </div>
         </div>
 
         <!-- TAB CONFIG -->
         <div id="rend-config" style="display:none">
-          <div class="page-sub" style="margin-bottom:20px">// Configura empresas, % de utilidad estimada y plataformas de venta.</div>
+          <div class="page-sub" style="margin-bottom:20px">Configura empresas, % de utilidad estimada y plataformas de venta.</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
 
             <!-- EMPRESAS + UTILIDAD -->
             <div class="section-card" style="margin:0">
               <div class="card-hdr" style="justify-content:space-between">
-                <div class="card-title">// Empresas y utilidad estimada</div>
+                <div class="card-title">Empresas y utilidad estimada</div>
                 <button class="btn-secondary" onclick="addRendEmpresa()" style="font-size:10px">+ Empresa</button>
               </div>
               <div class="card-body" id="rend-config-util" style="padding:0"></div>
@@ -1158,7 +1699,7 @@ input.fi-money{padding-left:58px!important;width:100%}
             <!-- PLATAFORMAS -->
             <div class="section-card" style="margin:0">
               <div class="card-hdr">
-                <div class="card-title">// Plataformas de venta</div>
+                <div class="card-title">Plataformas de venta</div>
                 <button class="btn-secondary" onclick="addRendPlataforma()">+ Agregar</button>
               </div>
               <div class="card-body" id="rend-config-plat" style="padding:0"></div>
@@ -1188,7 +1729,7 @@ input.fi-money{padding-left:58px!important;width:100%}
             </div>
             <div class="kpi-grid" id="rendf-kpi" style="margin-bottom:18px"></div>
             <div class="section-card">
-              <div class="card-hdr"><div class="card-title">// Ventas Fulfillment del mes</div></div>
+              <div class="card-hdr"><div class="card-title">Ventas Fulfillment del mes</div></div>
               <div class="card-body">
                 <table class="tbl">
                   <thead><tr>
@@ -1223,16 +1764,16 @@ input.fi-money{padding-left:58px!important;width:100%}
             </div>
             <div id="rendf-rpt-chart-wrap" style="margin-bottom:24px"></div>
             <div class="section-card">
-              <div class="card-hdr"><div class="card-title" id="rendf-rpt-table-title">// Evolución mensual FULL · Ventas Brutas</div></div>
+              <div class="card-hdr"><div class="card-title" id="rendf-rpt-table-title">Evolución mensual FULL · Ventas Brutas</div></div>
               <div class="card-body" id="rendf-rpt-table"></div>
             </div>
           </div>
           <!-- TAB CONFIG -->
           <div id="rendf-config" style="display:none">
-            <div class="page-sub" style="margin-bottom:16px">// Configura el % de utilidad estimada por empresa para canal Fulfillment. Las empresas se gestionan desde Canal Normal → Configuración.</div>
+            <div class="page-sub" style="margin-bottom:16px">Configura el % de utilidad estimada por empresa para canal Fulfillment. Las empresas se gestionan desde Canal Normal → Configuración.</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
               <div class="section-card" style="margin:0">
-                <div class="card-hdr"><div class="card-title">// Empresas y utilidad estimada FULL</div></div>
+                <div class="card-hdr"><div class="card-title">Empresas y utilidad estimada FULL</div></div>
                 <div class="card-body" id="rendf-config-util" style="padding:0"></div>
                 <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
                   <button class="btn-primary" onclick="saveRendFConfigManual()" style="font-size:13px;padding:8px 20px">💾 Guardar cambios</button>
@@ -1240,7 +1781,7 @@ input.fi-money{padding-left:58px!important;width:100%}
               </div>
               <div class="section-card" style="margin:0">
                 <div class="card-hdr">
-                  <div class="card-title">// Plataformas Fulfillment</div>
+                  <div class="card-title">Plataformas Fulfillment</div>
                   <button class="btn-secondary" onclick="addRendFPlataforma()">+ Agregar</button>
                 </div>
                 <div class="card-body" id="rendf-config-plat" style="padding:0"></div>
@@ -1253,7 +1794,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- PRESUPUESTO -->
       <div id="sec-presupuesto" style="display:none">
         <div class="page-title">GESTIÓN DE <span>PRESUPUESTO</span></div>
-        <div class="page-sub">// Presupuesto mensual por empresa · compras y gastos</div>
+        <div class="page-sub">Presupuesto mensual por empresa · compras y gastos</div>
 
         <!-- KPIs -->
         <div class="kpi-grid" id="pres-kpi"></div>
@@ -1277,7 +1818,7 @@ input.fi-money{padding-left:58px!important;width:100%}
             <button class="btn-primary" onclick="openAddCompra()">+ Nueva Compra</button>
           </div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Registro de compras</div></div>
+            <div class="card-hdr"><div class="card-title">Registro de compras</div></div>
             <div class="card-body">
               <table class="tbl">
                 <thead><tr>
@@ -1295,13 +1836,13 @@ input.fi-money{padding-left:58px!important;width:100%}
           <div class="kpi-grid" style="grid-template-columns:1fr 1fr 1fr">
             <!-- Presupuesto por empresa -->
             <div class="section-card" style="margin:0">
-              <div class="card-hdr"><div class="card-title">// Presupuesto del mes</div></div>
+              <div class="card-hdr"><div class="card-title">Presupuesto del mes</div></div>
               <div class="card-body" id="presupuestoConfig"></div>
             </div>
             <!-- Proveedores -->
             <div class="section-card" style="margin:0">
               <div class="card-hdr">
-                <div class="card-title">// Proveedores</div>
+                <div class="card-title">Proveedores</div>
                 <button class="btn-secondary" onclick="addCatItem('proveedores')">+</button>
               </div>
               <div class="card-body" id="proveedoresList"></div>
@@ -1309,7 +1850,7 @@ input.fi-money{padding-left:58px!important;width:100%}
             <!-- Bancos -->
             <div class="section-card" style="margin:0">
               <div class="card-hdr">
-                <div class="card-title">// Bancos</div>
+                <div class="card-title">Bancos</div>
                 <button class="btn-secondary" onclick="addCatItem('bancos_pres')">+</button>
               </div>
               <div class="card-body" id="bancosList"></div>
@@ -1326,14 +1867,14 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- HISTORIAL -->
       <div id="sec-historial" style="display:none">
         <div class="page-title">HISTORIAL <span>DE CIERRES</span></div>
-        <div class="page-sub">// Todos los meses registrados</div>
+        <div class="page-sub">Todos los meses registrados</div>
         <div class="section-card"><div class="card-body" id="histBody"></div></div>
       </div>
 
       <!-- CONFIGURACION -->
       <div id="sec-configuracion" style="display:none">
         <div class="page-title">CONFIGURACIÓN <span>DEL SISTEMA</span></div>
-        <div class="page-sub">// Personaliza listas desplegables, avisos y parámetros globales</div>
+        <div class="page-sub">Personaliza listas desplegables, avisos y parámetros globales</div>
 
         <!-- CFG NAV TABS -->
         <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:22px;flex-wrap:wrap">
@@ -1445,7 +1986,7 @@ input.fi-money{padding-left:58px!important;width:100%}
               <div style="display:flex;align-items:center;gap:10px">
                 <span style="font-size:18px">📢</span>
                 <div>
-                  <div class="card-title">// Mensajes del ticker superior</div>
+                  <div class="card-title">Mensajes del ticker superior</div>
                   <div style="font-family:var(--font-mono);font-size:8px;color:var(--text3);margin-top:2px">Se muestran al ingresar al sistema</div>
                 </div>
               </div>
@@ -1651,7 +2192,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- COMPRAS -->
       <div id="pview-compras">
         <div class="page-title">GESTIÓN DE <span style="color:var(--teal)">PRESUPUESTO</span></div>
-        <div class="page-sub">// Compras del mes · presupuesto por empresa</div>
+        <div class="page-sub">Compras del mes · presupuesto por empresa</div>
         <div id="pres-kpi2" style="margin-bottom:18px"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1665,7 +2206,7 @@ input.fi-money{padding-left:58px!important;width:100%}
           <button class="btn-primary" onclick="openAddCompra()">+ Nueva Compra</button>
         </div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Registro de compras</div></div>
+          <div class="card-hdr"><div class="card-title">Registro de compras</div></div>
           <div class="card-body">
             <table class="tbl">
               <thead><tr><th>Fecha</th><th>Proveedor</th><th>Responsable</th><th>Empresa</th><th>Tipo Pago</th><th>Estado</th><th style="text-align:right">Monto</th><th></th></tr></thead>
@@ -1678,7 +2219,7 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- REPORTE -->
       <div id="pview-reporte" style="display:none">
         <div class="page-title">REPORTE DE <span style="color:var(--teal)">GASTOS</span></div>
-        <div class="page-sub">// Resumen del mes · exportable a Excel</div>
+        <div class="page-sub">Resumen del mes · exportable a Excel</div>
         <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px">
           <button class="btn-secondary" onclick="exportarExcel()" style="border-color:rgba(23,134,79,0.3);color:var(--teal)">⬇ Exportar Excel</button>
           <button class="btn-secondary" onclick="imprimirReportePresupuesto()" style="border-color:rgba(23,134,79,0.3);color:var(--teal)">🖨 Imprimir PDF</button>
@@ -1689,22 +2230,22 @@ input.fi-money{padding-left:58px!important;width:100%}
       <!-- CONFIG -->
       <div id="pview-config" style="display:none">
         <div class="page-title">CONFIGURACIÓN <span style="color:var(--teal)">ADMIN</span></div>
-        <div class="page-sub">// Presupuestos, proveedores, responsables y bancos</div>
+        <div class="page-sub">Presupuestos, proveedores, responsables y bancos</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Presupuesto del mes por empresa</div></div>
+            <div class="card-hdr"><div class="card-title">Presupuesto del mes por empresa</div></div>
             <div class="card-body" id="presupuestoConfig2"></div>
           </div>
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Responsables</div><button class="btn-secondary" onclick="addCatItem('responsables_pres')">+</button></div>
+            <div class="card-hdr"><div class="card-title">Responsables</div><button class="btn-secondary" onclick="addCatItem('responsables_pres')">+</button></div>
             <div class="card-body" id="responsablesList"></div>
           </div>
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Proveedores</div><button class="btn-secondary" onclick="addCatItem('proveedores')">+</button></div>
+            <div class="card-hdr"><div class="card-title">Proveedores</div><button class="btn-secondary" onclick="addCatItem('proveedores')">+</button></div>
             <div class="card-body" id="proveedoresList2"></div>
           </div>
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Bancos</div><button class="btn-secondary" onclick="addCatItem('bancos_pres')">+</button></div>
+            <div class="card-hdr"><div class="card-title">Bancos</div><button class="btn-secondary" onclick="addCatItem('bancos_pres')">+</button></div>
             <div class="card-body" id="bancosList2"></div>
           </div>
         </div>
@@ -1733,7 +2274,7 @@ input.fi-money{padding-left:58px!important;width:100%}
     </div>
     <div class="main">
       <div class="page-title">GESTIÓN <span>RRHH</span></div>
-      <div class="page-sub">// Trabajadores · vacaciones legales · fichas de personal</div>
+      <div class="page-sub">Trabajadores · vacaciones legales · fichas de personal</div>
       <div id="rrhh-firebase-status" style="display:none;background:rgba(255,71,87,0.12);border:1px solid rgba(255,71,87,0.4);border-radius:2px;padding:12px 16px;margin-bottom:16px;font-family:var(--font-mono);font-size:11px;color:var(--red)"></div>
 
       <!-- TAB TRABAJADORES -->
@@ -1752,7 +2293,7 @@ input.fi-money{padding-left:58px!important;width:100%}
         </div>
         <div class="kpi-grid" id="rrhh-sa-kpis" style="margin-bottom:18px"></div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Nómina de trabajadores</div></div>
+          <div class="card-hdr"><div class="card-title">Nómina de trabajadores</div></div>
           <div class="card-body" style="padding:0">
             <table class="tbl">
               <thead><tr>
@@ -1770,11 +2311,11 @@ input.fi-money{padding-left:58px!important;width:100%}
       <div id="rrhh-sa-vacaciones" style="display:none">
         <div class="kpi-grid" id="rrhh-sa-vacc-kpis" style="margin-bottom:18px"></div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Saldos de vacaciones por trabajador</div></div>
+          <div class="card-hdr"><div class="card-title">Saldos de vacaciones por trabajador</div></div>
           <div class="card-body" id="rrhh-sa-vacc-pendientes"></div>
         </div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Historial de vacaciones tomadas</div></div>
+          <div class="card-hdr"><div class="card-title">Historial de vacaciones tomadas</div></div>
           <div class="card-body" id="rrhh-sa-vacc-historial"></div>
         </div>
       </div>
@@ -1783,7 +2324,7 @@ input.fi-money{padding-left:58px!important;width:100%}
         <div class="kpi-grid" id="rrhh-sa-cumple-kpis" style="margin-bottom:18px"></div>
         <div class="section-card">
           <div class="card-hdr">
-            <div class="card-title">// Calendario de cumpleaños</div>
+            <div class="card-title">Calendario de cumpleaños</div>
             <div style="display:flex;gap:8px;align-items:center">
               <button class="btn-secondary" onclick="cumpleNavMes(-1)">‹</button>
               <span id="rrhh-sa-cumple-mes-label" style="font-family:var(--font-mono);font-size:11px;color:var(--teal);min-width:140px;text-align:center"></span>
@@ -1793,7 +2334,7 @@ input.fi-money{padding-left:58px!important;width:100%}
           <div class="card-body" id="rrhh-sa-cumple-cal"></div>
         </div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Próximos cumpleaños (12 meses)</div></div>
+          <div class="card-hdr"><div class="card-title">Próximos cumpleaños (12 meses)</div></div>
           <div class="card-body" id="rrhh-sa-cumple-lista"></div>
         </div>
       </div>
@@ -1807,21 +2348,21 @@ input.fi-money{padding-left:58px!important;width:100%}
           <div>
             <div class="section-card" style="margin-bottom:14px">
               <div class="card-hdr">
-                <div class="card-title">// Áreas</div>
+                <div class="card-title">Áreas</div>
                 <button class="btn-secondary" onclick="agregarOrgItemDirect('areas')">+ Área</button>
               </div>
               <div class="card-body" id="org-sa-areas-list"></div>
             </div>
             <div class="section-card">
               <div class="card-hdr">
-                <div class="card-title">// Cargos</div>
+                <div class="card-title">Cargos</div>
                 <button class="btn-secondary" onclick="agregarOrgItemDirect('cargos')">+ Cargo</button>
               </div>
               <div class="card-body" id="org-sa-cargos-list"></div>
             </div>
           </div>
           <div class="section-card">
-            <div class="card-hdr"><div class="card-title">// Organigrama</div></div>
+            <div class="card-hdr"><div class="card-title">Organigrama</div></div>
             <div class="card-body" id="org-sa-chart" style="overflow-x:auto;min-height:200px"></div>
           </div>
         </div>
@@ -1860,7 +2401,7 @@ input.fi-money{padding-left:58px!important;width:100%}
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
           <div>
             <div class="page-title">CIERRE <span>ANUAL</span></div>
-            <div class="page-sub">// Consolidado anual por empresa, armado mes por mes con cálculo automático de IVA, PPM, sueldos y utilidad por socio</div>
+            <div class="page-sub">Consolidado anual por empresa, armado mes por mes con cálculo automático de IVA, PPM, sueldos y utilidad por socio</div>
           </div>
           <div style="min-width:240px">
             <label class="fl">Empresa</label>
@@ -1869,11 +2410,11 @@ input.fi-money{padding-left:58px!important;width:100%}
         </div>
         <div class="kpi-grid" id="annualKpiGrid"></div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Resumen estructural del año</div></div>
+          <div class="card-hdr"><div class="card-title">Resumen estructural del año</div></div>
           <div class="card-body" id="annualSummaryTable"></div>
         </div>
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Utilidad por socio y remuneración estimada</div></div>
+          <div class="card-hdr"><div class="card-title">Utilidad por socio y remuneración estimada</div></div>
           <div class="card-body" id="annualSociosTable"></div>
         </div>
       </div>
@@ -1881,7 +2422,7 @@ input.fi-money{padding-left:58px!important;width:100%}
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
           <div>
             <div class="page-title">ARMADO <span>MENSUAL</span></div>
-            <div class="page-sub">// Completa cada mes por empresa y el resumen anual se actualiza automáticamente</div>
+            <div class="page-sub">Completa cada mes por empresa y el resumen anual se actualiza automáticamente</div>
           </div>
           <div style="min-width:240px">
             <label class="fl">Empresa</label>
@@ -1899,15 +2440,15 @@ input.fi-money{padding-left:58px!important;width:100%}
         </div>
         <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title" id="annualComprasTitle">// Compras</div></div>
+            <div class="card-hdr"><div class="card-title" id="annualComprasTitle">Compras</div></div>
             <div class="card-body" id="annualComprasForm"></div>
           </div>
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Ventas</div></div>
+            <div class="card-hdr"><div class="card-title">Ventas</div></div>
             <div class="card-body" id="annualVentasForm"></div>
           </div>
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Impuestos y resultado</div></div>
+            <div class="card-hdr"><div class="card-title">Impuestos y resultado</div></div>
             <div class="card-body" id="annualFiscalForm"></div>
           </div>
         </div>
@@ -1919,37 +2460,37 @@ input.fi-money{padding-left:58px!important;width:100%}
 
       <div id="asec-historial" style="display:none">
         <div class="page-title">HISTORIAL <span>ANUAL</span></div>
-        <div class="page-sub">// Años creados y sus principales cifras</div>
+        <div class="page-sub">Años creados y sus principales cifras</div>
         <div class="section-card"><div class="card-body" id="annualHistoryBody"></div></div>
       </div>
 
 
       <div id="asec-socios" style="display:none">
         <div class="page-title">DETALLE DE <span>SOCIOS</span></div>
-        <div class="page-sub">// Vista por empresa, por socio y consolidado global del año seleccionado</div>
+        <div class="page-sub">Vista por empresa, por socio y consolidado global del año seleccionado</div>
         <div class="kpi-grid" id="annualSociosKpiGrid"></div>
 
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Resumen por empresa</div></div>
+          <div class="card-hdr"><div class="card-title">Resumen por empresa</div></div>
           <div class="card-body" id="annualSociosEmpresaTable"></div>
         </div>
 
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Detalle por socio y empresa</div></div>
+          <div class="card-hdr"><div class="card-title">Detalle por socio y empresa</div></div>
           <div class="card-body" id="annualSociosDetalleTable"></div>
         </div>
 
         <div class="section-card">
-          <div class="card-hdr"><div class="card-title">// Consolidado global por socio</div></div>
+          <div class="card-hdr"><div class="card-title">Consolidado global por socio</div></div>
           <div class="card-body" id="annualSociosGlobalTable"></div>
         </div>
       </div><div id="asec-config" style="display:none">
         <div class="page-title">CONFIGURACIÓN <span>ANUAL</span></div>
-        <div class="page-sub">// Cada empresa puede tener sus propios socios y porcentaje accionario</div>
+        <div class="page-sub">Cada empresa puede tener sus propios socios y porcentaje accionario</div>
         <div class="kpi-grid" id="annualConfigKpi"></div>
         <div class="section-card">
           <div class="card-hdr">
-            <div class="card-title">// Empresa seleccionada</div>
+            <div class="card-title">Empresa seleccionada</div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
               <select id="annualCompanyConfigSel" class="fi" style="width:220px" onchange="annualOnConfigCompanyChange()"></select>
               <button class="btn-secondary" onclick="annualAddEmpresa()">+ Agregar empresa</button>
@@ -1961,11 +2502,11 @@ input.fi-money{padding-left:58px!important;width:100%}
         </div>
         <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Empresas</div></div>
+            <div class="card-hdr"><div class="card-title">Empresas</div></div>
             <div class="card-body" id="annualEmpresasList"></div>
           </div>
           <div class="section-card" style="margin:0">
-            <div class="card-hdr"><div class="card-title">// Socios y % accionario de la empresa</div><button class="btn-secondary" onclick="annualAddSocio()">+ Agregar socio</button></div>
+            <div class="card-hdr"><div class="card-title">Socios y % accionario de la empresa</div><button class="btn-secondary" onclick="annualAddSocio()">+ Agregar socio</button></div>
             <div class="card-body" id="annualSociosList"></div>
           </div>
         </div>
@@ -2301,7 +2842,7 @@ input.fi-money{padding-left:58px!important;width:100%}
         🏖 Solicitar Vacaciones
       </button>
       <!-- Historial -->
-      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:10px;text-transform:uppercase">// Historial de solicitudes</div>
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:10px;text-transform:uppercase">Historial de solicitudes</div>
       <div id="vacc-historial-ficha">Sin vacaciones registradas.</div>
     </div>
 
@@ -2329,7 +2870,7 @@ input.fi-money{padding-left:58px!important;width:100%}
     </div>
 
     <div id="ft-org" style="display:none">
-      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:12px;text-transform:uppercase">// Posición en el organigrama</div>
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:12px;text-transform:uppercase">Posición en el organigrama</div>
       <div id="ficha-org-box" style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:14px;font-family:var(--font-mono);font-size:11px;color:var(--text2)">
         Guarda el trabajador primero para ver su posición en el organigrama.
       </div>
@@ -2453,7 +2994,7 @@ input.fi-money{padding-left:58px!important;width:100%}
 </div>
 <div id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <!-- FIREBASE -->
 <script type="module">
@@ -2578,7 +3119,6 @@ window.fbSaveBannerConfig = async (data) => {
     try {
       await setDoc(doc(db,'banner_config','main'), clean);
       saved = true;
-      console.log('[Banner] Guardado en banner_config OK');
     } catch(e1) {
       console.warn('[Banner] banner_config falló (posiblemente reglas Firestore):', e1.code, e1.message);
     }
@@ -2588,7 +3128,6 @@ window.fbSaveBannerConfig = async (data) => {
     const base = existing.exists() ? existing.data() : {};
     await setDoc(doc(db,'dropdown_config','main'), {...base, _banner: clean});
     saved = true;
-    console.log('[Banner] Guardado en dropdown_config._banner OK');
     if(!saved) throw new Error('No se pudo guardar en ninguna colección');
   } catch(e) {
     console.error('[Banner] Error final:', e.code, e.message);
@@ -2601,12 +3140,11 @@ window.fbLoadBannerConfig = async () => {
     // Try banner_config first
     try {
       const snap = await getDoc(doc(db,'banner_config','main'));
-      if(snap.exists()){ console.log('[Banner] Cargado desde banner_config'); return snap.data(); }
+      if(snap.exists()) return snap.data();
     } catch(e1){ console.warn('[Banner] No se pudo leer banner_config:', e1.code); }
     // Fallback: read from dropdown_config._banner
     const snap2 = await getDoc(doc(db,'dropdown_config','main'));
     if(snap2.exists() && snap2.data()._banner){
-      console.log('[Banner] Cargado desde dropdown_config._banner');
       return snap2.data()._banner;
     }
     return null;
@@ -2621,34 +3159,8 @@ document.addEventListener('DOMContentLoaded', () => { /* espera login */ });
 
 <!-- APP JS -->
 <script>
-const HASH_CIERRE = 'cf270c49b23a2dbc737575b4e7b8d447eb5d10fc9b0309b4fd9e7da0fa559d0e';
-const HASH_PRES   = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f';
-const HASH_ANUAL = 'cf270c49b23a2dbc737575b4e7b8d447eb5d10fc9b0309b4fd9e7da0fa559d0e';
-const HASH_ANALYZER = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f';
-const HASH_CALC = '0e1db2979be2947b6ac7ac3f6275a70c346c49ff3593eff7b2a8dbf0210b7d4f';
 let activeModule = 'cierre';
 
-function selectModule(mod) {
-  activeModule = mod;
-  // Highlight active button in mod-list
-  document.querySelectorAll('#mod-list button').forEach(function(b) {
-    b.style.borderColor = 'var(--border)';
-    b.style.color = 'var(--text)';
-  });
-  var active = document.getElementById('mod-' + mod);
-  if (active) { active.style.borderColor = 'var(--teal)'; active.style.color = 'var(--teal)'; }
-  // Legacy: also update .module-card if present
-  document.querySelectorAll('.module-card').forEach(function(c) { c.classList.remove('active'); });
-  var card = document.getElementById('mod-' + mod);
-  if (card && card.classList.contains('module-card')) card.classList.add('active');
-  var labels = { cierre:'// Cierre Mensual', presupuesto:'// Gestión de Presupuesto', anual:'// Cierre Anual', rrhh:'// Gestión RRHH', analyzer:'// MercadoLibre Analyzer', calc:'// Calculadora de Ganancias', proveedores:'// Catálogo & Órdenes de Compra', usuarios:'// Usuarios y Roles' };
-  var lbl = document.getElementById('login-module-label');
-  if (lbl) lbl.textContent = labels[mod] || '// ' + mod;
-  var err = document.getElementById('loginError');
-  if (err) err.style.display = 'none';
-  var pass = document.getElementById('loginPass');
-  if (pass) pass.value = '';
-}
 const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const EMPS   = ['Cybernetic','Mascokits','Mini Mall','Personal'];
 const DEFAULT_CATS = {
@@ -2688,7 +3200,6 @@ const S = { mes:null, data:{}, cur:'resumen', ctx:null };
 
 // ── AUTH ──
 const ADMIN_EMAIL_FALLBACK = 'cyberneticspa@gmail.com'; // permite el primer ingreso antes de crear su documento en /usuarios
-async function sha(s){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
 
 async function usrCargarRolActual(email){
   let isAdmin = false, modulos = [], nombre = '';
@@ -2714,71 +3225,6 @@ const USER_ALIASES = {
   'cyber': 'cyberneticspa@gmail.com',
   'kari':  'kari@cybernetic.cl'
 };
-function doLogin(){
-  let email = (document.getElementById('loginEmail').value||'').trim().toLowerCase();
-  email = USER_ALIASES[email] || email;
-  const pass  = document.getElementById('loginPass').value;
-  if(!email || !pass){
-    document.getElementById('loginError').textContent = 'Ingresa correo y contraseña';
-    document.getElementById('loginError').style.display='block';
-    return;
-  }
-  const btn = document.getElementById('btnDoLogin');
-  btn.disabled = true; btn.textContent = 'Verificando…';
-  document.getElementById('loginError').style.display='none';
-
-  window.fbSignIn(email, pass).then(async ()=>{
-    const rol = await usrCargarRolActual(email);
-    let tieneModulo;
-    if(activeModule==='usuarios')      tieneModulo = rol.isAdmin;               // solo admin gestiona usuarios
-    else if(rol.isAdmin)               tieneModulo = true;                       // admin entra a todo
-    else                                tieneModulo = rol.modulos.includes(activeModule);
-
-    if(!tieneModulo){
-      btn.disabled = false; btn.textContent = 'ENTRAR';
-      document.getElementById('loginError').textContent = 'No tienes acceso a este módulo. Contacta al administrador.';
-      document.getElementById('loginError').style.display='block';
-      window.fbSignOut().catch(()=>{});
-      return;
-    }
-
-    btn.disabled = false; btn.textContent = 'ENTRAR';
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('app').style.display='none';
-    document.getElementById('app-presupuesto').style.display='none';
-    if(document.getElementById('app-anual')) document.getElementById('app-anual').style.display='none';
-    if(activeModule==='cierre'){
-      document.getElementById('app').style.display='block';
-      boot();
-    } else if(activeModule==='presupuesto'){
-      document.getElementById('app-presupuesto').style.display='block';
-      bootPresupuesto();
-    } else if(activeModule==='rrhh'){
-      document.getElementById('app-rrhh').style.display='block';
-      bootRRHH();
-    } else if(activeModule==='calc') {
-      document.getElementById('app-calc').style.display='block';
-      bootCalc();
-    } else if(activeModule==='analyzer') {
-      document.getElementById('app-analyzer').style.display='block';
-      bootAnalyzer();
-    } else if(activeModule==='proveedores') {
-      document.getElementById('app-proveedores').style.display='block';
-      bootProveedores();
-    } else if(activeModule==='usuarios') {
-      document.getElementById('app-usuarios').style.display='block';
-      if(typeof bootUsuarios==='function') bootUsuarios();
-    } else {
-      document.getElementById('app-anual').style.display='block';
-      bootAnnual();
-    }
-  }).catch(()=>{
-    btn.disabled = false; btn.textContent = 'ENTRAR';
-    document.getElementById('loginError').textContent = 'Correo o contraseña incorrectos';
-    document.getElementById('loginError').style.display='block';
-    document.getElementById('loginPass').value='';
-  });
-}
 function doLogout(){
   if(window.fbSignOut) window.fbSignOut().catch(()=>{});
   document.getElementById('app').style.display='none';
@@ -2910,9 +3356,6 @@ function clpFormat(n){ const v=Math.round(parseFloat(String(n).replace(/\./g,'')
 function clpParse(s){ return Math.round(parseFloat(String(s).replace(/\./g,'').replace(',','.'))||0); }
 function clpInput(el){ const c=el.selectionStart; const raw=el.value.replace(/[^0-9]/g,''); const num=parseInt(raw||'0',10); const formatted=num===0?'':num.toLocaleString('es-CL'); el.value=formatted; }
 function clpVal(id){ const el=$(id); if(!el) return 0; return clpParse(el.value); }
-function clpSet(id,n){ const el=$(id); if(!el) return; el.value=n?clpFormat(n):''; }
-function mkMoneyInput(id,val,extraAttrs){ return '<input type="text" inputmode="numeric" id="'+id+'" class="fi fi-money" placeholder="0" value="'+(val?clpFormat(val):'')+'" oninput="clpInput(this)" '+(extraAttrs||'')+'>'; }
-function wrapClp(inputHtml){ return '<div class="fi-clp" style="position:relative"><span class="fi-clp-prefix">$ CLP</span>'+inputHtml+'</div>'; }
 function badge(cat){
   const c=COLORS[(cat||'OTRO').toUpperCase()]||COLORS.OTRO;
   return `<span class="cbadge" style="background:${c.b};color:${c.f}">${cat||'OTRO'}</span>`;
@@ -3050,11 +3493,6 @@ function renderResumen(){
   </tbody></table>`;
 }
 
-async function saveRetenciones(val){
-  const d=cur();
-  d.retenciones=parseFloat(val)||0;
-  try{ await saveDoc(d); } catch(e){ showToast('Error al guardar retenciones',true); }
-}
 
 // ── SALDOS ──
 function renderSaldos(){
@@ -3411,10 +3849,6 @@ async function delRendEmpresa(idx){
   showToast('Empresa eliminada');
 }
 
-async function updateRendUtil(emp, val){
-  rendConfig.utilidades[emp] = parseFloat(val)||0;
-  await saveRendConfig();
-}
 
 async function addRendPlataforma(){
   const nombre = await dlgPrompt('Nueva Plataforma','Nombre de la plataforma:','','Ej: MercadoLibre');
@@ -3565,7 +3999,7 @@ function renderRendReporte(){
 
   const modeLabel = isUtil ? 'Utilidad Est.' : (isBrutas ? 'Brutas' : 'Netas');
   const ttitle = $('rend-rpt-table-title');
-  if(ttitle) ttitle.textContent = '// Evolucion mensual - Ventas '+modeLabel+(selEmp?' - '+selEmp:'');
+  if(ttitle) ttitle.textContent = 'Evolución mensual · Ventas '+modeLabel+(selEmp?' - '+selEmp:'');
   const tbl = $('rend-rpt-table');
   if(!tbl) return;
   const empresas = selEmp ? [selEmp] : (rendConfig.empresas||EMPS).filter(function(e){
@@ -3682,7 +4116,7 @@ function renderRendFReporte(){
   const wrap=$('rendf-rpt-chart-wrap');
   if(wrap) wrap.innerHTML=buildLineChart(datos,color,isBrutas);
   const ttitle=$('rendf-rpt-table-title');
-  if(ttitle) ttitle.textContent='// Evolucion mensual FULL - Ventas '+(isBrutas?'Brutas':'Netas')+(selEmp?' - '+selEmp:'');
+  if(ttitle) ttitle.textContent='Evolución mensual FULL · Ventas '+(isBrutas?'Brutas':'Netas')+(selEmp?' - '+selEmp:'');
   const tbl=$('rendf-rpt-table'); if(!tbl) return;
   const empresas=selEmp?[selEmp]:(rendConfig.empresas||EMPS).filter(function(e){ return meses.some(function(mes){ return (S.data[mes].ventasF||[]).some(function(v){ return v.empresa===e; }); }); });
   tbl.innerHTML=buildReporteTable(meses,function(mes){ return S.data[mes].ventasF||[]; },empresas,isBrutas);
@@ -3722,7 +4156,6 @@ function renderRendFConfig(){
     : '<div style="padding:18px;color:var(--text3);font-family:var(--font-mono);font-size:11px;text-align:center">Sin plataformas configuradas.</div>';
   }
 }
-async function updateRendFUtil(emp,val){ rendFCfg.utilidades[emp]=parseFloat(val)||0; await saveRendConfig(); }
 async function saveRendFConfigManual(){
   const empresas = rendConfig.empresas || EMPS;
   empresas.forEach(function(e,i){
@@ -4147,13 +4580,6 @@ async function delCatItem(type, idx) {
 }
 
 // ── COMPRA MODAL ──
-function populateCompraSelects() {
-  const ce = $('c_empresa'); if(ce){ const cur=ce.value; ce.innerHTML='<option value="">— Empresa —</option>'; EMPS_PRES.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;ce.appendChild(o);}); if(cur) ce.value=cur; }
-  const cp = $('c_proveedor'); if(cp){ const cur=cp.value; cp.innerHTML='<option value="">— Proveedor —</option>'+dynamicOptions('proveedores', cur); if(cur) cp.value=cur; }
-  const cr = $('c_responsable'); if(cr){ const cur=cr.value; cr.innerHTML='<option value="">— Responsable —</option>'+dynamicOptions('responsables_pres', cur); if(cur) cr.value=cur; }
-  const ct = $('c_tipopago'); if(ct){ const cur=ct.value; ct.innerHTML=dynamicOptions('tiposPago', cur); if(cur) ct.value=cur; }
-  const cb = $('c_banco'); if(cb){ const cur=cb.value; cb.innerHTML='<option value="">— Banco —</option>'+dynamicOptions('bancos_pres', cur); if(cur) cb.value=cur; }
-}
 
 function toggleBanco() {
   const tipo = ($('c_tipopago')||{value:''}).value;
@@ -4192,38 +4618,7 @@ function setEstadoModal(val) {
   }
 }
 
-function updateEstadoLabels() { /* legacy no-op */ }
 
-async function saveCompra() {
-  const empresa  = ($('c_empresa')||{value:''}).value;
-  const proveedor= ($('c_proveedor')||{value:''}).value;
-  const monto    = clpVal('c_monto');
-  const tipoPago = ($('c_tipopago')||{value:''}).value;
-  if (!empresa||!proveedor||!monto||!tipoPago) { showToast('Completa todos los campos requeridos',true); return; }
-  const fecha = ($('c_fecha')||{value:''}).value;
-  const estado = ($('c_estado_val')||{value:'pagado'}).value || 'pagado';
-  const compra = {
-    id: 'c_'+Date.now(),
-    fecha, empresa, proveedor, monto, tipoPago, estado,
-    banco:    tipoPago==='Transferencia' ? ($('c_banco')||{value:''}).value : '',
-    desc:     ($('c_desc')||{value:''}).value
-  };
-  // Detect if the purchase belongs to a different month than currently selected
-  const compMes = fecha ? fecha.substring(0,7) : S.mes;
-  if (!presState.compras[compMes]) presState.compras[compMes] = [];
-  presState.compras[compMes].unshift(compra);
-  // Auto-switch to the purchase's month and rebuild selector
-  if (compMes !== S.mes) {
-    S.mes = compMes;
-    buildMesSel2();
-    const sel2=$('mesSel2'); if(sel2) sel2.value=compMes;
-    setPresLabel();
-  }
-  if (window.fbSavePres) await window.fbSavePres(compMes, { _id:compMes, compras: presState.compras[compMes] }).catch(e=>console.error(e));
-  closeOv('compraOverlay');
-  renderPresupuestoApp();
-  showToast('Compra registrada');
-}
 
 async function delCompra(idx) {
   if (!presState.compras[S.mes]) return;
@@ -4823,174 +5218,6 @@ function annualMonthLabelToKey(value=''){
   };
   return map[normalized] || '';
 }
-function annualTemplateRow(monthKey){
-  return {
-    anio: annualState.year || String(new Date().getFullYear()),
-    mes: MESES[+monthKey-1],
-    compras_factura: 0,
-    compras_exenta: 0,
-    compras_din: 0,
-    compras_nd: 0,
-    compras_nc: 0,
-    ventas_factura: 0,
-    ventas_boleta: 0,
-    ventas_liquidacion: 0,
-    ventas_nd: 0,
-    ventas_nc: 0,
-    sueldos: 0,
-    pendiente_facturar: 0
-  };
-}
-function annualTemplateInstructions(){
-  return [
-    {campo:'anio', descripcion:'Opcional pero recomendado. Si se informa, cada fila se guarda en ese año', editable:'SI'},
-    {campo:'mes', descripcion:'Obligatorio. Usa Enero..Diciembre o 1..12', editable:'SI'},
-    {campo:'compras_factura', descripcion:'Factura afecta compras', editable:'SI'},
-    {campo:'compras_exenta', descripcion:'Factura exenta compras', editable:'SI'},
-    {campo:'compras_din', descripcion:'DIN compras', editable:'SI'},
-    {campo:'compras_nd', descripcion:'Nota de débito compras', editable:'SI'},
-    {campo:'compras_nc', descripcion:'Nota de crédito compras', editable:'SI'},
-    {campo:'ventas_factura', descripcion:'Factura afecta ventas', editable:'SI'},
-    {campo:'ventas_boleta', descripcion:'Boleta ventas', editable:'SI'},
-    {campo:'ventas_liquidacion', descripcion:'Liquidación ventas', editable:'SI'},
-    {campo:'ventas_nd', descripcion:'Nota de débito ventas', editable:'SI'},
-    {campo:'ventas_nc', descripcion:'Nota de crédito ventas', editable:'SI'},
-    {campo:'sueldos', descripcion:'Sueldos del mes', editable:'SI'},
-    {campo:'pendiente_facturar', descripcion:'Pendiente por facturar', editable:'SI'},
-    {campo:'auto_calculados', descripcion:'Remanente anterior, crédito fiscal, débito fiscal, IVA, PPM, remanente siguiente, total impuesto y ganancia', editable:'NO'}
-  ];
-}
-function annualDownloadTemplate(){
-  try{
-    if(typeof XLSX === 'undefined'){
-      showToast('No se pudo cargar la librería Excel', true);
-      return;
-    }
-    const wb = XLSX.utils.book_new();
-    const rows = ANNUAL_MONTH_KEYS.map(annualTemplateRow);
-    const wsData = XLSX.utils.json_to_sheet(rows);
-    const wsInfo = XLSX.utils.json_to_sheet(annualTemplateInstructions());
-    XLSX.utils.book_append_sheet(wb, wsData, 'Plantilla');
-    XLSX.utils.book_append_sheet(wb, wsInfo, 'Instrucciones');
-    const company = getSelectedAnnualCompany() || 'empresa';
-    const year = annualState.year || new Date().getFullYear();
-    XLSX.writeFile(wb, `plantilla_cierre_anual_${company}_${year}.xlsx`);
-  }catch(e){
-    console.error('Error descargando plantilla anual:', e);
-    showToast('Error al descargar plantilla', true);
-  }
-}
-async function annualUploadTemplate(event){
-  const file = event?.target?.files?.[0];
-  if(!file) return;
-  try{
-    if(typeof XLSX === 'undefined') throw new Error('XLSX no disponible');
-    const buffer = await file.arrayBuffer();
-    const wb = XLSX.read(buffer, { type:'array' });
-    const sheetName = wb.SheetNames[0];
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval:'' });
-    if(!rows.length){
-      showToast('La planilla no contiene datos', true);
-      event.target.value = '';
-      return;
-    }
-
-    const touchedYears = new Set();
-    const touchedCompanies = new Set();
-    let loaded = 0;
-    let ignored = 0;
-    const currentCompany = getSelectedAnnualCompany();
-
-    const aliases = {
-      compras_factura:['compras_factura','compras factura','Compras Factura','compra_factura','compras afectas'],
-      compras_exenta:['compras_exenta','compras exenta','Compras Exenta'],
-      compras_din:['compras_din','compras din','Compras DIN','DIN'],
-      compras_nd:['compras_nd','compras nd','Compras ND'],
-      compras_nc:['compras_nc','compras nc','Compras NC'],
-      ventas_factura:['ventas_factura','ventas factura','Ventas Factura'],
-      ventas_boleta:['ventas_boleta','ventas boleta','Ventas Boleta'],
-      ventas_liquidacion:['ventas_liquidacion','ventas liquidacion','Ventas Liquidacion','Ventas Liquidación'],
-      ventas_nd:['ventas_nd','ventas nd','Ventas ND'],
-      ventas_nc:['ventas_nc','ventas nc','Ventas NC'],
-      sueldos:['sueldos','Sueldos'],
-      pendiente_facturar:['pendiente_facturar','pendiente por facturar','Pendiente por Facturar','pendiente']
-    };
-    const pick = (row, arr) => {
-      for(const key of arr){
-        if(Object.prototype.hasOwnProperty.call(row, key)) return row[key];
-      }
-      return '';
-    };
-
-    rows.forEach(row=>{
-      const monthRaw = row.mes ?? row.Mes ?? row.MES ?? row.month ?? row.Month;
-      const key = annualMonthLabelToKey(monthRaw);
-      if(!key || !ANNUAL_MONTH_KEYS.includes(key)){ ignored += 1; return; }
-
-      const rawYear = String(row.anio ?? row.año ?? row['Año'] ?? row['anio'] ?? row.year ?? row.Year ?? annualState.year ?? '').trim();
-      const year = /^\d{4}$/.test(rawYear) ? rawYear : String(annualState.year || new Date().getFullYear());
-      if(!annualState.data[year]) annualState.data[year] = mkAnnualYear(year);
-
-      const rawCompany = String(row.empresa ?? row.Empresa ?? row.EMPRESA ?? currentCompany ?? '').trim();
-      const names = getAnnualCompanyNames();
-      const company = names.includes(rawCompany) ? rawCompany : currentCompany;
-      const yearObj = annualState.data[year];
-      const companyData = company ? ensureAnnualCompanyYear(yearObj, company) : null;
-      if(!companyData){ ignored += 1; return; }
-
-      companyData.months[key] = annualMonthMerged({
-        ...companyData.months[key],
-        compras_factura: annualParseMoney(pick(row, aliases.compras_factura)),
-        compras_exenta: annualParseMoney(pick(row, aliases.compras_exenta)),
-        compras_din: annualParseMoney(pick(row, aliases.compras_din)),
-        compras_nd: annualParseMoney(pick(row, aliases.compras_nd)),
-        compras_nc: annualParseMoney(pick(row, aliases.compras_nc)),
-        ventas_factura: annualParseMoney(pick(row, aliases.ventas_factura)),
-        ventas_boleta: annualParseMoney(pick(row, aliases.ventas_boleta)),
-        ventas_liquidacion: annualParseMoney(pick(row, aliases.ventas_liquidacion)),
-        ventas_nd: annualParseMoney(pick(row, aliases.ventas_nd)),
-        ventas_nc: annualParseMoney(pick(row, aliases.ventas_nc)),
-        sueldos: annualParseMoney(pick(row, aliases.sueldos)),
-        pendiente_facturar: annualParseMoney(pick(row, aliases.pendiente_facturar))
-      });
-
-      recalcAnnualYear(yearObj);
-      touchedYears.add(year);
-      touchedCompanies.add(company);
-      loaded += 1;
-    });
-
-    for(const year of touchedYears){
-      await saveAnnualYear(year);
-    }
-
-    if(touchedYears.size){
-      const targetYear = annualState.year && touchedYears.has(annualState.year)
-        ? annualState.year
-        : Array.from(touchedYears).sort().reverse()[0];
-      if(targetYear){
-        annualState.year = targetYear;
-        buildYearSel();
-        if($('yearSel')) $('yearSel').value = targetYear;
-      }
-      if(touchedCompanies.size && !touchedCompanies.has(annualState.company)){
-        annualState.company = Array.from(touchedCompanies)[0];
-      }
-      persistAnnualSelection();
-      renderAnnualApp();
-    }
-
-    const msg = loaded
-      ? `Planilla cargada: ${loaded} fila(s) válidas${ignored ? ` · ${ignored} ignorada(s)` : ''}`
-      : 'No se reconocieron meses válidos';
-    showToast(msg, !loaded);
-  }catch(e){
-    console.error('Error cargando planilla anual:', e);
-    showToast('Error al cargar planilla', true);
-  } finally {
-    event.target.value = '';
-  }
-}
 function calcAnnualMonth(m){
   const comprasFactura = Number(m.compras_factura||0);
   const comprasExenta = Number(m.compras_exenta||0);
@@ -5343,7 +5570,7 @@ function renderAnnualMeses(){
   const month = annualCurMonth();
   const calc = calcAnnualMonth(month);
   const company = getSelectedAnnualCompany();
-  $('annualComprasTitle').textContent = `// Compras · ${MESES[+annualState.curMonth-1]} · ${company || ''}`;
+  $('annualComprasTitle').textContent = `Compras · ${MESES[+annualState.curMonth-1]} · ${company || ''}`;
   $('annualComprasForm').innerHTML = [
     annualField('Factura afecta','an_compras_factura',month.compras_factura),
     annualField('Factura exenta','an_compras_exenta',month.compras_exenta),
@@ -6170,9 +6397,6 @@ function clearAdjunto(kind){
   $(p+'placeholder').style.display = 'block';
 }
 // Alias de compatibilidad (por si quedan referencias antiguas)
-function handleFotoSelect(input){ handleAdjuntoSelect(input,'foto'); }
-function handleFotoDrop(e){ handleAdjuntoDrop(e,'foto'); }
-function clearFoto(){ clearAdjunto('foto'); }
 function openFotoViewer(b64, name){
   const isPdf = (typeof b64==='string' && b64.indexOf('data:application/pdf')===0) || /\.pdf$/i.test(name||'');
   const ov = document.createElement('div');
@@ -6410,13 +6634,6 @@ function getCurrentVersion(){
   }
   return '1.0.0';
 }
-function incrementarVersion(versionActual){
-  const partes = String(versionActual || '1.0.0').split('.').map(n => parseInt(n,10) || 0);
-  while(partes.length < 3) partes.push(0);
-  let [major, minor, patch] = partes;
-  patch += 1;
-  return `${major}.${minor}.${patch}`;
-}
 function getBadgeClass(tipo){
   const t = String(tipo || '').toLowerCase();
   if(t === 'feature') return 'badge-feature';
@@ -6469,13 +6686,6 @@ function openVersionModal(){
   renderVersionModal();
   document.getElementById('versionOv')?.classList.add('open');
 }
-function guardarVersionesLocal(){
-  try{
-    localStorage.setItem('gbisness_versiones', JSON.stringify(VERSIONES));
-  }catch(e){
-    console.error('No se pudieron guardar las versiones en localStorage', e);
-  }
-}
 function cargarVersionesLocal(){
   try{
     const raw = localStorage.getItem('gbisness_versiones');
@@ -6488,40 +6698,6 @@ function cargarVersionesLocal(){
   }catch(e){
     console.error('No se pudieron cargar las versiones desde localStorage', e);
   }
-}
-function registrarCambio({tipo='mejora', codigo='', txt=''} = {}){
-  if(!txt || !String(txt).trim()) return null;
-  const actual = getCurrentVersion();
-  const nueva = incrementarVersion(actual);
-  VERSIONES.unshift({
-    version: nueva,
-    fecha: fechaHoyVersionado(),
-    cambios: [{ tipo, codigo, txt: String(txt).trim() }]
-  });
-  guardarVersionesLocal();
-  renderFooterVersion();
-  renderVersionModal();
-  return nueva;
-}
-function nuevaVersionBase(){
-  const actual = getCurrentVersion();
-  const nueva = incrementarVersion(actual);
-  VERSIONES.unshift({ version: nueva, fecha: fechaHoyVersionado(), cambios: [] });
-  guardarVersionesLocal();
-  renderFooterVersion();
-  renderVersionModal();
-  return nueva;
-}
-function registrarCambioEnVersionActual({tipo='mejora', codigo='', txt=''} = {}){
-  if(!txt || !String(txt).trim()) return null;
-  if(!Array.isArray(VERSIONES) || !VERSIONES.length){
-    VERSIONES.unshift({ version: '1.0.0', fecha: fechaHoyVersionado(), cambios: [] });
-  }
-  VERSIONES[0].cambios.unshift({ tipo, codigo, txt: String(txt).trim() });
-  guardarVersionesLocal();
-  renderFooterVersion();
-  renderVersionModal();
-  return VERSIONES[0].version;
 }
 function updateFooterClock(){
   renderFooterDate();
@@ -7989,7 +8165,7 @@ function renderOrgChart() {
   Object.entries(byArea).forEach(([area, nodes])=>{
     const col = areaColors[area] || 'var(--text3)';
     html += `<div style="margin-bottom:28px">
-      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:${col};margin-bottom:14px;text-transform:uppercase;border-bottom:1px solid ${col}44;padding-bottom:5px">// ${escHtml(area)}</div>
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:${col};margin-bottom:14px;text-transform:uppercase;border-bottom:1px solid ${col}44;padding-bottom:5px">${escHtml(area)}</div>
       <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
         ${nodes.map(t=>nodeHtml(t,0)).join('')}
       </div>
@@ -8015,7 +8191,7 @@ function renderFichaOrg() {
       <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px">REPORTA A</div><div style="color:${jefe?'var(--blue)':'var(--text3)'}">${jefe?escHtml(jefe.nombres+' '+jefe.apellidos):'Sin jefe'}</div></div>
       <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px">REPORTES DIRECTOS</div><div style="color:var(--green)">${reportes.length}</div></div>
     </div>
-    ${reportes.length?`<div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">// Equipo directo</div>
+    ${reportes.length?`<div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">Equipo directo</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       ${reportes.map(r=>`<span onclick="openFichaTrabajador('${r._id}')" style="cursor:pointer;background:rgba(45,42,234,0.1);border:1px solid rgba(45,42,234,0.3);color:var(--teal);font-family:var(--font-mono);font-size:9px;padding:4px 10px;border-radius:2px;letter-spacing:1px">${escHtml(r.nombres.split(' ')[0]+' '+r.apellidos.split(' ')[0])}</span>`).join('')}
     </div>`:''}
@@ -8209,7 +8385,7 @@ function buildCalendarioCumple(year, month, cumpleMap, today) {
   }
   if(feriadosMes.length){
     html += `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:8px;text-transform:uppercase">// Feriados del mes</div>
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:8px;text-transform:uppercase">Feriados del mes</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
         ${feriadosMes.map(f=>`<span style="background:rgba(74,158,255,0.12);border:1px solid rgba(74,158,255,0.3);color:var(--blue);font-family:var(--font-mono);font-size:9px;padding:3px 10px;border-radius:2px;letter-spacing:1px">★ ${f.d} — ${f.nombre}</span>`).join('')}
       </div>
@@ -8406,24 +8582,6 @@ function rendCanalTab(canal) {
 // ═══════════════════════════════════════════════════════════
 // ══  THEME TOGGLE  ══════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════
-function toggleTheme(){
-  const isLight = document.body.classList.toggle('light-mode');
-  const btn = document.getElementById('btnTheme');
-  if(btn) btn.textContent = isLight ? '\u2600' : '\u263D';
-  try{ localStorage.setItem('gbisness_theme', isLight ? 'light' : 'dark'); }catch(e){}
-}
-function applyTheme(){
-  try{
-    const saved = localStorage.getItem('gbisness_theme');
-    if(saved === 'light'){
-      document.body.classList.add('light-mode');
-      const btn = document.getElementById('btnTheme');
-      if(btn) btn.textContent = '\u2600';
-    }
-  }catch(e){}
-}
-// Apply theme on load
-applyTheme();
 // ═══════════════════════════════════════════════════════════
 function closeOv(id){ document.getElementById(id).classList.remove('open'); if(id==='addOverlay') editCtx=null; if(id==='catOverlay'){ editCtx=null; dynamicSelectTarget=null; } }
 function showLoader(v){
@@ -9256,29 +9414,6 @@ function cgRender() {
     grid.innerHTML += '<div class="cg-empty" style="grid-column:1/-1;padding:16px">Mostrando 200 de ' + list.length + '. Refina la búsqueda.</div>';
   }
 }
-function cgToggle(id) {
-  var el = document.getElementById(id);
-  if (el) el.classList.toggle('open');
-}
-function cgSimCalc(cid, costo) {
-  var inp = document.getElementById('cgsim-' + cid);
-  if (!inp) return;
-  var price = parseFloat(inp.value);
-  var $v = function(id, val, cls) {
-    var el = document.getElementById(id);
-    if (el) { el.textContent = val; el.className = 'cg-sr-v ' + (cls || ''); }
-  };
-  if (!price || price <= 0) {
-    $v('cgsv-sim-' + cid, '—', ''); $v('cgsv-gan-' + cid, '—', ''); $v('cgsv-mar-' + cid, '—', '');
-    return;
-  }
-  var sim_siva = (price / 1.19) * 0.8627 / 1.19;
-  var gan = sim_siva - costo;
-  var mar = sim_siva > 0 ? gan / sim_siva : 0;
-  $v('cgsv-sim-' + cid, cgFmt(sim_siva), 'med');
-  $v('cgsv-gan-' + cid, cgFmt(gan), gan >= 0 ? 'pos' : 'neg');
-  $v('cgsv-mar-' + cid, cgPct(mar), mar >= 0.5 ? 'pos' : mar >= 0.2 ? 'med' : 'neg');
-}
 function cgPill(el, val) {
   document.querySelectorAll('#app-calc .cg-pill').forEach(function(p) { p.classList.remove('on'); });
   el.classList.add('on');
@@ -9364,33 +9499,6 @@ function cgRecalcAll(n) {
   if (resRow) resRow.className = 'cg-dark-row result ' + (ganancia >= 0 ? 'pos' : 'neg');
 }
 
-function _cgUpdateResult(cid, costoBase, simNeto, simSiva, ganancia, margen) {
-  var $ = function(id) { return document.getElementById(id); };
-  var fmt = cgFmt, pct = cgPct, mc = cgMClass(margen);
-  var ganPos = ganancia >= 0;
-
-  if ($(  'costobase-' + cid)) $('costobase-' + cid).textContent = fmt(costoBase);
-  if ($('simsiva-' + cid))   $('simsiva-' + cid).textContent   = fmt(simSiva);
-  if ($('ganlbl-' + cid))    $('ganlbl-' + cid).textContent    = fmt(ganancia);
-  if ($('pctlbl-' + cid)) {
-    $('pctlbl-' + cid).textContent = pct(margen);
-    $('pctlbl-' + cid).className   = 'cg-pct-badge ' + mc;
-  }
-  // Quick metric badges
-  if ($('gan-lbl-' + cid)) {
-    $('gan-lbl-' + cid).textContent = fmt(ganancia);
-    $('gan-lbl-' + cid).className   = 'cg-m-v ' + mc;
-  }
-  if ($('mar-lbl-' + cid)) {
-    $('mar-lbl-' + cid).textContent = pct(margen);
-    $('mar-lbl-' + cid).className   = 'cg-m-v ' + mc;
-  }
-  // Result row color
-  var resRow = $('resrow-' + cid);
-  if (resRow) {
-    resRow.className = 'cg-row-item result ' + (ganPos ? 'pos' : 'neg');
-  }
-}
 
 // Override cgToggle to handle chevron
 function cgToggle(n) {
@@ -9935,133 +10043,22 @@ function cgAddProduct() {
      Integrado en GBisness — Cybernetic SpA
      454 productos · Holchem · Navarro & Cia · Pochteca
 ══════════════════════════════════════════════════════════════ -->
-<style>
-#app-proveedores{min-height:100vh;background:var(--bg);display:none}
-#app-proveedores .pv-topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);padding:0 22px;display:flex;align-items:center;gap:10px;height:54px}
-#app-proveedores .pv-logo{font-family:var(--font-display);font-size:20px;letter-spacing:3px;color:var(--teal)}
-#app-proveedores .pv-layout{display:flex;min-height:calc(100vh - 54px)}
-#app-proveedores .pv-sidebar{width:190px;flex-shrink:0;background:var(--sidebar-bg);border-right:1px solid var(--border);padding:10px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
-#app-proveedores .pv-main{flex:1;padding:22px 26px;overflow-x:auto;min-width:0}
-#app-proveedores .pv-nav-group{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);padding:14px 16px 5px;text-transform:uppercase}
-#app-proveedores .pv-nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border-left:2px solid transparent}
-#app-proveedores .pv-nav-item:hover{background:rgba(255,255,255,0.02);color:var(--text)}
-#app-proveedores .pv-nav-item.active{background:var(--green-dim);color:var(--teal);border-left-color:var(--teal)}
-#app-proveedores .pv-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
-#app-proveedores .pv-kpi{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:14px 16px;position:relative;overflow:hidden}
-#app-proveedores .pv-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-#app-proveedores .pv-kpi.ct::before{background:var(--teal)}
-#app-proveedores .pv-kpi.cg::before{background:var(--green)}
-#app-proveedores .pv-kpi.ca::before{background:var(--amber)}
-#app-proveedores .pv-kpi.cr::before{background:var(--blue)}
-#app-proveedores .pv-kpi.cp::before{background:#a064ff}
-#app-proveedores .pv-kpi-lbl{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px}
-#app-proveedores .pv-kpi-val{font-family:var(--font-display);font-size:24px;letter-spacing:1px;line-height:1}
-#app-proveedores .pv-kpi-sub{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:4px}
-#app-proveedores .pv-section{background:var(--card);border:1px solid var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden}
-#app-proveedores .pv-sec-hdr{padding:11px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-#app-proveedores .pv-sec-title{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase}
-#app-proveedores .pv-tbl{width:100%;border-collapse:collapse}
-#app-proveedores .pv-tbl th{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
-#app-proveedores .pv-tbl td{padding:7px 10px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
-#app-proveedores .pv-tbl tr:last-child td{border-bottom:none}
-#app-proveedores .pv-tbl tr:hover td{background:rgba(255,255,255,0.015);cursor:pointer}
-#app-proveedores .pv-badge{display:inline-block;font-family:var(--font-mono);font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px;letter-spacing:1px;white-space:nowrap}
-#app-proveedores .badge-hol{background:rgba(91,79,207,0.2);color:#a090ff;border:1px solid rgba(91,79,207,0.3)}
-#app-proveedores .badge-nav{background:rgba(0,114,188,0.2);color:#60b0ff;border:1px solid rgba(0,114,188,0.3)}
-#app-proveedores .badge-poc{background:rgba(196,89,17,0.2);color:#f09060;border:1px solid rgba(196,89,17,0.3)}
-#app-proveedores .uso-com{background:rgba(0,180,100,0.18);color:#00c87a;border:1px solid rgba(0,180,100,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
-#app-proveedores .uso-fab{background:rgba(74,158,255,0.18);color:var(--blue);border:1px solid rgba(74,158,255,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
-#app-proveedores .uso-inf{background:rgba(255,71,87,0.18);color:var(--red);border:1px solid rgba(255,71,87,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
-#app-proveedores .uso-rev{background:rgba(245,166,35,0.18);color:var(--amber);border:1px solid rgba(245,166,35,0.3);font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap}
-#app-proveedores .pv-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 18px;border-bottom:1px solid var(--border)}
-#app-proveedores .pv-fi{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:7px 11px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;transition:border-color .2s}
-#app-proveedores .pv-fi:focus{border-color:var(--teal)}
-#app-proveedores .pv-search-wrap{position:relative;flex:1;min-width:200px}
-#app-proveedores .pv-search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none}
-#app-proveedores .pv-search{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:7px 11px 7px 32px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none}
-#app-proveedores .pv-search:focus{border-color:var(--teal)}
-#app-proveedores .pv-btn{padding:7px 14px;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;border-radius:2px;cursor:pointer;transition:all .15s}
-#app-proveedores .pv-btn-teal{background:var(--teal);color:#fff;border:none}
-#app-proveedores .pv-btn-teal:hover{opacity:.85}
-#app-proveedores .pv-btn-sec{background:none;border:1px solid var(--border2);color:var(--text2)}
-#app-proveedores .pv-btn-sec:hover{border-color:var(--teal);color:var(--teal)}
-#app-proveedores .pv-btn-amber{background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);color:var(--amber)}
-#app-proveedores .pv-btn-amber:hover{background:rgba(245,166,35,0.18)}
-#app-proveedores .oc-draft{background:rgba(160,168,200,0.15);color:var(--text3);border:1px solid rgba(160,168,200,0.25)}
-#app-proveedores .oc-sent{background:rgba(74,158,255,0.15);color:var(--blue);border:1px solid rgba(74,158,255,0.25)}
-#app-proveedores .oc-confirmed{background:rgba(23,134,79,0.15);color:var(--green);border:1px solid rgba(23,134,79,0.25)}
-#app-proveedores .oc-received{background:rgba(45,42,234,0.15);color:var(--teal);border:1px solid rgba(45,42,234,0.25)}
-#app-proveedores .oc-cancelled{background:rgba(255,71,87,0.15);color:var(--red);border:1px solid rgba(255,71,87,0.25)}
-#pv-oc-modal{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
-#pv-oc-modal.open{display:flex}
-#pv-oc-modal .pv-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;width:100%;max-width:820px;overflow:hidden}
-#pv-oc-modal .pv-modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-#pv-oc-modal .pv-modal-title{font-family:var(--font-display);font-size:18px;letter-spacing:2px}
-#pv-oc-modal .pv-modal-body{padding:20px;max-height:70vh;overflow-y:auto}
-#pv-edit-modal{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px}
-#pv-edit-modal.open{display:flex}
-#pv-edit-modal .pv-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;width:100%;max-width:560px;overflow:hidden;max-height:90vh;overflow-y:auto}
-@media print{body>*:not(#pv-print-area){display:none!important}#pv-print-area{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999;padding:24px}}
-#pv-print-area{display:none}
-#app-proveedores .pv-prov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;padding:16px 18px}
-#app-proveedores .pv-prov-card{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:14px 16px;position:relative;transition:all .15s}
-#app-proveedores .pv-prov-card:hover{border-color:var(--teal)}
-#app-proveedores .pv-prov-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .15s}
-#app-proveedores .pv-prov-card:hover::before{opacity:1}
-#app-proveedores .pv-prov-card.hol::before{background:#a090ff}
-#app-proveedores .pv-prov-card.nav::before{background:#60b0ff}
-#app-proveedores .pv-prov-card.poc::before{background:#f09060}
-#app-proveedores .pv-prov-name{font-family:var(--font-display);font-size:15px;letter-spacing:1px;margin-bottom:3px}
-#app-proveedores .pv-prov-contact{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:8px}
-#app-proveedores .pv-prov-stats{display:flex;gap:14px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
-#app-proveedores .pv-prov-stat{font-family:var(--font-mono);font-size:9px;color:var(--text3)}
-#app-proveedores .pv-prov-stat b{color:var(--text);display:block;font-size:14px;font-family:var(--font-display);letter-spacing:1px}
-
-#app-proveedores .pv-import-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-#app-proveedores .pv-mini-note{font-family:var(--font-mono);font-size:9px;color:var(--text3);line-height:1.45}
-#pv-product-modal{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px}
-#pv-product-modal.open{display:flex}
-#pv-product-modal .pv-modal-box{background:var(--card);border:1px solid var(--border2);border-radius:2px;width:100%;max-width:560px;overflow:hidden;max-height:90vh;overflow-y:auto}
-#app-proveedores .pv-check-row{display:flex;gap:12px;flex-wrap:wrap;background:var(--bg3);border:1px solid var(--border2);padding:8px 10px;border-radius:2px}
-#app-proveedores .pv-check-row label{font-family:var(--font-mono);font-size:10px;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer}
-#app-proveedores .oc-item-row{display:grid;grid-template-columns:1fr 70px 100px 110px 80px 28px;gap:8px;align-items:center;margin-bottom:6px}
-#app-proveedores .oc-item-row input,#app-proveedores .oc-item-row select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 9px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;width:100%}
-#app-proveedores .oc-item-row input:focus,#app-proveedores .oc-item-row select:focus{border-color:var(--teal)}
-#app-proveedores .pv-page-title{font-family:var(--font-display);font-size:26px;letter-spacing:2px;margin-bottom:2px}
-#app-proveedores .pv-page-title span{color:var(--teal)}
-#app-proveedores .pv-page-sub{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:18px}
-#app-proveedores .oc-num{font-family:var(--font-mono);font-size:11px;color:var(--teal)}
-#app-proveedores .precio-val{font-family:var(--font-mono);font-size:11px;color:var(--green)}
-#app-proveedores .precio-vacio{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
-/* Pills filtro uso */
-#app-proveedores .uso-pill{padding:4px 10px;border-radius:2px;border:1px solid var(--border2);background:none;font-family:var(--font-mono);font-size:9px;cursor:pointer;color:var(--text3);letter-spacing:.5px;transition:all .1s}
-#app-proveedores .uso-pill.on{color:#000!important;border-color:transparent}
-#app-proveedores .uso-pill.on-com{background:#00c87a}
-#app-proveedores .uso-pill.on-fab{background:var(--blue)}
-#app-proveedores .uso-pill.on-inf{background:var(--red)}
-#app-proveedores .uso-pill.on-rev{background:var(--amber)}
-#app-proveedores .uso-pill.on-all{background:var(--teal)}
-/* Price input inline */
-#app-proveedores .pv-price-inp{background:var(--bg3);border:1px solid var(--border2);color:var(--green);padding:3px 7px;font-family:var(--font-mono);font-size:11px;border-radius:2px;outline:none;width:90px;text-align:right}
-#app-proveedores .pv-price-inp:focus{border-color:var(--teal)}
-</style>
 
 <!-- ══ APP PROVEEDORES ══ -->
 <div id="app-proveedores" style="display:none">
   <div class="pv-topbar">
     <div class="pv-logo">GBISNESS</div>
-    <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3)">// PROVEEDORES &amp; CATÁLOGO QUÍMICOS</span>
+    <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text3)">PROVEEDORES &amp; CATÁLOGO QUÍMICOS</span>
     <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <button class="btn-theme" onclick="toggleTheme()">☽</button>
       <button class="btn-logout" onclick="pvLogout()">← SALIR</button>
     </div>
   </div>
 
   <div class="pv-layout">
     <div class="pv-sidebar">
-      <div class="pv-nav-group">// CATÁLOGO</div>
+      <div class="pv-nav-group">CATÁLOGO</div>
       <div class="pv-nav-item active" id="pvnav-catalogo"   onclick="pvNav(this,'catalogo')">🧪 Catálogo</div>
-      <div class="pv-nav-group">// GESTIÓN</div>
+      <div class="pv-nav-group">GESTIÓN</div>
       <div class="pv-nav-item"        id="pvnav-proveedores" onclick="pvNav(this,'proveedores')">🏢 Proveedores</div>
       <div class="pv-nav-item"        id="pvnav-ordenes"    onclick="pvNav(this,'ordenes')">📋 Órdenes de Compra</div>
       <div class="pv-nav-item"        id="pvnav-solicitudes" onclick="pvNav(this,'solicitudes')">📥 Solicitudes <span id="pv-sol-badge" style="display:none;background:#ff4757;color:#fff;border-radius:10px;font-size:9px;padding:1px 6px;margin-left:4px"></span></div>
@@ -11001,10 +10998,6 @@ function pvTotalWeight(items){
 }
 function pvPesoTxt(v){ return v ? pvNumFmt(v, v%1?2:0) + ' kg' : '—'; }
 
-function pvUsoBadge(uso) {
-  const map = { 'Comercialización':'uso-com','Fabricación':'uso-fab','Por Revisar':'uso-rev','Infactible':'uso-inf' };
-  return `<span class="${map[uso]||'uso-rev'}">${uso}</span>`;
-}
 function pvProvBadge(id) {
   const map = { holchem:'badge-hol HOLCHEM', navarro:'badge-nav NAVARRO', pochteca:'badge-poc POCHTECA' };
   const v = map[id] || ''; const [cls, lbl] = v.split(' ');
@@ -11049,38 +11042,6 @@ function pvGetFiltered() {
   });
 }
 
-function pvRenderCatalogo() {
-  const list = pvGetFiltered();
-  const tbody = document.getElementById('pv-cat-body');
-  if(!tbody) return;
-  if(!list.length){
-    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</td></tr>';
-    document.getElementById('pv-cat-info').textContent='0 productos';
-    return;
-  }
-  const shown = list.slice(0, 300);
-  tbody.innerHTML = shown.map(p=>{
-    const provs = p.provs.map(pr=>pvProvBadge(pr)).join(' ');
-    const prCell = p.precio
-      ? `<span class="precio-val" onclick="event.stopPropagation();pvEditPrecio('${p.cod}')" style="cursor:pointer" title="Clic para editar">${pvFmt(p.precio)}</span>`
-      : `<span class="precio-vacio" onclick="event.stopPropagation();pvEditPrecio('${p.cod}')" style="cursor:pointer" title="Agregar precio">+ precio</span>`;
-    const civa = p.precio ? pvFmt(Math.round(p.precio*1.19)) : '—';
-    const fuente = '';
-    return `<tr onclick="pvQuickAddOC('${p.cod}')">
-      <td><span style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">${p.cod}</span></td>
-      <td style="font-weight:500;max-width:280px">${p.nombre}${fuente}</td>
-      <td style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cat}</td>
-      <td style="font-family:var(--font-mono);font-size:9px;text-align:center">${p.um}</td>
-      <td style="font-size:11px;color:var(--text2)">${p.pres}</td>
-      <td>${provs}</td>
-      <td>${prCell}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">${civa}</td>
-      <td><button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px" onclick="event.stopPropagation();pvOpenEdit('${p.cod}')">✏</button></td>
-    </tr>`;
-  }).join('');
-  const extra = list.length > 300 ? ` (mostrando 300 de ${list.length})` : '';
-  document.getElementById('pv-cat-info').textContent = `${list.length} productos${extra} · ${pvAllProds().filter(x=>x.precio).length} con precio`;
-}
 
 // ════════════════════════════════════════════════════════════════
 // PRECIOS
@@ -11091,33 +11052,6 @@ function pvRenderCatalogo() {
 // ════════════════════════════════════════════════════════════════
 function pvEditPrecio(cod) {
   pvOpenEdit(cod);
-}
-function pvOpenEdit(cod) {
-  const p = pvGetProd(cod);
-  if(!p) return;
-  document.getElementById('edit-cod').value = cod;
-  document.getElementById('edit-cod-label').textContent = cod + ' · ' + p.provs.map(x=>x.toUpperCase()).join(' + ');
-  document.getElementById('edit-nombre').value = p.nombre;
-  document.getElementById('edit-precio').value = p.precio || '';
-  document.getElementById('edit-uso').value = p.uso;
-  document.getElementById('edit-pres').value = p.pres;
-  document.getElementById('pv-edit-modal').classList.add('open');
-}
-function pvSaveEdit() {
-  const cod    = document.getElementById('edit-cod').value;
-  const nombre = document.getElementById('edit-nombre').value.trim();
-  const precio = parseFloat(document.getElementById('edit-precio').value) || null;
-  const uso    = document.getElementById('edit-uso').value;
-  const pres   = document.getElementById('edit-pres').value.trim();
-  if(!pvEdits[cod]) pvEdits[cod] = {};
-  if(nombre) pvEdits[cod].nombre = nombre;
-  if(precio) pvEdits[cod].precio = precio; else delete pvEdits[cod].precio;
-  pvEdits[cod].uso  = uso;
-  if(pres) pvEdits[cod].pres = pres;
-  pvSaveLocal();
-  document.getElementById('pv-edit-modal').classList.remove('open');
-  pvRenderKPIs(); pvRenderCatalogo();
-  showToast('Producto actualizado');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -11149,49 +11083,6 @@ function pvRenderProveedores() {
 // ════════════════════════════════════════════════════════════════
 // ÓRDENES
 // ════════════════════════════════════════════════════════════════
-function pvRenderOrdenes() {
-  const q  = (document.getElementById('pv-oc-q')?.value||'').toLowerCase();
-  const sf = document.getElementById('pv-oc-status')?.value||'';
-  const pf = document.getElementById('pv-oc-prov-f')?.value||'';
-  const list = pvOCList.filter(oc=>{
-    const mQ = !q || oc.num.toLowerCase().includes(q) || (oc.provNombre||'').toLowerCase().includes(q);
-    return mQ && (!sf||oc.status===sf) && (!pf||oc.provId===pf);
-  }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-
-  document.getElementById('kpi-oc-total').textContent  = pvOCList.length;
-  document.getElementById('kpi-oc-rec').textContent    = pvOCList.filter(o=>o.status==='recibida').length;
-  document.getElementById('kpi-oc-sent').textContent   = pvOCList.filter(o=>o.status==='enviada').length;
-  document.getElementById('kpi-oc-pend').textContent   = pvOCList.filter(o=>['borrador','confirmada'].includes(o.status)).length;
-
-  const tbody = document.getElementById('pv-oc-body');
-  if(!tbody) return;
-  if(!list.length){
-    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin órdenes. <span style="color:var(--teal);cursor:pointer" onclick="pvNav(document.getElementById('pvnav-nueva-oc'),'nueva-oc')">Crear OC →</span></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = list.map(oc=>{
-    const neto = (oc.items||[]).reduce((s,i)=>s+i.qty*(i.precio||0),0);
-    return `<tr>
-      <td><span class="oc-num">${oc.num}</span></td>
-      <td style="font-weight:500">${oc.provNombre}</td>
-      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text2)">${oc.fecha}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;text-align:center">${(oc.items||[]).length}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;color:var(--teal);text-align:right">${pvFmt(neto)}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;text-align:right">${pvFmt(neto*1.19)}</td>
-      <td>${pvOCStatusBadge(oc.status)}</td>
-      <td style="white-space:nowrap">
-        <button class="pv-btn pv-btn-sec" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvViewOC('${oc.num}')">👁</button>
-        <button class="pv-btn pv-btn-teal" style="padding:3px 8px;font-size:9px;margin-right:3px" onclick="pvPrintOCById('${oc.num}')">🖨</button>
-        <select style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:3px 6px;font-family:var(--font-mono);font-size:9px;border-radius:2px;outline:none" onchange="pvChangeStatus('${oc.num}',this.value);this.value=''">
-          <option value="">Estado…</option>
-          <option value="borrador">Borrador</option><option value="enviada">Enviada</option>
-          <option value="confirmada">Confirmada</option><option value="recibida">Recibida</option>
-          <option value="cancelada">Cancelada</option>
-        </select>
-      </td>
-    </tr>`;
-  }).join('');
-}
 function pvChangeStatus(num, status) {
   if(!status) return;
   const oc = pvOCList.find(o=>o.num===num);
@@ -11222,35 +11113,6 @@ function pvOCProvChange() {
   const q = document.getElementById('oc-prod-q');
   if(q) q.value = '';
   pvOCSearchProds();
-}
-function pvOCSearchProds() {
-  const q    = (document.getElementById('oc-prod-q')?.value||'').toLowerCase();
-  const prov = document.getElementById('oc-prov-sel')?.value||'';
-  const res  = document.getElementById('oc-prod-results');
-  if(!res) return;
-  // Require a provider to be selected
-  if(!prov){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Selecciona un proveedor primero</div>'; return; }
-  const matches = pvAllProds().filter(p=>{
-    const mQ = !q || p.nombre.toLowerCase().includes(q) || p.cod.toLowerCase().includes(q);
-    const mP = p.provs.includes(prov);
-    return mQ && mP;
-  }).slice(0,80);
-  if(!matches.length){ res.innerHTML='<div style="padding:10px 14px;font-family:var(--font-mono);font-size:10px;color:var(--text3)">Sin resultados</div>'; return; }
-  res.innerHTML = matches.map(p=>{
-    return `<div style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''" onclick="pvAddItemToOC('${p.cod}')">
-      <div style="font-size:12px;font-weight:500">${p.nombre}</div>
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">${p.cod} · ${p.pres} · ${p.um}</div>
-    </div>`;
-  }).join('');
-}
-function pvAddItemToOC(cod) {
-  const p = pvGetProd(cod);
-  if(!p) return;
-  const ex = pvOCItems.find(i=>i.cod===cod);
-  if(ex){ ex.qty++; pvRenderOCItems(); showToast('Cantidad +1'); return; }
-  pvOCItems.push({ cod:p.cod, nombre:p.nombre, um:p.um, pres:p.pres, qty:1, precio:p.precio||0, pesoUnit:pvUnitWeight(p) });
-  pvRenderOCItems();
-  showToast('Agregado: '+p.nombre.slice(0,30));
 }
 function pvQuickAddOC(cod) {
   pvNav(document.getElementById('pvnav-nueva-oc'), 'nueva-oc');
@@ -11324,7 +11186,6 @@ function pvPreviewOC() {
     notas:document.getElementById('oc-notas')?.value||'',
     items:pvOCItems, status:'borrador' });
 }
-function pvPrintOC(){ const n=document.getElementById('pv-oc-modal').dataset.currentNum; if(n) pvPrintOCById(n); }
 function pvPrintOCById(num){ const oc=pvOCList.find(o=>o.num===num); if(oc) pvPrintOCObj(oc); }
 function pvPrintOCObj(oc){
   const area = document.getElementById('pv-print-area');
@@ -11744,11 +11605,6 @@ function pvExportCatalogo() {
   window.bootProveedores = function(){ window.pvApplyHolchemExcelPatch(); oldBoot(); };
 })();
 </script>
-<style>
-#app-proveedores .pv-rank{display:inline-block;font-family:var(--font-mono);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px;letter-spacing:.7px;white-space:nowrap}
-#app-proveedores .pv-rank-low{background:rgba(23,134,79,.12);color:var(--green);border:1px solid rgba(23,134,79,.28)}
-#app-proveedores .pv-rank-high{background:rgba(255,71,87,.12);color:var(--red);border:1px solid rgba(255,71,87,.30)}
-</style>
 
 
 <script>
@@ -12053,10 +11909,6 @@ function pvExportCatalogo() {
   document.addEventListener('DOMContentLoaded',()=>{ insApply(); insRefreshUI(); });
 })();
 </script>
-<style>
-#app-proveedores .badge-ins{background:rgba(5,150,105,0.18);color:#34d399;border:1px solid rgba(5,150,105,0.35)}
-#app-proveedores .pv-prov-card.ins::before{background:#34d399}
-</style>
 
 
 
@@ -13618,168 +13470,6 @@ setTimeout(function(){ try{ pvRenderCatalogo(); }catch(e){}}, 150);
 })();
 </script>
 
-<style>
-/* ══ AUTOMATIK MODALS · diseño moderno modo claro ══ */
-
-/* Overlay */
-#pv-edit-modal, #pv-product-modal, #pv-oc-modal {
-  background: rgba(15,20,40,0.5) !important;
-  backdrop-filter: blur(6px) !important;
-}
-
-/* Caja principal */
-#pv-edit-modal .pv-modal-box,
-#pv-product-modal .pv-modal-box {
-  background: #ffffff !important;
-  border: none !important;
-  border-radius: 10px !important;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08) !important;
-  overflow: hidden !important;
-  animation: modalIn .18s cubic-bezier(.2,.8,.4,1);
-}
-@keyframes modalIn {
-  from { transform: translateY(10px) scale(0.98); opacity:0; }
-  to   { transform: translateY(0) scale(1); opacity:1; }
-}
-
-/* Header */
-#pv-edit-modal .pv-modal-box > div:first-child,
-#pv-product-modal .pv-modal-box > div:first-child {
-  background: #f6f8fa !important;
-  border-bottom: 1px solid #e8ecf0 !important;
-  padding: 18px 22px !important;
-  position: relative !important;
-}
-#pv-edit-modal .pv-modal-box > div:first-child::after,
-#pv-product-modal .pv-modal-box > div:first-child::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #00d4aa, #0078d4);
-}
-
-/* Título header */
-#pv-edit-modal [style*="font-family:var(--font-display)"],
-#pv-product-modal [style*="font-family:var(--font-display)"],
-#pv-prod-modal-title {
-  color: #1a2035 !important;
-  letter-spacing: 3px !important;
-  font-size: 15px !important;
-}
-#edit-cod-label { color: #00b894 !important; }
-
-/* Body */
-#pv-edit-modal .pv-modal-box > div:last-child,
-#pv-product-modal .pv-modal-box > div:last-child {
-  background: #ffffff !important;
-  padding: 22px !important;
-}
-
-/* Labels */
-#pv-edit-modal [style*="letter-spacing:1.5px"],
-#pv-product-modal [style*="letter-spacing:1.5px"] {
-  color: #8892a4 !important;
-  font-size: 9px !important;
-  letter-spacing: 2px !important;
-  font-weight: 600 !important;
-}
-
-/* Inputs */
-#pv-edit-modal input:not([type=hidden]), #pv-edit-modal select, #pv-edit-modal textarea,
-#pv-product-modal input:not([type=hidden]), #pv-product-modal select, #pv-product-modal textarea,
-#pv-edit-modal .pv-fi, #pv-product-modal .pv-fi {
-  background: #f6f8fa !important;
-  border: 1.5px solid #e1e6ed !important;
-  color: #1a2035 !important;
-  border-radius: 6px !important;
-  padding: 9px 13px !important;
-  font-size: 13px !important;
-  transition: border-color .15s, box-shadow .15s !important;
-}
-#pv-edit-modal input:focus, #pv-edit-modal select:focus,
-#pv-product-modal input:focus, #pv-product-modal select:focus {
-  border-color: #00d4aa !important;
-  box-shadow: 0 0 0 3px rgba(45,42,234,0.12) !important;
-  background: #fff !important;
-  outline: none !important;
-}
-#pv-edit-modal input::placeholder, #pv-product-modal input::placeholder {
-  color: #b0bac8 !important;
-}
-
-/* Filas de precios por proveedor */
-#edit-prov-prices > div {
-  background: #f9fafb !important;
-  border: 1.5px solid #e8ecf2 !important;
-  border-radius: 8px !important;
-  padding: 10px 12px !important;
-  margin-bottom: 8px !important;
-  transition: border-color .15s, box-shadow .15s !important;
-}
-#edit-prov-prices > div:hover {
-  border-color: #c8d4e0 !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
-}
-
-/* Footer */
-#pv-edit-modal [style*="border-top:1px solid var(--border)"],
-#pv-product-modal [style*="border-top:1px solid var(--border)"] {
-  border-top: 1px solid #edf0f5 !important;
-  margin-top: 4px !important;
-  padding-top: 16px !important;
-}
-
-/* Botón cancelar */
-#pv-edit-modal .pv-btn-sec, #pv-product-modal .pv-btn-sec {
-  background: #f0f3f7 !important;
-  border: 1.5px solid #dde2ea !important;
-  color: #6b7585 !important;
-  border-radius: 6px !important;
-  font-weight: 500 !important;
-}
-#pv-edit-modal .pv-btn-sec:hover, #pv-product-modal .pv-btn-sec:hover {
-  background: #e4e9f0 !important;
-  color: #3a4254 !important;
-}
-
-/* Botón guardar */
-#pv-edit-modal .pv-btn-teal, #pv-product-modal .pv-btn-teal {
-  background: #00d4aa !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 6px !important;
-  font-weight: 700 !important;
-  letter-spacing: 1px !important;
-  box-shadow: 0 2px 8px rgba(45,42,234,0.35) !important;
-}
-#pv-edit-modal .pv-btn-teal:hover, #pv-product-modal .pv-btn-teal:hover {
-  background: #00bfa0 !important;
-  box-shadow: 0 4px 12px rgba(45,42,234,0.45) !important;
-}
-
-/* Modal OC */
-#pv-oc-modal .pv-modal-box {
-  background: #ffffff !important;
-  border: none !important;
-  border-radius: 10px !important;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.18) !important;
-}
-#pv-oc-modal .pv-modal-hdr {
-  background: #f6f8fa !important;
-  border-bottom: 1px solid #e8ecf0 !important;
-  position: relative !important;
-}
-#pv-oc-modal .pv-modal-hdr::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #00d4aa, #0078d4);
-}
-#pv-oc-modal .pv-modal-title { color: #1a2035 !important; }
-#pv-oc-modal .pv-modal-body { background: #fff !important; color: #1a2035 !important; }
-</style>
 
 <script>
 /* ══ OC EXPORT: PDF limpio + XLSX bien estructurado ══ */
@@ -14385,296 +14075,8 @@ async function usrCargarLista(){
      Poppins · índigo #2d2aea · pasteles · tarjetas redondeadas
      Capa de estilos al final del archivo: gana sobre todo lo anterior.
      ══════════════════════════════════════════════════════════════════ -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style id="automatik-ui-v3">
-:root, body.light-mode{
-  color-scheme:light;
-  --bg:#eef2ff; --bg2:#ffffff; --bg3:#f6f8ff; --card:#ffffff;
-  --teal:#2d2aea; --green:#17864f; --green-dim:#e9efff;
-  --blue:#2563eb; --amber:#c46a00; --red:#d13a3a;
-  --text:#1c1c30; --text2:#3a3a55; --text3:#6e7189;
-  --border:#e3e6ef; --border2:#d4d8e4;
-  --topbar-bg:#2d2aea; --sidebar-bg:#ffffff; --loader-bg:rgba(238,242,255,.88);
-  --font-display:'Poppins',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --font-mono:'Poppins',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --font-body:'Poppins',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --ui-primary:#2d2aea; --ui-primary-2:#e9efff; --ui-primary-3:#dce6ff; --ui-primary-ink:#1b2d55;
-  --ui-ok-2:#d7f9e7; --ui-late-2:#ffe6e6; --ui-soon-2:#fff0dc;
-  --ui-r-s:8px; --ui-r-m:12px; --ui-r-l:16px;
-  --ui-shadow:0 1px 2px rgba(28,28,48,.04),0 4px 14px rgba(45,42,234,.06);
-  --ui-shadow-lg:0 24px 64px rgba(27,45,85,.22);
-}
-html,body{background:var(--bg)!important}
-body{font-family:var(--font-body)!important;color:var(--text);font-size:14px;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
-.btn-theme{display:none!important}
-::selection{background:var(--ui-primary-3)}
-*::-webkit-scrollbar{width:8px;height:8px}
-*::-webkit-scrollbar-thumb{background:#c9cfe2;border-radius:99px}
-*::-webkit-scrollbar-track{background:transparent}
-
-/* ── LOGIN ─────────────────────────────────────────── */
-#loginScreen{background:radial-gradient(1200px 600px at 10% -10%,#dce6ff 0,transparent 60%),radial-gradient(900px 500px at 110% 110%,#e8e4ff 0,transparent 55%),var(--bg)!important;padding:30px 0}
-.login-wrap{max-width:480px!important;width:100%!important}
-.login-logo{font-family:var(--font-display)!important;font-weight:700!important;font-size:30px!important;letter-spacing:-.5px!important;color:var(--teal)!important;margin-bottom:2px!important}
-.login-sub{font-size:12px!important;letter-spacing:.3px!important;margin-bottom:20px!important;color:var(--text3)!important}
-#mod-list{display:grid!important;grid-template-columns:1fr 1fr;gap:8px!important}
-#mod-list button{background:#fff!important;border-radius:var(--ui-r-m)!important;font-family:var(--font-body)!important;font-weight:500!important;font-size:13px!important;letter-spacing:0!important;padding:12px 14px!important;box-shadow:var(--ui-shadow);transition:transform .12s,box-shadow .12s}
-#mod-list button:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(45,42,234,.12)}
-#mod-list button[style*="var(--teal)"]{background:var(--ui-primary-2)!important;font-weight:600!important}
-.login-card{border:none!important;border-radius:var(--ui-r-l)!important;padding:26px!important;box-shadow:var(--ui-shadow-lg)!important}
-.login-card::before{height:4px!important;background:linear-gradient(90deg,#2d2aea,#7c6cff)!important}
-.login-field label{font-size:11.5px!important;letter-spacing:0!important;text-transform:none!important;font-weight:500;color:var(--text2)!important}
-.login-field input{background:#fff!important;border:1px solid var(--border2)!important;border-radius:var(--ui-r-s)!important;padding:11px 13px!important;font-family:var(--font-body)!important;font-size:14px!important}
-.login-field input:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px var(--ui-primary-3)}
-.btn-login{background:var(--teal)!important;color:#fff!important;font-family:var(--font-body)!important;font-weight:600!important;font-size:15px!important;letter-spacing:.3px!important;border-radius:var(--ui-r-s)!important;padding:12px!important;box-shadow:0 6px 16px rgba(45,42,234,.3)}
-.btn-login:hover{filter:brightness(1.08)}
-.btn-login:disabled{opacity:.7}
-
-/* ── TOPBARS ───────────────────────────────────────── */
-.topbar,#app-proveedores .pv-topbar{background:var(--topbar-bg)!important;border-bottom:none!important;height:60px!important;box-shadow:0 2px 14px rgba(45,42,234,.25);color:#fff}
-.topbar-logo,#app-proveedores .pv-logo{font-family:var(--font-display)!important;font-weight:700!important;font-size:17px!important;letter-spacing:.2px!important;color:#fff!important}
-#app-proveedores .pv-topbar > span{color:#c9d2ff!important;letter-spacing:.5px!important;font-size:11px!important}
-.topbar .month-select{background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.25)!important;color:#fff!important;border-radius:var(--ui-r-s)!important;font-family:var(--font-body)!important;font-size:13px!important;padding:8px 12px!important}
-.topbar .month-select option{color:#1c1c30}
-.topbar .btn-primary{background:#cfe0fa!important;color:var(--ui-primary-ink)!important}
-.topbar .btn-secondary{background:rgba(255,255,255,.12)!important;border-color:rgba(255,255,255,.3)!important;color:#fff!important}
-.btn-logout{background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.3)!important;color:#fff!important;border-radius:var(--ui-r-s)!important;font-family:var(--font-body)!important;font-weight:500!important;font-size:12px!important;letter-spacing:.3px!important;padding:8px 14px!important}
-.btn-logout:hover{background:#fff!important;color:var(--teal)!important}
-
-/* ticker */
-#tickerBanner,#tickerBanner2,#tickerBanner3{background:#fff!important;border-bottom:1px solid var(--border)!important;height:34px!important}
-.ticker-prefix{background:var(--ui-primary-2)!important;color:var(--teal)!important;height:34px!important;font-family:var(--font-body)!important;font-size:11px!important;letter-spacing:.3px!important;font-weight:600!important}
-.ticker-item{font-family:var(--font-body)!important;font-size:12.5px!important;color:var(--text2)!important}
-.ticker-item::before{color:var(--teal)!important}
-
-/* ── LAYOUT / SIDEBAR ─────────────────────────────── */
-.app-layout,#app-proveedores .pv-layout{min-height:calc(100vh - 60px)!important}
-.sidebar,#app-proveedores .pv-sidebar{width:220px!important;background:#fff!important;border-right:1px solid var(--border)!important;padding:14px 10px!important;top:60px!important;height:calc(100vh - 60px)!important}
-.nav-group,#app-proveedores .pv-nav-group{font-family:var(--font-body)!important;font-size:11px!important;letter-spacing:.6px!important;font-weight:600;color:var(--text3)!important;padding:14px 12px 6px!important}
-.nav-item,#app-proveedores .pv-nav-item{border-left:none!important;border-radius:var(--ui-r-s);padding:10px 12px!important;margin:2px 0;font-size:13.5px!important;font-weight:500;color:var(--text2)!important;transition:background .12s,color .12s}
-.nav-item:hover,#app-proveedores .pv-nav-item:hover{background:var(--bg3)!important;color:var(--text)!important}
-.nav-item.active,#app-proveedores .pv-nav-item.active{background:var(--ui-primary-2)!important;color:var(--teal)!important;font-weight:600}
-.main,#app-proveedores .pv-main{padding:26px 32px!important}
-
-/* ── TÍTULOS ──────────────────────────────────────── */
-.page-title,#app-proveedores .pv-page-title{font-family:var(--font-display)!important;font-weight:700!important;font-size:24px!important;letter-spacing:-.3px!important;text-transform:none;color:var(--text)!important;margin-bottom:4px!important}
-.page-title span,#app-proveedores .pv-page-title span{color:var(--teal)!important}
-.page-sub,#app-proveedores .pv-page-sub{font-family:var(--font-body)!important;font-size:12.5px!important;letter-spacing:0!important;color:var(--text3)!important;margin-bottom:22px!important}
-.mes-label{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display)!important;font-size:12.5px!important;font-weight:600!important;letter-spacing:.4px!important;color:var(--teal)!important;background:var(--ui-primary-2);padding:6px 14px;border-radius:99px;margin-bottom:16px!important}
-.mes-label:empty{display:none}
-
-/* ── KPI ──────────────────────────────────────────── */
-.kpi-grid,#app-proveedores .pv-kpi-grid{gap:14px!important}
-.kpi-card,#app-proveedores .pv-kpi{background:#fff!important;border:1px solid var(--border)!important;border-radius:var(--ui-r-m)!important;padding:18px 20px!important;box-shadow:var(--ui-shadow)}
-.kpi-card::before,#app-proveedores .pv-kpi::before{top:16px!important;bottom:16px!important;left:0!important;right:auto!important;width:4px!important;height:auto!important;border-radius:0 4px 4px 0}
-.kpi-card[style*="border-top:2px"]{border-top:1px solid var(--border)!important}
-.kpi-label,#app-proveedores .pv-kpi-lbl{font-family:var(--font-body)!important;font-size:12px!important;letter-spacing:0!important;text-transform:none!important;font-weight:500;color:var(--text3)!important;margin-bottom:8px!important}
-.kpi-val,#app-proveedores .pv-kpi-val{font-family:var(--font-display)!important;font-weight:700!important;font-size:24px!important;letter-spacing:-.4px!important}
-.kpi-sub,#app-proveedores .pv-kpi-sub{font-family:var(--font-body)!important;font-size:11.5px!important;color:var(--text3)!important;margin-top:6px!important;line-height:1.45}
-
-/* ── CARDS / SECCIONES ────────────────────────────── */
-.section-card,#app-proveedores .pv-section{background:#fff!important;border:1px solid var(--border)!important;border-radius:var(--ui-r-m)!important;box-shadow:var(--ui-shadow);margin-bottom:18px!important}
-.card-hdr,#app-proveedores .pv-sec-hdr{padding:14px 20px!important;border-bottom:1px solid var(--border)!important;background:#fff!important}
-.card-title,#app-proveedores .pv-sec-title{font-family:var(--font-body)!important;font-size:13.5px!important;letter-spacing:0!important;text-transform:none!important;font-weight:600!important;color:var(--text)!important}
-.card-body{padding:16px 20px!important}
-.total-bar{background:var(--bg3);border-top:1px solid var(--border)!important;padding:12px 20px!important}
-.total-lbl{font-family:var(--font-body)!important;font-size:12px!important;color:var(--text3)!important}
-.total-val{font-family:var(--font-display)!important;font-weight:700!important;font-size:18px!important}
-
-/* ── TABLAS ───────────────────────────────────────── */
-.tbl,#app-proveedores .pv-tbl{border-collapse:separate!important;border-spacing:0}
-.tbl th,#app-proveedores .pv-tbl th{font-family:var(--font-body)!important;font-size:11.5px!important;letter-spacing:.2px!important;text-transform:none!important;font-weight:600!important;color:var(--text3)!important;background:var(--bg3);padding:10px 12px!important;border-bottom:1px solid var(--border)!important}
-.tbl th:first-child,#app-proveedores .pv-tbl th:first-child{border-top-left-radius:8px}
-.tbl th:last-child,#app-proveedores .pv-tbl th:last-child{border-top-right-radius:8px}
-.tbl td,#app-proveedores .pv-tbl td{padding:11px 12px!important;font-size:13px!important;border-bottom:1px solid #eef0f6!important}
-.tbl tr:hover td,#app-proveedores .pv-tbl tr:hover td{background:#f4f7ff!important}
-.tbl td[style*="font-family:var(--font-mono)"]{font-variant-numeric:tabular-nums}
-
-/* badges */
-.cbadge,#app-proveedores .pv-badge{font-family:var(--font-body)!important;font-size:10.5px!important;font-weight:600!important;letter-spacing:.2px!important;padding:3px 9px!important;border-radius:99px!important}
-.ep{color:var(--green)!important;background:var(--ui-ok-2);padding:2px 9px;border-radius:99px;font-family:var(--font-body)!important;font-size:11px!important;font-weight:600}
-.ea{color:var(--amber)!important;background:var(--ui-soon-2);padding:2px 9px;border-radius:99px;font-family:var(--font-body)!important;font-size:11px!important;font-weight:600}
-.etiqueta-excede{border-radius:99px!important;font-family:var(--font-body)!important;font-weight:600}
-
-/* ── BOTONES ──────────────────────────────────────── */
-.btn-primary{background:var(--teal)!important;color:#fff!important;font-family:var(--font-body)!important;font-weight:600!important;font-size:13px!important;letter-spacing:.2px!important;border-radius:var(--ui-r-s)!important;padding:9px 16px!important;border:none!important;box-shadow:0 4px 12px rgba(45,42,234,.22);transition:filter .12s,transform .12s}
-.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
-.btn-secondary{background:#fff!important;border:1px solid var(--border2)!important;color:var(--text2)!important;font-family:var(--font-body)!important;font-weight:500!important;font-size:12.5px!important;letter-spacing:0!important;border-radius:var(--ui-r-s)!important;padding:8px 14px!important}
-.btn-secondary:hover{border-color:var(--teal)!important;color:var(--teal)!important;background:var(--ui-primary-2)!important}
-.btn-add{background:var(--bg3)!important;border:1.5px dashed #c6cdf3!important;color:var(--teal)!important;font-family:var(--font-body)!important;font-size:12.5px!important;font-weight:500;letter-spacing:0!important;border-radius:var(--ui-r-s)!important;padding:10px 12px!important}
-.btn-add:hover{background:var(--ui-primary-2)!important}
-.btn-del{border-radius:6px!important;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0!important}
-.btn-del:hover{background:var(--ui-late-2)!important}
-button[style*="background:var(--teal)"]{color:#fff!important}
-
-/* ── PESTAÑAS ─────────────────────────────────────── */
-.ptab,#cierreTabBar .ptab,#rendTabBar .ptab{font-family:var(--font-body)!important;font-size:13px!important;letter-spacing:0!important;font-weight:500;color:var(--text3)!important;border:none!important;border-radius:var(--ui-r-s)!important;padding:8px 14px!important;margin:0 2px 0 0!important}
-.ptab:hover{color:var(--text)!important;background:var(--bg3)!important}
-.ptab.active{background:var(--ui-primary-2)!important;color:var(--teal)!important;font-weight:600}
-div:has(> .ptab){border-bottom:none!important;gap:4px!important;padding:4px;background:#fff;border:1px solid var(--border)!important;border-radius:var(--ui-r-m);display:inline-flex!important;flex-wrap:wrap;margin-bottom:20px!important;box-shadow:var(--ui-shadow)}
-
-/* ── FORMULARIOS ──────────────────────────────────── */
-.fi,#app-proveedores .pv-fi,#app-proveedores .pv-search,.oc-item-row input,.oc-item-row select{background:#fff!important;border:1px solid var(--border2)!important;color:var(--text)!important;border-radius:var(--ui-r-s)!important;font-family:var(--font-body)!important;font-size:13px!important;padding:9px 12px!important;transition:border-color .12s,box-shadow .12s}
-#app-proveedores .pv-search{padding-left:34px!important}
-.fi:focus,#app-proveedores .pv-fi:focus,#app-proveedores .pv-search:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px var(--ui-primary-3)!important;outline:none}
-.fl{font-family:var(--font-body)!important;font-size:11.5px!important;letter-spacing:0!important;text-transform:none!important;font-weight:500;color:var(--text2)!important}
-.fi-clp-prefix{font-family:var(--font-body)!important;font-size:10.5px!important;font-weight:600;color:var(--teal)!important;background:var(--ui-primary-2)!important;border-right:1px solid var(--ui-primary-3)!important;border-radius:var(--ui-r-s) 0 0 var(--ui-r-s)!important}
-input.fi-money{padding-left:62px!important}
-.annual-locked{background:var(--bg3)!important;color:var(--teal)!important}
-
-/* ── MODALES ──────────────────────────────────────── */
-.overlay{background:rgba(20,24,52,.42)!important;backdrop-filter:blur(6px)!important}
-.modal{background:#fff!important;border:none!important;border-radius:var(--ui-r-l)!important;padding:26px!important;box-shadow:var(--ui-shadow-lg)!important}
-.overlay.open .modal{animation:uiModalIn .18s cubic-bezier(.2,.8,.4,1)}
-@keyframes uiModalIn{from{transform:translateY(10px) scale(.98);opacity:0}to{transform:none;opacity:1}}
-.modal-title{font-family:var(--font-display)!important;font-weight:700!important;font-size:19px!important;letter-spacing:-.2px!important;color:var(--text)!important}
-.modal-sub{font-family:var(--font-body)!important;font-size:12.5px!important;color:var(--text3)!important;margin-bottom:20px!important}
-.close-btn{width:32px;height:32px;border-radius:50%!important;display:flex;align-items:center;justify-content:center;top:14px!important;right:14px!important}
-.close-btn:hover{background:var(--bg3)!important}
-.modal-actions{padding-top:14px;border-top:1px solid var(--border);margin-top:20px!important}
-
-/* toast */
-.toast-item{font-family:var(--font-body)!important;font-size:13px!important;font-weight:500;padding:11px 16px!important;border-radius:var(--ui-r-s)!important;box-shadow:0 10px 26px rgba(27,45,85,.22)}
-.toast-item.ok{background:#1c1c30!important;color:#fff!important}
-.toast-item.ok::first-letter{color:#7ee2b0}
-#_ldr{font-family:var(--font-body)!important;font-size:13px!important;font-weight:600;letter-spacing:.5px!important;color:var(--teal)!important}
-
-/* footer */
-#footer-ai{font-family:var(--font-body)!important;font-size:11px!important;opacity:1!important;background:#fff;border-top:1px solid var(--border);padding:10px 20px!important}
-
-/* listas config / historial */
-.cat-item{font-family:var(--font-body)!important;font-size:13px!important;letter-spacing:0!important;padding:9px 14px!important;color:var(--text2)!important}
-.cat-item:hover{background:var(--bg3)!important}
-.hist-row{padding:14px 4px!important}
-.hist-row:hover{background:var(--bg3);border-radius:var(--ui-r-s)}
-.module-card{border-radius:var(--ui-r-m)!important}
-
-/* ── PROVEEDORES ──────────────────────────────────── */
-#app-proveedores{background:var(--bg)!important}
-#app-proveedores .pv-btn{font-family:var(--font-body)!important;font-size:12.5px!important;letter-spacing:0!important;font-weight:500;border-radius:var(--ui-r-s)!important;padding:8px 13px!important}
-#app-proveedores .pv-btn-teal{background:var(--teal)!important;color:#fff!important;box-shadow:0 4px 12px rgba(45,42,234,.2)}
-#app-proveedores .pv-btn-sec{background:#fff!important;border:1px solid var(--border2)!important;color:var(--text2)!important}
-#app-proveedores .pv-btn-sec:hover{border-color:var(--teal)!important;color:var(--teal)!important;background:var(--ui-primary-2)!important}
-#app-proveedores .pv-btn-amber{background:var(--ui-soon-2)!important;border:1px solid #f4d3a6!important;color:var(--amber)!important}
-#app-proveedores .pv-filters{padding:14px 20px!important;gap:10px!important;background:#fff}
-#app-proveedores .uso-pill{font-family:var(--font-body)!important;font-size:12px!important;letter-spacing:0!important;border-radius:99px!important;padding:5px 12px!important;background:#fff}
-#app-proveedores .pv-prov-grid{padding:4px 0!important;gap:16px!important}
-#app-proveedores .pv-prov-card{background:#fff!important;border:1px solid var(--border)!important;border-radius:var(--ui-r-m)!important;padding:18px!important;box-shadow:var(--ui-shadow)}
-#app-proveedores .pv-prov-name{font-family:var(--font-display)!important;font-weight:700!important;font-size:16px!important;letter-spacing:-.2px!important}
-#app-proveedores .pv-prov-contact,#app-proveedores .pv-prov-stat{font-family:var(--font-body)!important;font-size:12px!important}
-#app-proveedores .pv-prov-stat b{font-family:var(--font-display)!important;font-weight:700!important;font-size:18px!important;letter-spacing:-.3px!important}
-#app-proveedores .oc-num{font-family:var(--font-body)!important;font-weight:600;color:var(--teal)!important}
-#app-proveedores .precio-val{color:var(--green)!important;font-weight:600}
-#app-proveedores .uso-com,#app-proveedores .uso-fab,#app-proveedores .uso-inf,#app-proveedores .uso-rev{border-radius:99px!important;font-family:var(--font-body)!important;font-size:10.5px!important;padding:3px 9px!important}
-#pv-oc-modal .pv-modal-box,#pv-edit-modal .pv-modal-box,#pv-product-modal .pv-modal-box{border-radius:var(--ui-r-l)!important}
-#pv-oc-modal .pv-modal-title{font-family:var(--font-display)!important;font-weight:700!important;letter-spacing:-.2px!important;font-size:18px!important}
-
-/* ── MERCADOLIBRE ANALYZER ────────────────────────── */
-#app-analyzer{--anl-bg:#eef2ff;--anl-accent:#2d2aea;--anl-border:#e3e6ef;--anl-border2:#d4d8e4;--anl-surface2:#f6f8ff;--anl-surface3:#eef1f9;--anl-text:#1c1c30;--anl-text2:#3a3a55;--anl-text3:#6e7189;--anl-green:#17864f;--font-head:'Poppins',sans-serif;--font-mono:'Poppins',sans-serif;--font-body:'Poppins',sans-serif;font-family:'Poppins',sans-serif;background:#eef2ff!important}
-#app-analyzer header.anl-header{min-height:60px!important;border-bottom:1px solid var(--anl-border)!important;box-shadow:0 1px 10px rgba(45,42,234,.06)!important}
-#app-analyzer .btn,#app-analyzer .vbtn,#app-analyzer .cpill,#app-analyzer select.filter-sel,#app-analyzer .search-wrap input{font-family:'Poppins',sans-serif!important;border-radius:var(--ui-r-s)!important}
-#app-analyzer .cpill{border-radius:99px!important;font-size:11.5px!important;letter-spacing:0!important;text-transform:none!important}
-#app-analyzer .cpill.active{background:#2d2aea!important;border-color:#2d2aea!important;color:#fff!important}
-#app-analyzer .stat-card{border-radius:var(--ui-r-m)!important;box-shadow:var(--ui-shadow)!important}
-#app-analyzer .stat-card.accent{background:linear-gradient(135deg,#2d2aea,#5b4dff)!important}
-#app-analyzer .stat-label{text-transform:none!important;letter-spacing:0!important;font-size:12px!important}
-#app-analyzer .pcard{border-radius:var(--ui-r-m)!important}
-#app-analyzer #anl-dropZone{border-radius:var(--ui-r-l)!important;border-color:#c6cdf3!important;background:#fff!important;padding:70px 32px;text-align:center;cursor:pointer}
-#app-analyzer .drop-title{font-family:'Poppins',sans-serif!important;font-weight:700}
-
-/* ── CALCULADORA ──────────────────────────────────── */
-#app-calc{--cg-paper:#eef2ff;--cg-line:#e3e6ef;--cg-line2:#d4d8e4;--cg-ink:#1c1c30;--cg-ink3:#6e7189;--cg-gold:#ffd166;font-family:'Poppins',sans-serif!important;background:#eef2ff!important}
-#app-calc .cg-nav{background:#2d2aea!important;min-height:60px!important;box-shadow:0 2px 14px rgba(45,42,234,.25)}
-#app-calc .cg-logo,#app-calc .cg-hero-title,#app-calc .cg-analysis-title{font-family:'Poppins',sans-serif!important;font-weight:700!important}
-#app-calc .cg-nav-right{color:#c9d2ff!important;font-family:'Poppins',sans-serif!important}
-#app-calc .cg-hero{background:linear-gradient(135deg,#2d2aea 0%,#4b3fff 55%,#7c6cff 100%)!important;border-radius:var(--ui-r-l)!important;box-shadow:0 12px 32px rgba(45,42,234,.25)}
-#app-calc .cg-search-wrap input{background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important;font-family:'Poppins',sans-serif!important}
-#app-calc .cg-search-wrap input::placeholder,#app-calc .cg-search-ico,#app-calc .cg-search-hint{color:#d6dcff!important}
-#app-calc .cg-strip-card,#app-calc .cg-card{border-radius:var(--ui-r-m)!important;border-color:var(--cg-line)!important;box-shadow:var(--ui-shadow)}
-#app-calc .cg-card.open{border-color:#2d2aea!important}
-#app-calc .cg-pill.on{background:#2d2aea!important;border-color:#2d2aea!important}
-#app-calc .cg-pill,#app-calc .cg-strip-label,#app-calc .cg-m-l,#app-calc .cg-m-v,#app-calc .cg-strip-val,#app-calc .cg-flabel,#app-calc .cg-rinfo,#app-calc .cg-card-sku,#app-calc .cg-row-lbl,#app-calc .cg-row-val,#app-calc select.cg-sel,#app-calc button{font-family:'Poppins',sans-serif!important;letter-spacing:0!important}
-#app-calc .cg-strip-label,#app-calc .cg-m-l{text-transform:none!important;font-size:11px!important}
-#app-calc .cg-dark-panel{background:#1b1a4a!important;border-color:#2c2a6b!important}
-#app-calc .cg-export-btn{background:#ffd166!important;color:#1c1c30!important}
-#app-calc .cg-analysis-btn{background:rgba(255,255,255,.16)!important}
-#app-calc .cg-logout-btn{background:rgba(255,255,255,.12)!important;border-color:rgba(255,255,255,.3)!important;color:#fff!important}
-#app-calc .cg-add-btn{background:#2d2aea!important;border-radius:var(--ui-r-s)!important}
-
-/* ── USUARIOS ─────────────────────────────────────── */
-#app-usuarios{background:var(--bg)!important;font-family:'Poppins',sans-serif!important}
-#app-usuarios > div:first-child{background:#2d2aea!important;height:60px;box-shadow:0 2px 14px rgba(45,42,234,.25)}
-#app-usuarios input:not([type=checkbox]){border-radius:var(--ui-r-s)!important;font-family:'Poppins',sans-serif!important}
-#app-usuarios > div:last-child > div > div{border-radius:var(--ui-r-m)!important;box-shadow:var(--ui-shadow)}
-#app-usuarios input[type=checkbox]{accent-color:#2d2aea}
 
 
-/* ── ajustes v3.1 ── */
-body{display:flex;flex-direction:column;min-height:100vh}
-body > *{flex-shrink:0}
-#footer-ai{order:99;margin-top:auto}
-#anl-listWrap{display:none}
-#annualKpiGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-@media(max-width:900px){#annualKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-#rrhh-kpis,#rrhh-sa-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-@media(max-width:1000px){#rrhh-kpis,#rrhh-sa-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-#app-proveedores .uso-pill.on{color:#fff!important}
-#rend-rpt-chart-wrap > div,#rendf-rpt-chart-wrap > div{border-radius:var(--ui-r-m)!important;box-shadow:var(--ui-shadow);padding:18px 20px!important}
-#app-calc *{font-family:'Poppins',sans-serif!important}
-#app-calc .cg-search-hint b{color:#ffd166!important}
-#app-calc .cg-prov-badge{border-radius:99px!important;letter-spacing:.2px!important}
-
-/* ── RESPONSIVE ───────────────────────────────────── */
-@media(max-width:768px){
-  .main,#app-proveedores .pv-main{padding:16px!important}
-  .topbar,#app-proveedores .pv-topbar{padding:0 12px!important;gap:8px!important;overflow-x:auto}
-  .topbar-logo{font-size:14px!important}
-  #mod-list{grid-template-columns:1fr}
-  div:has(> .ptab){display:flex!important}
-}
-</style>
-
-<script>
-/* AUTOMATIK UI v3 · quita los prefijos "// " de títulos y subtítulos */
-(function(){
-  var SEL='#app-proveedores .pv-topbar > span,.card-title,.page-sub,.login-sub,#login-module-label,.nav-group,#app-proveedores .pv-nav-group,#app-proveedores .pv-sec-title,.cg-analysis-subtitle';
-  function clean(root){
-    (root.querySelectorAll ? root.querySelectorAll(SEL) : []).forEach(function(el){
-      var n=el.firstChild;
-      while(n && n.nodeType===3 && !n.nodeValue.trim()) n=n.nextSibling;
-      if(n && n.nodeType===3 && /^\s*\/\/\s*/.test(n.nodeValue)) n.nodeValue=n.nodeValue.replace(/^\s*\/\/\s*/,'');
-    });
-  }
-  var pending=false;
-  function run(){ if(pending) return; pending=true; requestAnimationFrame(function(){ pending=false; clean(document); }); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
-  new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
-})();
-</script>
-
-<style id="automatik-auth-hub">
-/* ── Login → hub de módulos ── */
-#loginScreen:not(.is-hub) #mod-list,#loginScreen:not(.is-hub) #hubHead,#loginScreen:not(.is-hub) #hubFoot{display:none!important}
-#loginScreen.is-hub .login-card{display:none!important}
-#loginScreen.is-checking .login-card,#loginScreen.is-checking #mod-list{display:none!important}
-#loginScreen.is-checking .login-wrap::after{content:'Verificando sesión…';display:block;text-align:center;color:var(--text3);font-size:13px;margin-top:18px}
-#loginScreen.is-hub .login-wrap{max-width:560px!important}
-#hubHead{text-align:center;margin:-6px 0 18px}
-#hubHello{font-size:20px;font-weight:700;color:var(--text)}
-#hubSub{font-size:13px;color:var(--text3);margin-top:2px}
-#loginScreen.is-hub #mod-list button{padding:18px 16px!important;font-size:14px!important;border:1px solid var(--border)!important;color:var(--text)!important;background:#fff!important}
-#loginScreen.is-hub #mod-list button:hover{border-color:var(--teal)!important;color:var(--teal)!important}
-#loginScreen.is-hub #mod-list button.last-used{border-color:var(--teal)!important;background:var(--ui-primary-2,#e9efff)!important}
-#hubFoot{display:flex;justify-content:center;gap:10px;align-items:center;margin-top:20px;font-size:12px;color:var(--text3)}
-#hubFoot button{background:#fff;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:8px 14px;font-family:inherit;font-size:12.5px;cursor:pointer}
-#hubFoot button:hover{border-color:var(--red);color:var(--red)}
-.btn-hub{font-family:var(--font-body,'Poppins',sans-serif)!important;font-size:12px!important;font-weight:500!important;padding:8px 14px!important;border-radius:8px!important;cursor:pointer;background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.3)!important;color:#fff!important;white-space:nowrap}
-.btn-hub:hover{background:#fff!important;color:#2d2aea!important}
-#app-analyzer .btn-hub{background:#f0f2f5!important;border:1px solid #dde1e8!important;color:#1c1c30!important}
-#app-proveedores .pv-topbar .btn-hub,#app-usuarios .btn-hub{margin-right:6px}
-.topbar .btn-hub{margin-left:auto}
-.topbar .btn-hub + .btn-logout{margin-left:0!important}
-</style>
 <script>
 /* ══ AUTOMATIK · login principal + hub por usuario + sesión persistente ══ */
 (function(){
