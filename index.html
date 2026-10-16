@@ -7666,12 +7666,12 @@ function pgComprobanteHTML(t, mes){
   if(sinDesc.length) notas.push('Ausencias sin descuento: '+sinDesc.map(a=>`${fmtFecha(a.fecha)} · ${pgDias(a.dias)} · ${e(a.motivo)}`).join('; '));
   if(r.liquidoEstimado && r.liquido) notas.push('El sueldo líquido es un monto estimado; registre el valor real en la ficha del trabajador.');
   const folio='CP-'+mes.replace('-','')+'-'+String(t._id||'').replace(/[^a-z0-9]/gi,'').slice(-5).toUpperCase();
-  const dato=(l,v)=>v?`<div><span>${l}</span><b>${e(v)}</b></div>`:'';
+  const dato=(l,v,nw)=>v?`<div><span>${l}</span><b${nw?' class="nw"':''}>${e(v)}</b></div>`:'';
   return `<section class="cp">
     <header><div><div class="emp">${e(t.empresa||'')}</div><h1>Comprobante de pago</h1></div>
       <div class="per"><span>Período</span><b>${pgMesLabel(mes)}</b><small>N° ${folio}</small></div></header>
     <div class="trab">
-      ${dato('Trabajador',`${t.nombres||''} ${t.apellidos||''}`)}${dato('RUT',t.rut)}${dato('Cargo',t.cargo)}
+      ${dato('Trabajador',`${t.nombres||''} ${t.apellidos||''}`)}${dato('RUT',t.rut,1)}${dato('Cargo',t.cargo)}
       ${dato('Fecha de ingreso',fmtFecha(t.ingreso))}${dato('Jornada semanal',hxJornada(t)+' horas')}${dato('Contrato',t.tipo_contrato)}
       ${dato('Banco',t.banco)}${dato('Cuenta',t.cuenta)}
     </div>
@@ -7680,7 +7680,14 @@ function pgComprobanteHTML(t, mes){
       ${desc?`<tr class="sec"><td colspan="3">Descuentos</td></tr>${desc}<tr class="sub"><td colspan="2">Total descuentos</td><td class="r neg">−${fmt(r.descuentos)}</td></tr>`:''}</tbody></table>
     <div class="tot"><div><span>Total a pagar</span><small>Son: ${r.total<0?'menos ':''}${pgEnPalabras(r.total)}</small></div><b>${r.total<0?'−':''}${fmt(Math.abs(r.total))}</b></div>
     ${notas.length?`<div class="notas">${notas.map(n=>`<p>${n}</p>`).join('')}</div>`:''}
-    <div class="firmas"><div><i></i>Firma empleador<small>${e(t.empresa||'')}</small></div><div><i></i>Recibí conforme<small>${e((t.nombres||'')+' '+(t.apellidos||''))} · ${e(t.rut||'')}</small></div></div>
+    <div class="firmas2">
+      <div class="f-elec">
+        <div class="sello"><span>✓</span><div><b>Firmado electrónicamente</b><small>${new Date().toLocaleString('es-CL')}</small></div></div>
+        <div class="fn">Richard Daniel Urbina</div><div class="fr"><span class="nw">RUT 26.338.779-1</span> · Representante legal · ${e(t.empresa||'Cybernetic SpA')}</div>
+        <code>${'sha256:'+btoa(unescape(encodeURIComponent(folio+'|'+(t.rut||'')+'|'+r.total+'|26338779|'+pgHoy()))).replace(/=/g,'').slice(0,40)}</code>
+      </div>
+      <div class="f-trab"><i></i><b>Recibí conforme</b><small>${e((t.nombres||'')+' '+(t.apellidos||''))}</small><small class="nw">RUT ${e(t.rut||'—')}</small></div>
+    </div>
     <footer>Emitido el ${fmtFecha(pgHoy())} · Montos en pesos chilenos</footer>
   </section>`;
 }
@@ -7702,7 +7709,8 @@ tr.sub td{font-weight:700;background:#fbfcff}
 .tot{margin:18px 28px 0;background:#2d2aea;color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px}
 .tot span{display:block;font-size:13px;font-weight:600}.tot small{display:block;font-size:11px;opacity:.85;margin-top:2px}.tot b{font-size:26px;font-weight:700;white-space:nowrap}
 .notas{margin:12px 28px 0;font-size:11px;color:#6e7189}.notas p{margin-top:3px}
-.firmas{display:grid;grid-template-columns:1fr 1fr;gap:48px;padding:56px 56px 8px}
+.firmas{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:56px 36px 8px}
+.nw{white-space:nowrap}
 .firmas div{text-align:center;font-size:12px;font-weight:600}.firmas i{display:block;border-top:1px solid #1c1c30;margin-bottom:6px}.firmas small{display:block;font-weight:400;color:#6e7189;font-size:11px}
 footer{padding:14px 28px 20px;font-size:10.5px;color:#6e7189;text-align:center}
 @media print{body{background:#fff}.cp{margin:0;box-shadow:none;border-radius:0;max-width:none}}`;
@@ -7724,7 +7732,7 @@ function pgAbrirDoc(titulo, body, css, win){
 }
 function pgAbrirComprobantes(lista, mes){
   const titulo = lista.length===1 ? `Comprobante de pago ${pgMesLabel(mes)} - ${lista[0].nombres||''} ${lista[0].apellidos||''}` : `Comprobantes de pago ${pgMesLabel(mes)}`;
-  pgAbrirDoc(titulo, lista.map(t=>pgComprobanteHTML(t,mes)).join(''), PG_CP_CSS);
+  pgAbrirDoc(titulo, lista.map(t=>pgComprobanteHTML(t,mes)).join(''), PG_CP_CSS+PG_CERT_CSS);
 }
 function pgExportarComprobante(){
   const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
@@ -7946,13 +7954,13 @@ function generarCertificado(t, v, win) {
   const tomadasAntes=(t.vacaciones||[]).filter(x=>x.estado!=='rechazada' && x.id!==v.id).reduce((a,x)=>a+(x.dias_habiles||0),0);
   const saldoAntes=Math.max(0, info.diasAcumulados-tomadasAntes);
   const saldoRestante=Math.max(0, saldoAntes-(v.dias_habiles||0));
-  const dato=(l,val)=>`<div><span>${l}</span><b>${e(val||'—')}</b></div>`;
+  const dato=(l,val,nw)=>`<div><span>${l}</span><b${nw?' class="nw"':''}>${e(val||'—')}</b></div>`;
   const hash='sha256:'+btoa((v.folio||'')+'26338779'+hoyIso).replace(/=/g,'').slice(0,40);
   const body=`<section class="cp">
     <header><div><div class="emp">${e(t.empresa||'')}</div><h1>Certificado de vacaciones</h1></div>
       <div class="per"><span>Folio</span><b>${e(v.folio||'—')}</b><small>Emitido el ${fmtLong(hoyIso)}</small></div></header>
     <div class="trab">
-      ${dato('Trabajador',`${t.nombres||''} ${t.apellidos||''}`)}${dato('RUT',t.rut)}${dato('Cargo',t.cargo)}
+      ${dato('Trabajador',`${t.nombres||''} ${t.apellidos||''}`)}${dato('RUT',t.rut,1)}${dato('Cargo',t.cargo)}
       ${dato('Empresa',t.empresa)}${dato('Área',t.area)}${dato('Contrato',t.tipo_contrato)}
       ${dato('Fecha de ingreso',fmtLong(t.ingreso))}${dato('Antigüedad',`${info.anos} año${info.anos!==1?'s':''} ${info.meses%12} mes${info.meses%12!==1?'es':''}`)}${dato('Fecha de solicitud',fmtLong(v.fecha_solicitud))}
     </div>
@@ -7970,10 +7978,10 @@ function generarCertificado(t, v, win) {
       <div class="acum"><b>${info.diasAcumulados}</b> días acumulados<br>Base: 15 días/año · ${info.diasPorMes} días/mes</div>
     </div>
     <div class="firmas2">
-      <div class="f-trab"><i></i><b>${e((t.nombres||'')+' '+(t.apellidos||''))}</b><small>RUT ${e(t.rut||'—')} · Trabajador</small></div>
+      <div class="f-trab"><i></i><b>${e((t.nombres||'')+' '+(t.apellidos||''))}</b><small class="nw">RUT ${e(t.rut||'—')} · Trabajador</small></div>
       <div class="f-elec">
         <div class="sello"><span>✓</span><div><b>Firmado electrónicamente</b><small>${hoy.toLocaleString('es-CL')}</small></div></div>
-        <div class="fn">Richard Daniel Urbina</div><div class="fr">RUT 26.338.779-1 · Representante legal · ${e(t.empresa||'Cybernetic SpA')}</div>
+        <div class="fn">Richard Daniel Urbina</div><div class="fr"><span class="nw">RUT 26.338.779-1</span> · Representante legal · ${e(t.empresa||'Cybernetic SpA')}</div>
         <code>${hash}</code>
       </div>
     </div>
@@ -7994,7 +8002,7 @@ const PG_CERT_CSS=`
 .saldo i{font-style:normal;font-size:18px;color:#b8bfd6}.saldo .ok{color:#17864f}.saldo .neg{color:#d13a3a}
 .saldo .acum{margin-left:auto;text-align:left;border-left:1px solid #e3e6ef;padding-left:16px;font-size:11px;color:#6e7189;line-height:1.7}.saldo .acum b{display:inline;font-size:12px;color:#1c1c30}
 .firmas2{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:40px 28px 6px;align-items:end}
-.f-trab{text-align:center}.f-trab i{display:block;border-top:1px solid #1c1c30;margin-bottom:6px}.f-trab b{display:block;font-size:12px}.f-trab small{font-size:11px;color:#6e7189}
+.f-trab{text-align:center}.f-trab i{display:block;border-top:1px solid #1c1c30;margin-bottom:6px}.f-trab b{display:block;font-size:12px}.f-trab small{display:block;font-size:11px;color:#6e7189}
 .f-elec{border:1px solid #dce6ff;background:#f5f7ff;border-radius:12px;padding:12px 14px}
 .sello{display:flex;gap:10px;align-items:center;margin-bottom:8px}.sello>span{width:28px;height:28px;border-radius:50%;background:#2d2aea;color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;flex-shrink:0}
 .sello b{display:block;font-size:11px;color:#17864f}.sello small{font-size:10px;color:#6e7189}
