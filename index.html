@@ -7307,7 +7307,9 @@ function hxBaseDT(t, fecha){
   const imm=Math.round(immVigente(fecha)*j/JORNADA_LEGAL);   // part-time: mínimo proporcional
   return { sueldo:sb, imm, jornada:j, factor:hxFactor(j), base: sb>0 ? Math.max(sb,imm) : 0, usaImm: sb>0 && sb<imm };
 }
-function hxSueldoRef(t, base, fecha){ return base==='liquido' ? rrhhLiquidoDe(t) : hxBaseDT(t,fecha).base; }
+// Bonos/asignaciones asignados en el mes de la fecha (monto completo, sin proporcionar)
+function hxBonosMes(t, fecha){ const m=hxMesKey(fecha||pgFechaDefault()); return (t.bonos||[]).filter(b=>b.mes===m).reduce((s,b)=>s+(Number(b.monto)||0),0); }
+function hxSueldoRef(t, base, fecha){ return base==='liquido' ? rrhhLiquidoDe(t) + hxBonosMes(t, fecha) : hxBaseDT(t,fecha).base; }
 // Opción "Líquido": valor día = líquido (base + asignaciones) ÷ 20 días; valor hora = día ÷ (jornada ÷ 5); × 1,5 recargo
 function hxHorasDia(t){ return hxJornada(t)/5; }
 function hxValorHora(t, base, fecha){
@@ -7510,15 +7512,15 @@ function hxInfo(t){
   const fecha=($('hx_fecha')&&$('hx_fecha').value)||pgFechaDefault();
   const c=(l,v,st)=>`<div><div style="color:var(--text3);font-size:11px">${l}</div><div style="font-weight:700;font-size:15px;${st||''}">${v}</div></div>`;
   if(hxBaseSel()==='liquido'){
-    const liq=rrhhLiquidoDe(t), est=!(Number(t.liquido)>0), hd=hxHorasDia(t), vd=liq/PG_DIAS_MES, vhl=hxValorHora(t,'liquido',fecha);
+    const liqB=rrhhLiquidoDe(t), bon=hxBonosMes(t,fecha), liq=liqB+bon, est=!(Number(t.liquido)>0), hd=hxHorasDia(t), vd=liq/PG_DIAS_MES, vhl=hxValorHora(t,'liquido',fecha);
     if(!liq){ $('hx-info').innerHTML=`<span style="color:var(--red)">Registra el sueldo líquido en la pestaña Contrato para calcular sobre el líquido.</span>`; return; }
     $('hx-info').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
-      ${c('Líquido (base + asignaciones)', fmt(liq)+(est?`<div style="font-weight:400;font-size:11px;color:var(--amber)">estimado</div>`:''))}
+      ${c('Líquido (base + asignaciones)', fmt(liq)+`<div style="font-weight:400;font-size:11px;color:var(--text3)">${fmt(liqB)}${est?' (estimado)':''} + bonos ${fmt(bon)}</div>`)}
       ${c('Valor día (÷ 20)', fmt(Math.round(vd)))}
       ${c('Horas por día', pgNum(hd)+' h')}
       ${c('Valor hora extra', fmt(vhl), 'color:var(--teal)')}
     </div>
-    <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">Fórmula líquido: líquido ÷ 20 días ÷ ${pgNum(hd)} h (${hxJornada(t)} h ÷ 5 días) × 1,5 (recargo 50%).<br>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">Fórmula líquido: (sueldo líquido + bonos del mes) ÷ 20 días ÷ ${pgNum(hd)} h (${hxJornada(t)} h ÷ 5 días) × 1,5 (recargo 50%).<br>
     Referencia DT sobre sueldo base: ${fmt(hxValorHora(t,'base',fecha))} por hora. Máximo 2 horas extra por día, pactadas por escrito.</div>`;
     return;
   }
