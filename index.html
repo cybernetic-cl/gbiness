@@ -1305,21 +1305,6 @@ body > *{flex-shrink:0}
 #ft-pagos .pg-top .fw{margin:0}
 #ft-pagos .pg-top .fi{width:auto}
 .pg-res{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:14px}
-.lq{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;background:var(--bg2,var(--bg))}
-.lq-hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 14px;background:var(--bg3);font-weight:700;font-size:13px;flex-wrap:wrap}
-.lq-hd small{font-weight:500;color:var(--text3);font-size:11.5px}
-.lq-cols{display:grid;grid-template-columns:1fr 1fr}
-.lq-col{padding:6px 14px 10px}.lq-col+.lq-col{border-left:1px dashed var(--border)}
-.lq-t{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin:6px 0 4px}
-.lq-t.h{color:var(--green)}.lq-t.d{color:var(--red)}
-.lq-r{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dotted var(--border);font-size:12.5px}
-.lq-r span{color:var(--text2)}.lq-r small{display:block;font-size:10.5px;color:var(--text3)}
-.lq-r b{white-space:nowrap;font-weight:600}
-.lq-r.st{border-bottom:none;font-weight:700}.lq-r.st span{color:var(--text);font-weight:700}
-.lq-ft{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--border);border-top:1px solid var(--border)}
-.lq-ft div{background:var(--bg3);padding:9px 14px}.lq-ft span{display:block;font-size:11px;color:var(--text3)}.lq-ft b{font-size:16px}
-.lq-ft .tot{background:var(--teal)}.lq-ft .tot span{color:rgba(255,255,255,.8)}.lq-ft .tot b{color:#fff;font-size:19px}
-@media(max-width:640px){.lq-cols{grid-template-columns:1fr}.lq-col+.lq-col{border-left:none;border-top:1px dashed var(--border)}}
 .pg-res .it{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 11px;min-width:0}
 .pg-res .it .l{font-size:11px;color:var(--text3);white-space:nowrap}
 .pg-res .it .v{font-weight:700;font-size:14px;margin-top:2px;white-space:nowrap}
@@ -2873,11 +2858,11 @@ body > *{flex-shrink:0}
         </div>
         <div class="fw"><label class="fl">Fecha de Ingreso <span style="color:var(--red)">*</span></label><input type="date" id="t_ingreso" class="fi" onchange="calcularVaccInfo()"></div>
         <div class="fw"><label class="fl">Fecha término contrato</label><input type="date" id="t_termino" class="fi" onchange="pgPropHint()"></div>
-        <div id="t_prop_hint" class="fw" style="grid-column:1/-1;display:none"></div>
+        <div id="t_prop_hint" class="fw" style="grid-column:1/-1;display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2)"></div>
         <div class="fw"><label class="fl">Sueldo Base (CLP) <span style="color:var(--red)">*</span></label>
           <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_sueldo" class="fi fi-money" placeholder="0" oninput="clpInput(this);pgPropHint()"></div>
         </div>
-        <div class="fw"><label class="fl">Sueldo Líquido (CLP) <span style="color:var(--text3);font-weight:400">— solo si no hay sueldo base; con sueldo base se calcula solo</span></label>
+        <div class="fw"><label class="fl">Sueldo Líquido (CLP) <span style="color:var(--text3);font-weight:400">— si se deja vacío se estima</span></label>
           <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_liquido" class="fi fi-money" placeholder="0" oninput="clpInput(this)"></div>
         </div>
         <div class="fw"><label class="fl">Jornada (horas/semana)</label>
@@ -2888,17 +2873,6 @@ body > *{flex-shrink:0}
             <option value="otro">Otra</option>
           </select>
         </div>
-        <div class="fw"><label class="fl">Gratificación legal (art. 50)</label>
-          <select id="t_gratif" class="fi"><option value="si">Sí · 25% mensual, tope 4,75 IMM ÷ 12</option><option value="no">No</option></select>
-        </div>
-        <div class="fw"><label class="fl">Plan Isapre ($/mes) <span style="color:var(--text3);font-weight:400">— solo si es Isapre</span></label>
-          <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_isapre" class="fi fi-money" placeholder="0" oninput="clpInput(this);pgPropHint()"></div></div>
-        <div class="fw"><label class="fl">Colación ($/mes · no imponible)</label>
-          <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_colacion" class="fi fi-money" placeholder="0" oninput="clpInput(this);pgPropHint()"></div></div>
-        <div class="fw"><label class="fl">Movilización ($/mes · no imponible)</label>
-          <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_movilizacion" class="fi fi-money" placeholder="0" oninput="clpInput(this);pgPropHint()"></div></div>
-        <div class="fw"><label class="fl">Asignación familiar ($/mes)</label>
-          <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_asigfam" class="fi fi-money" placeholder="0" oninput="clpInput(this);pgPropHint()"></div></div>
         <div class="fw"><label class="fl">Estado</label>
           <select id="t_estado" class="fi">
             <option value="activo">Activo</option>
@@ -2908,7 +2882,6 @@ body > *{flex-shrink:0}
         </div>
         <div class="fw"><label class="fl">Observaciones contrato</label></div>
         <div class="fw" style="grid-column:1/-1"><textarea id="t_obs" class="fi" rows="3" placeholder="Notas o condiciones especiales del contrato..."></textarea></div>
-        <div id="t_liq_box" class="fw" style="grid-column:1/-1"></div>
       </div>
     </div>
 
@@ -2934,7 +2907,7 @@ body > *{flex-shrink:0}
       <div id="pg-body">
         <div class="pg-top">
           <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div class="fw"><label class="fl">Mes</label><input type="month" id="pg_mes" class="fi" onchange="pgRender()"></div>
-          <div class="fw"><label class="fl">Días contratados del mes <span style="color:var(--text3);font-weight:400">— vacío = automático</span></label><input type="number" id="pg_dias" class="fi" min="0" max="30" step="1" style="width:120px" onchange="pgDiasSet(this.value)"></div></div>
+          <div class="fw"><label class="fl">Días a pagar <span style="color:var(--text3);font-weight:400">— vacío = automático</span></label><input type="number" id="pg_dias" class="fi" min="0" max="30" step="1" style="width:120px" onchange="pgDiasSet(this.value)"></div></div>
           <button class="btn-primary" onclick="pgExportarComprobante()">🧾 Exportar comprobante de pago</button>
         </div>
         <div id="pg-resumen"></div>
@@ -7271,89 +7244,6 @@ function rrhhEstimarLiquido(t){
 function rrhhLiquidoCell(t){
   return rrhhLiquidoCellBase(t);
 }
-// ══ LIQUIDACIÓN DE SUELDO · cálculo legal (Chile) ══
-// Haberes imponibles: sueldo base (proporcional a días) + horas extra + días extra + bonos + gratificación.
-// Gratificación art. 50 CT: 25% de lo imponible del mes, tope 4,75 IMM ÷ 12 (no se prorratea, ORD 5020/2017).
-// No imponibles: colación, movilización y asignación familiar (proporcionales a los días).
-// Descuentos legales: AFP (10% + comisión) y salud 7% con tope 90 UF; cesantía 0,6% (indefinido) con tope 135,2 UF;
-// impuesto único de 2ª categoría (tabla SII por UTM del mes) sobre imponible − cotizaciones.
-// Días: mes de 30 días; si ingresa o termina a mitad de mes se pagan los días efectivamente
-// trabajados × sueldo ÷ 30 (DT ORD 5715/2015). Ej.: ingreso 13-10 → 19 días.
-const UF_REF = 41057.2;                          // UF al 30-09-2026 (Previred). Solo influye sobre el tope imponible.
-const TOPE_AFP_UF = 90, TOPE_AFC_UF = 135.2;     // Superintendencia de Pensiones 2026
-const UTM_TABLA = { '2026-01':69751,'2026-02':69611,'2026-03':69889,'2026-04':69889,'2026-05':70588,'2026-06':71506,
-                    '2026-07':71649,'2026-08':71649,'2026-09':71721,'2026-10':72151,'2026-11':72440 };
-// Impuesto único mensual: [hasta (UTM), factor, rebaja (UTM)]
-const IUSC_TRAMOS = [[13.5,0,0],[30,0.04,0.54],[50,0.08,1.74],[70,0.135,4.49],[90,0.23,11.14],[120,0.304,17.8],[310,0.35,23.32],[Infinity,0.4,38.82]];
-function utmMes(mes){ const ks=Object.keys(UTM_TABLA).sort(); let v=UTM_TABLA[ks[0]]; ks.forEach(k=>{ if(k<=mes) v=UTM_TABLA[k]; }); return v; }
-function impuestoUnico(trib, mes){
-  const u=utmMes(mes), tr=IUSC_TRAMOS.find(t=>trib<=t[0]*u);
-  return Math.max(0, Math.round(trib*tr[1] - tr[2]*u));
-}
-function mesFin(mes){ const [y,m]=mes.split('-').map(Number); return mes+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0'); }
-function liqCalc(p){
-  const dias=Math.max(0,Math.min(30, p.dias==null?30:p.dias)), f=dias/30, pr=v=>dias>=30 ? (v||0) : Math.round((v||0)*f);
-  const L={ mes:p.mes, dias, sueldoMensual:p.sueldo||0, gratif:p.gratif||'si', afpNombre:p.afp||'', saludNombre:p.salud||'' };
-  L.sueldoBase = pr(p.sueldo);
-  L.hx=p.hx||0; L.dx=p.dx||0; L.bonos=p.bonos||0;
-  L.imm = immVigente(mesFin(p.mes));
-  L.topeGrat = Math.round(4.75*L.imm/12);
-  const baseGrat = L.sueldoBase + L.hx + L.dx + L.bonos;
-  L.grat = L.gratif==='no' ? 0 : Math.min(Math.round(baseGrat*0.25), L.topeGrat);
-  L.imponible = baseGrat + L.grat;
-  L.colacion=pr(p.colacion); L.movilizacion=pr(p.movilizacion); L.asigFam=pr(p.asigFam);
-  L.noImponible = L.colacion + L.movilizacion + L.asigFam;
-  L.haberes = L.imponible + L.noImponible;
-  L.topeAfp = Math.round(TOPE_AFP_UF*UF_REF); L.topeAfc = Math.round(TOPE_AFC_UF*UF_REF);
-  const bAfp=Math.min(L.imponible,L.topeAfp), bAfc=Math.min(L.imponible,L.topeAfc);
-  L.afpSinDefinir = !p.afp;
-  L.afpPct = 10 + (RRHH_AFP_COMISION[p.afp] ?? 1.2);
-  L.afp = Math.round(bAfp*L.afpPct/100);
-  const s7 = Math.round(bAfp*0.07);
-  L.esIsapre = /isapre/i.test(p.salud||'');
-  L.salud = L.esIsapre ? Math.max(s7, p.isapre||0) : s7;
-  L.cesPct = (!p.tipo_contrato || p.tipo_contrato==='Indefinido' || p.tipo_contrato==='Part-time') ? 0.6 : 0;
-  L.ces = Math.round(bAfc*L.cesPct/100);
-  L.tributable = Math.max(0, L.imponible - L.afp - s7 - L.ces);   // salud rebaja solo el 7% legal
-  L.utm = utmMes(p.mes);
-  L.impuesto = impuestoUnico(L.tributable, p.mes);
-  L.descLegales = L.afp + L.salud + L.ces + L.impuesto;
-  L.liquido = L.haberes - L.descLegales;
-  return L;
-}
-function liqParamsDe(t, mes, extra){
-  return Object.assign({ mes, sueldo:Number(t.sueldo)||0, dias:30, gratif:t.gratif||'si',
-    colacion:Number(t.colacion)||0, movilizacion:Number(t.movilizacion)||0, asigFam:Number(t.asig_familiar)||0,
-    afp:t.afp, salud:t.salud, isapre:Number(t.isapre_plan)||0, tipo_contrato:t.tipo_contrato }, extra||{});
-}
-// Panel tipo "calculadora de sueldo": haberes | descuentos | totales
-function liqPanelHTML(L, o){
-  o=o||{};
-  const row=(l,v,sub,cls)=>`<div class="lq-r ${cls||''}"><span>${l}${sub?`<small>${sub}</small>`:''}</span><b>${v}</b></div>`;
-  let h = row('Sueldo base', fmt(L.sueldoBase), L.dias<30 ? `${fmt(L.sueldoMensual)} ÷ 30 × ${L.dias} días` : 'mes completo');
-  if(L.hx) h+=row('Horas extra', fmt(L.hx), o.hxSub||'recargo 50% · fórmula DT');
-  if(L.dx) h+=row('Días extra', fmt(L.dx));
-  if(L.bonos) h+=row('Bonos', fmt(L.bonos));
-  h+=row('Gratificación', fmt(L.grat), L.gratif==='no' ? 'no pactada' : (L.grat>=L.topeGrat ? `tope 4,75 IMM ÷ 12 = ${fmt(L.topeGrat)}` : '25% del imponible'));
-  h+=row('Total imponible', fmt(L.imponible), '', 'st');
-  if(L.colacion) h+=row('Colación', fmt(L.colacion), L.dias<30?`proporcional ${L.dias}/30`:'no imponible');
-  if(L.movilizacion) h+=row('Movilización', fmt(L.movilizacion), L.dias<30?`proporcional ${L.dias}/30`:'no imponible');
-  if(L.asigFam) h+=row('Asignación familiar', fmt(L.asigFam), L.dias<30?`proporcional ${L.dias}/30`:'');
-  let d = row('AFP '+pgEsc(L.afpNombre||'(sin definir)'), fmt(L.afp), pgPct(L.afpPct/100)+'%'+(L.imponible>L.topeAfp?' · tope 90 UF':''));
-  d+=row('Salud · '+pgEsc(L.saludNombre||'Fonasa'), fmt(L.salud), L.esIsapre && L.salud>Math.round(Math.min(L.imponible,L.topeAfp)*0.07) ? 'plan Isapre' : '7%');
-  d+=row('Seguro de cesantía', fmt(L.ces), L.cesPct ? '0,6% trabajador' : 'no aplica (plazo fijo / obra)');
-  d+=row('Impuesto único', fmt(L.impuesto), L.impuesto ? `base tributable ${fmt(L.tributable)}` : `exento · tributable ${fmt(L.tributable)} ≤ 13,5 UTM (${fmt(13.5*L.utm)})`);
-  if(o.creditos) d+=row('Créditos / anticipos', fmt(o.creditos), 'otros descuentos');
-  const desc = L.descLegales + (o.creditos||0), pagar = L.liquido - (o.creditos||0);
-  return `<div class="lq">
-    <div class="lq-hd"><span>${o.titulo||'Liquidación'}</span><small>${o.sub||''}</small></div>
-    <div class="lq-cols"><div class="lq-col"><div class="lq-t h">● Haberes</div>${h}</div><div class="lq-col"><div class="lq-t d">● Descuentos</div>${d}</div></div>
-    <div class="lq-ft"><div><span>Haberes</span><b style="color:var(--green)">${fmt(L.haberes)}</b></div>
-      <div><span>Descuentos</span><b style="color:var(--red)">${fmt(desc)}</b></div>
-      <div class="tot"><span>${o.creditos?'Total a pagar':'Sueldo líquido'}</span><b>${fmt(pagar)}</b></div></div>
-  </div>`;
-}
-
 // ── Mes de pago de la nómina (selector "Comprobantes del mes") ──
 function rrhhMesPago(){ return rrhhState.mesPago || hxMesActual(); }
 function rrhhSetMesPago(m){
@@ -7362,31 +7252,26 @@ function rrhhSetMesPago(m){
   rrhhRefrescarListas();
 }
 document.querySelectorAll('.rrhh-cp-mes').forEach(i=>{ i.value=hxMesActual(); });
-['t_afp','t_salud','t_tipo_contrato','t_jornada','t_gratif','t_ingreso'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('change', ()=>{ try{ pgPropHint(); }catch(e){} }); });
 
 function rrhhTotalPagarCell(t){
   const r=rrhhPagoMes(t, rrhhMesPago());
   if(!r.total && !r.liquido) return '<span style="color:var(--text3)">—</span>';
   const det=[];
   if(r.proporcional) det.push(`Sueldo proporcional ${r.dias}/30 días`+(pgDiasDetalle(r)?' ('+pgDiasDetalle(r)+')':''));
-  if(r.calculado) det.push('Imponible '+fmt(r.liq.imponible), 'Desc. legales −'+fmt(r.liq.descLegales));
-  if(r.hx.monto) det.push('Horas extra +'+fmt(r.hx.monto));
+  if(r.hx.monto) det.push('Horas extra +'+fmt(r.hx.monto)+(r.hx.cotiz?' (cotiz. −'+fmt(r.hx.cotiz)+')':''));
   if(r.dx.monto) det.push('Días extra +'+fmt(r.dx.monto));
   if(r.bonos.monto) det.push('Bonos +'+fmt(r.bonos.monto));
-  if(r.au.dias) det.push('Ausencias '+pgDias(r.au.dias));
+  if(r.au.monto) det.push('Ausencias −'+fmt(r.au.monto));
   if(r.cr.monto) det.push('Créditos −'+fmt(r.cr.monto));
-  const sub=[];
-  if(r.proporcional) sub.push(`<span style="color:var(--amber)">${r.dias}/30 días</span>`);
-  if(r.extras) sub.push(`<span style="color:var(--green)">+${fmt(r.extras)} extras</span>`);
-  if(r.cr.monto) sub.push(`<span style="color:var(--red)">−${fmt(r.cr.monto)} créd.</span>`);
-  return `<span title="${det.join(' · ')}" style="font-size:13px;font-weight:700;color:var(--teal)">${fmt(r.total)}</span>`
-    + (sub.length ? `<div style="font-size:11px;margin-top:2px;white-space:nowrap">${sub.join(' ')}</div>` : '');
+  const sub = (r.extras ? ` <span style="color:var(--green)">+${fmt(r.extras)}</span>` : '') + (r.descuentos ? ` <span style="color:var(--red)">−${fmt(r.descuentos)}</span>` : '');
+  return `<span title="${det.join(' · ')||'Solo sueldo líquido'}" style="font-size:13px;font-weight:700;color:var(--teal)">${r.liquidoEstimado?'~':''}${fmt(r.total)}</span>`
+    + (sub ? `<div style="font-size:11px;margin-top:2px;white-space:nowrap">${sub.trim()}</div>` : '');
 }
 function rrhhLiquidoCellBase(t){
-  const v=rrhhLiquidoDe(t);
-  if(!v) return '<span style="color:var(--text3)">—</span>';
-  const tip = Number(t.sueldo)>0 ? 'Líquido de un mes completo, calculado: haberes − AFP − salud − cesantía − impuesto único' : 'Líquido ingresado manualmente (sin sueldo base)';
-  return `<span title="${tip}" style="font-family:var(--font-mono);font-size:12px;color:var(--green);font-weight:700">${fmt(v)}</span>`;
+  if(Number(t.liquido)>0) return `<span style="font-family:var(--font-mono);font-size:12px;color:var(--green);font-weight:700">${fmt(t.liquido)}</span>`;
+  const est = rrhhEstimarLiquido(t);
+  if(!est) return '<span style="color:var(--text3)">—</span>';
+  return `<span title="Estimado: sueldo base − AFP − salud 7% − seguro cesantía. No incluye impuesto único ni bonos. Ingresa el líquido real en la ficha." style="font-family:var(--font-mono);font-size:12px;color:var(--amber)">~${fmt(est)}</span>`;
 }
 
 
@@ -7464,25 +7349,19 @@ async function pgDiasSet(v){
   await pgGuardar(t, v===''?'Días a pagar: automático':'Días a pagar actualizados');
 }
 function pgPropHint(){
-  const hint=$('t_prop_hint'), box=$('t_liq_box'); if(!hint && !box) return;
-  const v=id=>($(id)||{}).value||'';
-  const ing=v('t_ingreso'), ter=v('t_termino'), sueldo=clpVal('t_sueldo');
-  const tf={ sueldo, ingreso:ing, termino:ter, gratif:v('t_gratif')||'si', colacion:clpVal('t_colacion'), movilizacion:clpVal('t_movilizacion'),
-    asig_familiar:clpVal('t_asigfam'), afp:v('t_afp'), salud:v('t_salud'), isapre_plan:clpVal('t_isapre'), tipo_contrato:v('t_tipo_contrato') };
-  if(hint) hint.style.display='none';
-  if(!box) return;
-  if(!sueldo){ box.innerHTML=''; return; }
-  const mesRef = hxMesActual();
-  let html = liqPanelHTML(liqCalc(liqParamsDe(tf, mesRef)), { titulo:'Sueldo mes completo', sub:'cálculo con '+pgMesLabel(mesRef)+' · sin horas extra ni bonos' });
-  const meses=[];
-  if(ing && +ing.slice(8)>1) meses.push([ing.slice(0,7),'Mes de ingreso']);
-  if(ter && ter.slice(0,7)!==ing.slice(0,7) && ter<mesFin(ter.slice(0,7))) meses.push([ter.slice(0,7),'Mes de término']);
-  meses.forEach(([mes,tipo])=>{
-    const p=pgDiasMes(tf, mes); if(p.completo) return;
-    html += liqPanelHTML(liqCalc(liqParamsDe(tf, mes, {dias:p.dias})), { titulo:`${tipo} · ${pgMesLabel(mes)}`,
-      sub:`${p.dias} de 30 días (del ${fmtFecha(p.desde).slice(0,5)} al ${fmtFecha(p.hasta).slice(0,5)}) · DT ORD 5715/2015` });
-  });
-  box.innerHTML = html;
+  const box=$('t_prop_hint'); if(!box) return;
+  const ing=($('t_ingreso')||{}).value||'', ter=($('t_termino')||{}).value||'';
+  const sueldo=clpVal('t_sueldo'), msgs=[];
+  const linea=(mes, tipo)=>{
+    const p=pgDiasMes({ingreso:ing, termino:ter}, mes);
+    if(p.completo) return;
+    msgs.push(`<b>${tipo} ${pgMesLabel(mes)}:</b> se pagan <b>${p.dias} de 30 días</b> (del ${fmtFecha(p.desde).slice(0,5)} al ${fmtFecha(p.hasta).slice(0,5)})`
+      + (sueldo ? ` → sueldo base proporcional <b style="color:var(--teal)">${fmt(Math.round(sueldo*p.dias/30))}</b> = ${fmt(sueldo)} ÷ 30 × ${p.dias}` : ''));
+  };
+  if(ing && +ing.slice(8)>1) linea(ing.slice(0,7), 'Mes de ingreso ·');
+  if(ter && ter.slice(0,7)!==ing.slice(0,7)) linea(ter.slice(0,7), 'Mes de término ·');
+  box.style.display = msgs.length ? 'block' : 'none';
+  box.innerHTML = msgs.map(m=>`<div>📅 ${m}</div>`).join('');
 }
 function hxMesKey(d){ return (d||'').slice(0,7); }
 function hxMesActual(){ const n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0'); }
@@ -7499,7 +7378,7 @@ function pgMesCorto(m){ const [y,mm]=String(m).split('-'); return MESES[+mm-1].s
 function pgMesSum(m, n){ let [y,mm]=m.split('-').map(Number); const t=y*12+(mm-1)+n; return Math.floor(t/12)+'-'+String(t%12+1).padStart(2,'0'); }
 function pgHoy(){ const n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); }
 function pgFechaDefault(){ const m=pgMes(); return m===hxMesActual() ? pgHoy() : m+'-01'; }
-function pgValorDia(t){ return Number(t.sueldo)>0 ? Math.round(Number(t.sueldo)/30) : Math.round((Number(t.liquido)||0)/30); }
+function pgValorDia(t){ return Math.round(rrhhLiquidoDe(t)/PG_DIAS_MES); }
 function pgEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 function pgNum(n){ return String(Math.round(n*100)/100).replace('.',','); }
 function pgDias(n){ return pgNum(n)+' día'+(n==1?'':'s'); }
@@ -7520,7 +7399,7 @@ function crEstado(c, ref){
 }
 function crSaldoTras(c, mes){ return crCuotas(c).filter(x=>x.mes>mes).reduce((s,x)=>s+x.monto,0); }
 
-// ── Resumen de pago de un trabajador para un mes (liquidación) ──
+// ── Resumen de pago de un trabajador para un mes ──
 function rrhhPagoMes(t, mes){
   mes = mes || hxMesActual();
   const enMes=a=>(a||[]).filter(x=>hxMesKey(x.fecha)===mes);
@@ -7529,32 +7408,21 @@ function rrhhPagoMes(t, mes){
   const bonos=(t.bonos||[]).filter(b=>b.mes===mes);
   const cr=(t.creditos||[]).map(c=>({c, q:crCuotaDelMes(c,mes)})).filter(x=>x.q);
   const prop=pgDiasMes(t, mes), ov=(t.diasPagados||{})[mes], diasManual = ov!=null && ov!=='';
-  const diasContrato = diasManual ? Math.max(0,Math.min(30,Number(ov)||0)) : prop.dias;
-  const auDias=sum(au,'dias');
-  const r={ mes, prop, diasManual, diasContrato, liquidoEstimado:false,
-    hx:{horas:sum(hx,'horas'), monto:sum(hx,'monto'), items:hx},
+  const dias = diasManual ? Math.max(0,Math.min(30,Number(ov)||0)) : prop.dias;
+  const liqMes=rrhhLiquidoDe(t), sbMes=Number(t.sueldo)||0, tasa=rrhhTasaCotiz(t);
+  const r={ mes, dias, prop, diasManual, proporcional: dias<30,
+    liquidoMensual:liqMes, liquido: dias>=30 ? liqMes : Math.round(liqMes*dias/30),
+    sueldoBase: dias>=30 ? sbMes : Math.round(sbMes*dias/30), liquidoEstimado:!(Number(t.liquido)>0), tasaCotiz:tasa,
+    hx:{horas:sum(hx,'horas'), monto:sum(hx,'monto'), items:hx,
+        imponible: hx.filter(h=>h.base!=='liquido').reduce((s,h)=>s+(Number(h.monto)||0),0)},
     dx:{dias:sum(dx,'dias'), monto:sum(dx,'monto'), items:dx},
     bonos:{monto:sum(bonos,'monto'), items:bonos},
-    au:{dias:auDias, monto:sum(au,'monto'), items:au, todas:auTodas},
+    au:{dias:sum(au,'dias'), monto:sum(au,'monto'), items:au, todas:auTodas},
     cr:{monto:cr.reduce((s,x)=>s+x.q.monto,0), items:cr} };
+  r.hx.cotiz = Math.round(r.hx.imponible*tasa);           // AFP + salud + cesantía sobre las HE
   r.extras = r.hx.monto + r.dx.monto + r.bonos.monto;
-  r.calculado = Number(t.sueldo)>0;
-  if(r.calculado){
-    // Ausencias con descuento restan días (sueldo ÷ 30 por día, DT)
-    r.dias = Math.max(0, diasContrato - auDias);
-    r.liq = liqCalc(liqParamsDe(t, mes, { dias:r.dias, hx:r.hx.monto, dx:r.dx.monto, bonos:r.bonos.monto }));
-    r.liquido = r.liq.liquido; r.sueldoBase = r.liq.sueldoBase;
-    r.haberes = r.liq.haberes; r.descLegales = r.liq.descLegales;
-    r.descuentos = r.descLegales + r.cr.monto;
-  } else {
-    // Sin sueldo base: se usa el líquido ingresado manualmente (modelo simple)
-    r.dias = diasContrato;
-    const liqMes=Number(t.liquido)||0;
-    r.liquido = r.dias>=30 ? liqMes : Math.round(liqMes*r.dias/30); r.sueldoBase=0;
-    r.haberes = r.liquido + r.extras; r.descLegales = 0;
-    r.descuentos = r.au.monto + r.cr.monto;
-  }
-  r.proporcional = r.dias<30;
+  r.haberes = r.liquido + r.extras;
+  r.descuentos = r.au.monto + r.cr.monto + r.hx.cotiz;
   r.total = r.haberes - r.descuentos;
   return r;
 }
@@ -7580,24 +7448,20 @@ function pgRender(){
   const mes=pgMes(), r=rrhhPagoMes(t,mes);
   ['hx_fecha','dx_fecha','au_fecha'].forEach(id=>{ const el=$(id); if(el && hxMesKey(el.value)!==mes) el.value=pgFechaDefault(); });
   $('pg-bo-mes').textContent=pgMesLabel(mes);
-  if($('pg_dias')){ $('pg_dias').value = r.diasManual ? r.diasContrato : ''; $('pg_dias').placeholder = String(r.prop.dias); }
-  if(r.calculado){
-    const subs=[];
-    if(r.proporcional) subs.push(`${r.dias} de 30 días`+(pgDiasDetalle(r)?' · '+pgDiasDetalle(r):'')+(r.au.dias?` · ${pgDias(r.au.dias)} de ausencia`:''));
-    $('pg-resumen').innerHTML = liqPanelHTML(r.liq, { titulo:'Liquidación · '+pgMesLabel(mes), sub:subs.join(' · '), creditos:r.cr.monto });
-  } else {
-    const it=(l,v,cls)=>`<div class="it ${cls}"><div class="l">${l}</div><div class="v">${v}</div></div>`;
-    const signo=(v,s)=>v ? s+fmt(v) : '$0';
-    $('pg-resumen').innerHTML=`<div class="pg-note" style="color:var(--amber)">⚠ Sin sueldo base: se usa el líquido ingresado. Registra el sueldo base en Contrato para calcular la liquidación completa (AFP, salud, cesantía, impuesto, gratificación).</div><div class="pg-res">
-    ${it('Sueldo líquido'+(r.proporcional?` · ${r.dias}/30`:''), fmt(r.liquido), '')}
-    ${it('Horas extra', signo(r.hx.monto,'+'), r.hx.monto?'pos':'cero')}
+  const it=(l,v,cls,sub)=>`<div class="it ${cls}"><div class="l">${l}</div><div class="v">${v}</div>${sub?`<div style="font-size:10.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sub}</div>`:''}</div>`;
+  const signo=(v,s)=>v ? s+fmt(v) : '$0';
+  if($('pg_dias')){ $('pg_dias').value = r.diasManual ? r.dias : ''; $('pg_dias').placeholder = String(r.prop.dias); }
+  const subLiq = r.proporcional ? `<span style="color:var(--amber)" title="${pgEsc(pgDiasDetalle(r))}">${r.dias}/30 días · ${pgEsc(pgDiasDetalle(r))}</span>` : '';
+  const subHx = r.hx.cotiz ? `<span style="color:var(--red)" title="AFP + salud + cesantía ${pgPct(r.tasaCotiz)}% sobre ${fmt(r.hx.imponible)}">−${fmt(r.hx.cotiz)} cotiz.</span>` : '';
+  $('pg-resumen').innerHTML=`<div class="pg-res">
+    ${it('Sueldo líquido'+(r.liquidoEstimado&&r.liquido?' ~':''), fmt(r.liquido), '', subLiq)}
+    ${it('Horas extra', signo(r.hx.monto,'+'), r.hx.monto?'pos':'cero', subHx)}
     ${it('Días extra', signo(r.dx.monto,'+'), r.dx.monto?'pos':'cero')}
     ${it('Bonos', signo(r.bonos.monto,'+'), r.bonos.monto?'pos':'cero')}
     ${it('Ausencias', signo(r.au.monto,'−'), r.au.monto?'neg':'cero')}
     ${it('Créditos', signo(r.cr.monto,'−'), r.cr.monto?'neg':'cero')}
     ${it('Total a pagar · '+pgMesLabel(mes), fmt(r.total), 'tot')}
   </div>`;
-  }
   const activos=(t.creditos||[]).filter(c=>!crEstado(c).terminado).length;
   const cnt={hx:r.hx.items.length, dx:r.dx.items.length, au:r.au.todas.length, bo:r.bonos.items.length, cr:activos};
   document.querySelectorAll('#ft-pagos .pg-sub').forEach(b=>{
@@ -7646,7 +7510,7 @@ function hxInfo(t){
   ${b.usaImm?`<div style="color:var(--amber);font-size:11.5px;margin-top:8px">⚠ El sueldo base (${fmt(b.sueldo)}) es menor al ingreso mínimo ${b.jornada<JORNADA_LEGAL?'proporcional a '+b.jornada+' h ':''}(${fmt(b.imm)}). Según la DT, las horas extra se calculan sobre el ingreso mínimo.</div>`:''}
   <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">Fórmula Dirección del Trabajo: sueldo base × 28 ÷ 30 ÷ (4 × jornada) × 1,5 (recargo 50%, art. 32 CT).<br>
   Factores: ${tabla}<br>
-  Las horas extra son imponibles: entran a la liquidación (gratificación, AFP, salud, cesantía e impuesto). Máximo 2 horas extra por día, pactadas por escrito.</div>`;
+  Las horas extra son imponibles: se descuenta AFP + salud + cesantía (${pgPct(tasa)}%). Máximo 2 horas extra por día, pactadas por escrito.</div>`;
 }
 function hxPreview(){
   const t=hxTrabActual(), box=$('hx-preview'); if(!t||!box) return;
@@ -7657,7 +7521,7 @@ function hxPreview(){
   const aviso = h>2 ? `<div style="color:var(--amber);font-size:11.5px;margin-top:4px">⚠ El Código del Trabajo permite máximo 2 horas extra por día.</div>` : '';
   const bruto=Math.round(h*vh), cot=Math.round(bruto*rrhhTasaCotiz(t));
   box.innerHTML=`${pgNum(h)} h × ${fmt(vh)} = <b style="color:var(--teal);font-size:15px">${fmt(bruto)}</b> bruto
-    <div style="font-size:11.5px;color:var(--text3);margin-top:3px">Imponible: suma también 25% de gratificación (si no está en el tope) y paga AFP, salud, cesantía e impuesto en la liquidación.</div>${aviso}`;
+    <div style="font-size:11.5px;color:var(--text3);margin-top:3px">Cotizaciones −${fmt(cot)} → líquido aprox. <b>${fmt(bruto-cot)}</b></div>${aviso}`;
 }
 async function hxRegistrar(){
   const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
@@ -7676,17 +7540,17 @@ function hxRenderLista(t, r){
     list.map(h=>`<tr>${pgTd(fmtFecha(h.fecha))}${pgTd(pgNum(h.horas),'text-align:right;font-weight:600')}${pgTd(fmt(h.valorHora),'text-align:right')}
       ${pgTd(`<span class="pg-tag ${h.base==='base'?'now':'warn'}" title="${h.base==='base'?'Fórmula DT sobre '+fmt(h.baseCalculo||0)+(h.usaImm?' (ingreso mínimo)':''):'Registro antiguo calculado sobre el líquido'}">${h.base==='base'?'DT':'Líquido'}</span>`)}
       ${pgTd(fmt(h.monto),'text-align:right;font-weight:700;color:var(--teal)')}${pgTd(pgEsc(h.nota),'color:var(--text3);font-size:12px')}${pgDel(`hxEliminar('${h.id}')`)}</tr>`).join(''),
-    pgPie([{v:'Total bruto'},{v:pgNum(r.hx.horas),r:1},{},{},{v:fmt(r.hx.monto),r:1,c:'var(--teal)'},{v:'imponible · entra en la liquidación'}]));
+    pgPie([{v:'Total bruto'},{v:pgNum(r.hx.horas),r:1},{},{},{v:fmt(r.hx.monto),r:1,c:'var(--teal)'},{v:r.hx.cotiz?`Cotizaciones −${fmt(r.hx.cotiz)} · líquido ${fmt(r.hx.monto-r.hx.cotiz)}`:''}]));
 }
 
 // ── Días extra y ausencias (valor día = líquido ÷ 20) ──
 function pgInfoDia(t){
-  const sb=Number(t.sueldo)||0, vd=pgValorDia(t);
-  const base = sb ? `sueldo base ${fmt(sb)} ÷ 30 (DT: remuneración mensual ÷ 30, cualquiera sea el largo del mes)` : `sueldo líquido ${fmt(Number(t.liquido)||0)} ÷ 30`;
-  const txt = vd ? `Valor día: <b style="color:var(--teal);font-size:14px">${fmt(vd)}</b> = ${base}`
-    : `<span style="color:var(--red)">Registra el sueldo base en la pestaña Contrato para calcular el valor día.</span>`;
-  $('dx-info').innerHTML = txt + (sb?`<div style="font-size:11.5px;color:var(--text3);margin-top:4px">Los días extra son imponibles y entran a la liquidación.</div>`:'');
-  $('au-info').innerHTML = txt.replace('Valor día:','Descuento por día:') + (sb?`<div style="font-size:11.5px;color:var(--text3);margin-top:4px">Cada día de ausencia con descuento resta un día del sueldo base; también baja la gratificación y las cotizaciones.</div>`:'');
+  const liq=rrhhLiquidoDe(t), vd=pgValorDia(t), est=!(Number(t.liquido)>0);
+  const txt = liq
+    ? `Valor día: <b style="color:var(--teal);font-size:14px">${fmt(vd)}</b> = sueldo líquido ${est?'estimado ':''}${fmt(liq)} ÷ ${PG_DIAS_MES} días${est?'<div style="color:var(--amber);font-size:11.5px;margin-top:4px">⚠ El líquido es estimado. Regístralo en la pestaña Contrato para un cálculo exacto.</div>':''}`
+    : `<span style="color:var(--red)">Registra el sueldo líquido en la pestaña Contrato para calcular el valor día.</span>`;
+  $('dx-info').innerHTML=txt;
+  $('au-info').innerHTML=txt.replace('Valor día:','Descuento por día:');
 }
 function dxValor(t){
   const el=$('dx_valor');
@@ -7699,13 +7563,13 @@ function dxPreview(){
   if(!d||!vd){ box.style.display='none'; return; }
   box.style.display='block';
   box.innerHTML=`${pgDias(d)} × ${fmt(vd)} = <b style="color:var(--green);font-size:15px">+${fmt(Math.round(d*vd))}</b>`
-    + (vd!==sug ? `<div style="font-size:11.5px;color:var(--text3);margin-top:4px">Valor editado · el sugerido es ${fmt(sug)} (sueldo base ÷ 30)</div>` : '');
+    + (vd!==sug ? `<div style="font-size:11.5px;color:var(--text3);margin-top:4px">Valor editado · el sugerido es ${fmt(sug)} (líquido ÷ ${PG_DIAS_MES})</div>` : '');
 }
 async function dxRegistrar(){
   const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
   const fecha=$('dx_fecha').value, dias=parseFloat($('dx_dias').value)||0, vd=dxValor(t);
   if(!fecha||dias<=0){ showToast('Ingresa fecha y días',true); return; }
-  if(!vd){ showToast('Ingresa el valor por día o registra el sueldo base en Contrato',true); return; }
+  if(!vd){ showToast('Ingresa el valor por día o registra el sueldo líquido en Contrato',true); return; }
   (t.diasExtra=t.diasExtra||[]).push({ id:'dx_'+Date.now(), fecha, dias, valorDia:vd, editado: vd!==pgValorDia(t), monto:Math.round(dias*vd), nota:($('dx_nota').value||'').trim(), creado:new Date().toISOString() });
   if(await pgGuardar(t,'Días extra registrados',hxMesKey(fecha))){ $('dx_dias').value=''; $('dx_nota').value=''; delete $('dx_valor').dataset.t; dxPreview(); }
 }
@@ -7734,14 +7598,14 @@ function auPreview(){
   if(!d){ box.style.display='none'; return; }
   box.style.display='block';
   box.innerHTML = !desc ? `${pgDias(d)} · <b>sin descuento</b> (se registra solo como control)`
-    : vd ? `${pgDias(d)} × ${fmt(vd)} = <b style="color:var(--red);font-size:15px">−${fmt(Math.round(d*vd))}</b>` : '<span style="color:var(--red)">Registra el sueldo base en Contrato.</span>';
+    : vd ? `${pgDias(d)} × ${fmt(vd)} = <b style="color:var(--red);font-size:15px">−${fmt(Math.round(d*vd))}</b>` : '<span style="color:var(--red)">Registra el sueldo líquido en Contrato.</span>';
   if($('au_motivo').value==='Licencia médica' && desc) box.innerHTML+=`<div style="font-size:11.5px;color:var(--text3);margin-top:4px">Los días de licencia los paga el subsidio de salud (Fonasa/Isapre), por eso se descuentan del pago del empleador.</div>`;
 }
 async function auRegistrar(){
   const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
   const fecha=$('au_fecha').value, dias=parseFloat($('au_dias').value)||0, desc=$('au_desc').checked, vd=pgValorDia(t);
   if(!fecha||dias<=0){ showToast('Ingresa fecha y días',true); return; }
-  if(desc && !vd){ showToast('Registra el sueldo base en Contrato',true); return; }
+  if(desc && !vd){ showToast('Registra el sueldo líquido en Contrato',true); return; }
   (t.ausencias=t.ausencias||[]).push({ id:'au_'+Date.now(), fecha, dias, motivo:$('au_motivo').value, descuenta:desc, valorDia:vd, monto: desc?Math.round(dias*vd):0, nota:($('au_nota').value||'').trim(), creado:new Date().toISOString() });
   if(await pgGuardar(t,'Ausencia registrada',hxMesKey(fecha))){ $('au_dias').value=''; $('au_nota').value=''; auPreview(); }
 }
@@ -7834,7 +7698,7 @@ function rrhhRefrescarListas(){
 }
 
 // ── Totales de remuneraciones (RRHH) ──
-function rrhhLiquidoDe(t){ return Number(t.sueldo)>0 ? liqCalc(liqParamsDe(t, rrhhMesPago ? rrhhMesPago() : hxMesActual())).liquido : (Number(t.liquido)||0); }
+function rrhhLiquidoDe(t){ return Number(t.liquido)>0 ? Number(t.liquido) : rrhhEstimarLiquido(t); }
 function rrhhKpiHorasExtra(){
   const mes=rrhhMesPago(), [y,m]=mes.split("-");
   const vig = rrhhState.trabajadores.filter(t=>t.estado!=='inactivo');
@@ -7846,7 +7710,7 @@ function rrhhKpiRemuneraciones(){
   const mes=rrhhMesPago(), vig = rrhhState.trabajadores.filter(t=>t.estado!=='inactivo');
   const rs = vig.map(t=>rrhhPagoMes(t,mes));
   const liq=rs.reduce((s,r)=>s+r.liquido,0), ext=rs.reduce((s,r)=>s+r.extras,0), des=rs.reduce((s,r)=>s+r.descuentos,0), tot=rs.reduce((s,r)=>s+r.total,0);
-  return `<div class="kpi-card cteal"><div class="kpi-label">Total a pagar · ${pgMesLabel(mes)}</div><div class="kpi-val" style="color:var(--teal)">${fmt(tot)}</div><div class="kpi-sub">Líquido ${fmt(liq)}${ext?` · incl. ${fmt(ext)} extras`:''}${rs.some(r=>r.cr.monto)?` · −${fmt(rs.reduce((s,r)=>s+r.cr.monto,0))} créditos`:''} · ${vig.length} trabajador${vig.length!==1?'es':''}</div></div>`;
+  return `<div class="kpi-card cteal"><div class="kpi-label">Total a pagar · ${pgMesLabel(mes)}</div><div class="kpi-val" style="color:var(--teal)">${fmt(tot)}</div><div class="kpi-sub">Líquido ${fmt(liq)}${ext?` · +${fmt(ext)} extras`:''}${des?` · −${fmt(des)} descuentos`:''} · ${vig.length} trabajador${vig.length!==1?'es':''}</div></div>`;
 }
 function rrhhRenderTotales(list, tbody){
   const table = tbody.closest('table'); if(!table) return;
@@ -7861,9 +7725,9 @@ function rrhhRenderTotales(list, tbody){
   const excl = list.length - vig.length;
   tf.innerHTML = `<tr style="background:var(--bg3)">
     <td colspan="6" style="padding:12px;font-weight:700;color:var(--text)">Total remuneraciones · ${pgMesLabel(mes)}
-      <div style="font-weight:400;font-size:11.5px;color:var(--text3);margin-top:2px">Sueldo base: ${fmt(base)} · ${vig.length} trabajador${vig.length!==1?'es':''}${excl?` · ${excl} inactivo${excl!==1?'s':''} excluido${excl!==1?'s':''}`:''}${rs.some(r=>r.proporcional)?' · incluye sueldos proporcionales':''}</div></td>
+      <div style="font-weight:400;font-size:11.5px;color:var(--text3);margin-top:2px">Sueldo base: ${fmt(base)} · ${vig.length} trabajador${vig.length!==1?'es':''}${excl?` · ${excl} inactivo${excl!==1?'s':''} excluido${excl!==1?'s':''}`:''}${est?' · incluye montos estimados (~)':''}</div></td>
     <td style="padding:12px;text-align:right;font-weight:700;color:var(--green);white-space:nowrap">${fmt(liq)}<div style="font-weight:400;font-size:11px;color:var(--text3)">líquido</div></td>
-    <td style="padding:12px;text-align:right;font-weight:700;font-size:15px;color:var(--teal);white-space:nowrap">${fmt(tot)}<div style="font-weight:400;font-size:11px;color:var(--text3)">total a pagar${rs.some(r=>r.cr.monto)?` · <span style="color:var(--red)">−${fmt(rs.reduce((s,r)=>s+r.cr.monto,0))} créd.</span>`:''}</div></td>
+    <td style="padding:12px;text-align:right;font-weight:700;font-size:15px;color:var(--teal);white-space:nowrap">${fmt(tot)}<div style="font-weight:400;font-size:11px;color:var(--text3)">${ext?`<span style="color:var(--green)">+${fmt(ext)}</span> `:''}${des?`<span style="color:var(--red)">−${fmt(des)}</span>`:''}${!ext&&!des?'total a pagar':''}</div></td>
     <td colspan="3"></td></tr>`;
 }
 
@@ -7885,44 +7749,26 @@ function pgComprobanteHTML(t, mes){
   const r=rrhhPagoMes(t,mes), e=pgEsc;
   const fechas=(items,f)=>items.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(f).join(' · ');
   const fila=(c,d,m,cls)=>`<tr><td>${c}</td><td class="d">${d||''}</td><td class="r ${cls||''}">${m}</td></tr>`;
-  let pagos='', desc='';
-  const hxDet = r.hx.monto ? (()=>{ const vhs=[...new Set(r.hx.items.map(h=>h.valorHora))].map(v=>fmt(v)).join(' / ');
-      return `${pgNum(r.hx.horas)} h × ${vhs} · fórmula DT, recargo 50% · `+fechas(r.hx.items,h=>`${fmtFecha(h.fecha).slice(0,5)}: ${pgNum(h.horas)} h`); })() : '';
-  const dxDet = r.dx.monto ? `${pgDias(r.dx.dias)} · `+fechas(r.dx.items,d=>`${fmtFecha(d.fecha).slice(0,5)}: ${pgNum(d.dias)} × ${fmt(d.valorDia)}${d.nota?' '+e(d.nota):''}`) : '';
-  if(r.calculado){
-    const L=r.liq, sub=(c,m)=>`<tr class="sub"><td colspan="2">${c}</td><td class="r">${m}</td></tr>`, sec=c=>`<tr class="sec"><td colspan="3">${c}</td></tr>`;
-    const diasTxt = r.proporcional ? `${fmt(L.sueldoMensual)} ÷ 30 × ${r.dias} días`+(pgDiasDetalle(r)?' · '+pgDiasDetalle(r):'')+(r.au.dias?` · ${pgDias(r.au.dias)} de ausencia descontados`:'') : 'Mes completo (30 días)';
-    pagos += sec('Haberes imponibles') + fila('Sueldo base', diasTxt, fmt(L.sueldoBase));
-    if(L.hx) pagos+=fila('Horas extra', hxDet, fmt(L.hx));
-    if(L.dx) pagos+=fila('Días extra', dxDet, fmt(L.dx));
-    r.bonos.items.forEach(b=>{ pagos+=fila('Bono', e(b.concepto), fmt(b.monto)); });
-    pagos += fila('Gratificación legal', L.gratif==='no'?'No pactada':(L.grat>=L.topeGrat?`Art. 50 · tope 4,75 IMM ÷ 12`:'Art. 50 · 25% del imponible'), fmt(L.grat));
-    pagos += sub('Total imponible', fmt(L.imponible));
-    if(L.noImponible){ pagos += sec('Haberes no imponibles');
-      if(L.colacion) pagos+=fila('Colación', r.proporcional?`Proporcional ${r.dias}/30`:'', fmt(L.colacion));
-      if(L.movilizacion) pagos+=fila('Movilización', r.proporcional?`Proporcional ${r.dias}/30`:'', fmt(L.movilizacion));
-      if(L.asigFam) pagos+=fila('Asignación familiar', r.proporcional?`Proporcional ${r.dias}/30`:'', fmt(L.asigFam)); }
-    desc += fila('AFP '+e(L.afpNombre||'(sin definir)'), pgPct(L.afpPct/100)+'% sobre '+fmt(Math.min(L.imponible,L.topeAfp)), '−'+fmt(L.afp),'neg');
-    desc += fila('Salud · '+e(L.saludNombre||'Fonasa'), L.esIsapre?'Plan Isapre (mínimo 7%)':'7%', '−'+fmt(L.salud),'neg');
-    desc += fila('Seguro de cesantía', L.cesPct?'0,6% trabajador':'No aplica', '−'+fmt(L.ces),'neg');
-    desc += fila('Impuesto único 2ª cat.', `Base tributable ${fmt(L.tributable)} · UTM ${fmt(L.utm)}`, '−'+fmt(L.impuesto),'neg');
-    if(r.cr.monto){ desc += sub('Total descuentos legales','−'+fmt(L.descLegales)); desc += sub('Sueldo líquido', fmt(L.liquido)) + sec('Otros descuentos'); }
-  } else {
-    pagos=fila('Sueldo líquido', r.proporcional?`Proporcional ${r.dias} de 30 días${pgDiasDetalle(r)?' · '+pgDiasDetalle(r):''}`:'Monto mensual', fmt(r.liquido));
-    if(r.hx.monto) pagos+=fila('Horas extra', hxDet, fmt(r.hx.monto));
-    if(r.dx.monto) pagos+=fila('Días extra', dxDet, fmt(r.dx.monto));
-    r.bonos.items.forEach(b=>{ pagos+=fila('Bono', e(b.concepto), fmt(b.monto)); });
-    if(r.au.monto) desc+=fila('Ausencias', `${pgDias(r.au.dias)} · `+fechas(r.au.items,a=>`${fmtFecha(a.fecha).slice(0,5)} ${e(a.motivo)}`), '−'+fmt(r.au.monto),'neg');
-  }
+  const detLiq = r.proporcional
+    ? `Proporcional ${r.dias} de 30 días${pgDiasDetalle(r)?' · '+pgDiasDetalle(r):''} · ${fmt(r.liquidoMensual)} ÷ 30 × ${r.dias}${r.liquidoEstimado?' (estimado)':''}`
+    : (r.liquidoEstimado?'Monto mensual (estimado)':'Monto mensual');
+  let pagos=fila('Sueldo líquido', detLiq, fmt(r.liquido));
+  if(r.hx.monto){ const vhs=[...new Set(r.hx.items.map(h=>h.valorHora))].map(v=>fmt(v)).join(' / ');
+    pagos+=fila('Horas extra', `${pgNum(r.hx.horas)} h × ${vhs} · fórmula DT, recargo 50% · `+fechas(r.hx.items,h=>`${fmtFecha(h.fecha).slice(0,5)}: ${pgNum(h.horas)} h`), fmt(r.hx.monto)); }
+  if(r.dx.monto) pagos+=fila('Días extra', `${pgDias(r.dx.dias)} · `+fechas(r.dx.items,d=>`${fmtFecha(d.fecha).slice(0,5)}: ${pgNum(d.dias)} × ${fmt(d.valorDia)}${d.nota?' '+e(d.nota):''}`), fmt(r.dx.monto));
+  r.bonos.items.forEach(b=>{ pagos+=fila('Bono', e(b.concepto), fmt(b.monto)); });
+  let desc='';
+  if(r.hx.cotiz) desc+=fila('Cotizaciones s/ horas extra', `AFP + salud + cesantía ${pgPct(r.tasaCotiz)}% sobre ${fmt(r.hx.imponible)}`, '−'+fmt(r.hx.cotiz),'neg');
+  if(r.au.monto) desc+=fila('Ausencias', `${pgDias(r.au.dias)} × ${fmt(r.au.items[0].valorDia)} · `+fechas(r.au.items,a=>`${fmtFecha(a.fecha).slice(0,5)} ${e(a.motivo)}`), '−'+fmt(r.au.monto),'neg');
   r.cr.items.forEach(({c,q})=>{ const saldo=crSaldoTras(c,mes); desc+=fila('Crédito · '+e(c.concepto), `Cuota ${q.k} de ${q.n} · monto original ${fmt(c.monto)} · saldo después de este pago ${fmt(saldo)}`, '−'+fmt(q.monto),'neg'); });
   const sinDesc=r.au.todas.filter(a=>a.descuenta===false);
   const notas=[];
   if(sinDesc.length) notas.push('Ausencias sin descuento: '+sinDesc.map(a=>`${fmtFecha(a.fecha)} · ${pgDias(a.dias)} · ${e(a.motivo)}`).join('; '));
-  if(r.calculado && r.au.dias) notas.push('Ausencias descontadas: '+r.au.items.map(a=>`${fmtFecha(a.fecha)} · ${pgDias(a.dias)} · ${e(a.motivo)}`).join('; '));
+  if(r.liquidoEstimado && r.liquido) notas.push('El sueldo líquido es un monto estimado; registre el valor real en la ficha del trabajador.');
   const folio='CP-'+mes.replace('-','')+'-'+String(t._id||'').replace(/[^a-z0-9]/gi,'').slice(-5).toUpperCase();
   const dato=(l,v,nw)=>v?`<div><span>${l}</span><b${nw?' class="nw"':''}>${e(v)}</b></div>`:'';
   return `<section class="cp">
-    <header><div><div class="emp">${e(t.empresa||'')}</div><h1>Liquidación de sueldo</h1></div>
+    <header><div><div class="emp">${e(t.empresa||'')}</div><h1>Comprobante de pago</h1></div>
       <div class="per"><span>Período</span><b>${pgMesLabel(mes)}</b><small>N° ${folio}</small></div></header>
     <div class="trab">
       ${dato('Trabajador',`${t.nombres||''} ${t.apellidos||''}`)}${dato('RUT',t.rut,1)}${dato('Cargo',t.cargo)}
@@ -7930,7 +7776,7 @@ function pgComprobanteHTML(t, mes){
       ${dato('Banco',t.banco)}${dato('Cuenta',t.cuenta)}
     </div>
     <table><thead><tr><th>Concepto</th><th>Detalle</th><th class="r">Monto</th></tr></thead>
-      <tbody><tr class="sec"><td colspan="3">Pagos</td></tr>${pagos}<tr class="sub"><td colspan="2">Total haberes</td><td class="r">${fmt(r.haberes)}</td></tr>
+      <tbody><tr class="sec"><td colspan="3">Pagos</td></tr>${pagos}<tr class="sub"><td colspan="2">Total pagos</td><td class="r">${fmt(r.haberes)}</td></tr>
       ${desc?`<tr class="sec"><td colspan="3">Descuentos</td></tr>${desc}<tr class="sub"><td colspan="2">Total descuentos</td><td class="r neg">−${fmt(r.descuentos)}</td></tr>`:''}</tbody></table>
     <div class="tot"><div><span>Total a pagar</span><small>Son: ${r.total<0?'menos ':''}${pgEnPalabras(r.total)}</small></div><b>${r.total<0?'−':''}${fmt(Math.abs(r.total))}</b></div>
     ${notas.length?`<div class="notas">${notas.map(n=>`<p>${n}</p>`).join('')}</div>`:''}
@@ -8324,11 +8170,8 @@ function openNuevoTrabajador() {
   $('t_nacionalidad').value='Chilena';
   $('t_sueldo').value='';
   if($('t_liquido')) $('t_liquido').value='';
-  ['t_isapre','t_colacion','t_movilizacion','t_asigfam'].forEach(id=>{const el=$(id);if(el)el.value='';});
-  if($('t_gratif')) $('t_gratif').value='si';
   $('t_jornada').value='42';
   populateOrgSelects(null);
-  try{ pgPropHint(); }catch(e){}
   fichaTab($('ft-tab-personal'),'personal');
   $('rrhhOverlay').classList.add('open');
 }
@@ -8352,10 +8195,7 @@ function openFichaTrabajador(id) {
   if(!$('t_jornada').value) $('t_jornada').value='otro';
   if(t.sueldo){ $('t_sueldo').value=clpFormat(t.sueldo); }else{ $('t_sueldo').value=''; }
   if($('t_liquido')) $('t_liquido').value = t.liquido ? clpFormat(t.liquido) : '';
-  if($('t_gratif')) $('t_gratif').value = t.gratif||'si';
-  [['t_isapre','isapre_plan'],['t_colacion','colacion'],['t_movilizacion','movilizacion'],['t_asigfam','asig_familiar']].forEach(([id,k])=>{ const el=$(id); if(el) el.value = t[k] ? clpFormat(t[k]) : ''; });
   populateOrgSelects(t);
-  try{ pgPropHint(); }catch(e){}
   fichaTab($('ft-tab-personal'),'personal');
   $('rrhhOverlay').classList.add('open');
 }
@@ -8391,9 +8231,7 @@ async function saveTrabajador() {
     jefe_id:($('t_jefe_id')||{value:''}).value||null,
     tipo_contrato:($('t_tipo_contrato')||{value:''}).value,
     ingreso, termino:($('t_termino')||{value:''}).value,
-    sueldo, liquido:clpVal('t_liquido')||0, gratif:($('t_gratif')||{value:'si'}).value||'si',
-    isapre_plan:clpVal('t_isapre'), colacion:clpVal('t_colacion'), movilizacion:clpVal('t_movilizacion'), asig_familiar:clpVal('t_asigfam'),
-    jornada:($('t_jornada')||{value:'42'}).value,
+    sueldo, liquido:clpVal('t_liquido')||0, jornada:($('t_jornada')||{value:'42'}).value,
     estado:($('t_estado')||{value:'activo'}).value,
     obs:($('t_obs')||{value:''}).value.trim(),
     vacaciones: existing.vacaciones||[]
