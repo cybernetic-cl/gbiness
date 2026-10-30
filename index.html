@@ -2925,7 +2925,12 @@ body > *{flex-shrink:0}
           <div class="pg-g2">
             <div class="fw"><label class="fl">Fecha <span style="color:var(--red)">*</span></label><input type="date" id="hx_fecha" class="fi" onchange="hxInfo(hxTrabActual());hxPreview()"></div>
             <div class="fw"><label class="fl">Horas extra <span style="color:var(--red)">*</span></label><input type="number" id="hx_horas" class="fi" min="0.5" max="12" step="0.5" placeholder="Ej: 2" oninput="hxPreview()"></div>
-            <div class="fw" style="grid-column:1/-1"><label class="fl">Motivo / nota</label><input type="text" id="hx_nota" class="fi" placeholder="Ej: Despacho urgente"><input type="hidden" id="hx_base" value="base"></div>
+            <div class="fw"><label class="fl">Calcular sobre</label>
+              <select id="hx_base" class="fi" onchange="hxInfo(hxTrabActual());hxPreview()">
+                <option value="base">Dirección del Trabajo (sueldo base)</option>
+                <option value="liquido">Líquido (base + asignaciones ÷ 20)</option>
+              </select></div>
+            <div class="fw"><label class="fl">Motivo / nota</label><input type="text" id="hx_nota" class="fi" placeholder="Ej: Despacho urgente"></div>
           </div>
           <div id="hx-preview" class="pg-prev" style="display:none"></div>
           <button class="btn-primary pg-add" onclick="hxRegistrar()">+ Registrar horas extra</button>
@@ -7302,11 +7307,15 @@ function hxBaseDT(t, fecha){
   const imm=Math.round(immVigente(fecha)*j/JORNADA_LEGAL);   // part-time: mínimo proporcional
   return { sueldo:sb, imm, jornada:j, factor:hxFactor(j), base: sb>0 ? Math.max(sb,imm) : 0, usaImm: sb>0 && sb<imm };
 }
-function hxSueldoRef(t, base, fecha){ return base==='liquido' ? (Number(t.liquido)||0) : hxBaseDT(t,fecha).base; }
+function hxSueldoRef(t, base, fecha){ return base==='liquido' ? rrhhLiquidoDe(t) : hxBaseDT(t,fecha).base; }
+// Opción "Líquido": valor día = líquido (base + asignaciones) ÷ 20 días; valor hora = día ÷ (jornada ÷ 5); × 1,5 recargo
+function hxHorasDia(t){ return hxJornada(t)/5; }
 function hxValorHora(t, base, fecha){
   const s=hxSueldoRef(t, base, fecha); if(!s) return 0;
+  if(base==='liquido') return Math.round(s/PG_DIAS_MES/hxHorasDia(t)*1.5);
   return Math.round(s*hxFactor(hxJornada(t)));
 }
+function hxBaseSel(){ return ($('hx_base')&&$('hx_base').value)||'base'; }
 // Tasa de cotizaciones del trabajador: AFP (10% + comisión) + salud 7% + cesantía 0,6% (indefinido)
 function rrhhTasaCotiz(t){
   const afp = 10 + (RRHH_AFP_COMISION[t.afp] ?? 1.2);
@@ -7405,10 +7414,12 @@ function rrhhPagoMes(t, mes){
   const enMes=a=>(a||[]).filter(x=>hxMesKey(x.fecha)===mes);
   const sum=(a,f)=>a.reduce((s,x)=>s+(Number(x[f])||0),0);
   const hx=enMes(t.horasExtra), dx=enMes(t.diasExtra), auTodas=enMes(t.ausencias), au=auTodas.filter(a=>a.descuenta!==false);
-  const bonos=(t.bonos||[]).filter(b=>b.mes===mes);
   const cr=(t.creditos||[]).map(c=>({c, q:crCuotaDelMes(c,mes)})).filter(x=>x.q);
   const prop=pgDiasMes(t, mes), ov=(t.diasPagados||{})[mes], diasManual = ov!=null && ov!=='';
   const dias = diasManual ? Math.max(0,Math.min(30,Number(ov)||0)) : prop.dias;
+  // Bonos proporcionales a los días pagados del mes (ingreso / término a mitad de mes): monto ÷ 30 × días
+  const bonos=(t.bonos||[]).filter(b=>b.mes===mes).map(b=>({ ...b, montoMes:Number(b.monto)||0,
+    monto: dias>=30 ? (Number(b.monto)||0) : Math.round((Number(b.monto)||0)*dias/30) }));
   const liqMes=rrhhLiquidoDe(t), sbMes=Number(t.sueldo)||0, tasa=rrhhTasaCotiz(t);
   const r={ mes, dias, prop, diasManual, proporcional: dias<30,
     liquidoMensual:liqMes, liquido: dias>=30 ? liqMes : Math.round(liqMes*dias/30),
@@ -7419,7 +7430,7 @@ function rrhhPagoMes(t, mes){
     bonos:{monto:sum(bonos,'monto'), items:bonos},
     au:{dias:sum(au,'dias'), monto:sum(au,'monto'), items:au, todas:auTodas},
     cr:{monto:cr.reduce((s,x)=>s+x.q.monto,0), items:cr} };
-  r.hx.cotiz = Math.round(r.hx.imponible*tasa);           // AFP + salud + cesantía sobre las HE
+  r.hx.cotiz = 0;                                          // sin descuento de cotizaciones sobre las HE
   r.extras = r.hx.monto + r.dx.monto + r.bonos.monto;
   r.haberes = r.liquido + r.extras;
   r.descuentos = r.au.monto + r.cr.monto + r.hx.cotiz;
@@ -7435,7 +7446,7 @@ function pgInit(){
   if(!t) return;
   if(!$('pg_mes').value) $('pg_mes').value=hxMesActual();
   if(!$('cr_fecha').value){ $('cr_fecha').value=pgHoy(); }
-  $('hx_base').value = 'base';
+  if(!$('hx_base').value) $('hx_base').value = 'base';
   crAutoInicio();
   pgRender();
 }
@@ -7497,8 +7508,21 @@ const pgPie=(celdas)=>`<tr style="background:var(--bg3)">${celdas.map(c=>`<td st
 function hxInfo(t){
   if(!t || !$('hx-info')) return;
   const fecha=($('hx_fecha')&&$('hx_fecha').value)||pgFechaDefault();
-  const b=hxBaseDT(t,fecha), vh=hxValorHora(t,'base',fecha), tasa=rrhhTasaCotiz(t);
   const c=(l,v,st)=>`<div><div style="color:var(--text3);font-size:11px">${l}</div><div style="font-weight:700;font-size:15px;${st||''}">${v}</div></div>`;
+  if(hxBaseSel()==='liquido'){
+    const liq=rrhhLiquidoDe(t), est=!(Number(t.liquido)>0), hd=hxHorasDia(t), vd=liq/PG_DIAS_MES, vhl=hxValorHora(t,'liquido',fecha);
+    if(!liq){ $('hx-info').innerHTML=`<span style="color:var(--red)">Registra el sueldo líquido en la pestaña Contrato para calcular sobre el líquido.</span>`; return; }
+    $('hx-info').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
+      ${c('Líquido (base + asignaciones)', fmt(liq)+(est?`<div style="font-weight:400;font-size:11px;color:var(--amber)">estimado</div>`:''))}
+      ${c('Valor día (÷ 20)', fmt(Math.round(vd)))}
+      ${c('Horas por día', pgNum(hd)+' h')}
+      ${c('Valor hora extra', fmt(vhl), 'color:var(--teal)')}
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">Fórmula líquido: líquido ÷ 20 días ÷ ${pgNum(hd)} h (${hxJornada(t)} h ÷ 5 días) × 1,5 (recargo 50%).<br>
+    Referencia DT sobre sueldo base: ${fmt(hxValorHora(t,'base',fecha))} por hora. Máximo 2 horas extra por día, pactadas por escrito.</div>`;
+    return;
+  }
+  const b=hxBaseDT(t,fecha), vh=hxValorHora(t,'base',fecha);
   if(!b.sueldo){ $('hx-info').innerHTML=`<span style="color:var(--red)">Registra el sueldo base en la pestaña Contrato para calcular las horas extra con la fórmula de la Dirección del Trabajo.</span>`; return; }
   const tabla=[45,44,42,40].map(j=>`<span style="${j===b.jornada?'color:var(--teal);font-weight:700':''}">${j} h → ${hxFactorTxt(j)}</span>`).join(' · ');
   $('hx-info').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
@@ -7510,26 +7534,25 @@ function hxInfo(t){
   ${b.usaImm?`<div style="color:var(--amber);font-size:11.5px;margin-top:8px">⚠ El sueldo base (${fmt(b.sueldo)}) es menor al ingreso mínimo ${b.jornada<JORNADA_LEGAL?'proporcional a '+b.jornada+' h ':''}(${fmt(b.imm)}). Según la DT, las horas extra se calculan sobre el ingreso mínimo.</div>`:''}
   <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">Fórmula Dirección del Trabajo: sueldo base × 28 ÷ 30 ÷ (4 × jornada) × 1,5 (recargo 50%, art. 32 CT).<br>
   Factores: ${tabla}<br>
-  Las horas extra son imponibles: se descuenta AFP + salud + cesantía (${pgPct(tasa)}%). Máximo 2 horas extra por día, pactadas por escrito.</div>`;
+  Máximo 2 horas extra por día, pactadas por escrito.</div>`;
 }
 function hxPreview(){
   const t=hxTrabActual(), box=$('hx-preview'); if(!t||!box) return;
-  const h=parseFloat($('hx_horas').value)||0, fecha=$('hx_fecha').value||pgFechaDefault(), vh=hxValorHora(t,'base',fecha);
+  const h=parseFloat($('hx_horas').value)||0, fecha=$('hx_fecha').value||pgFechaDefault(), base=hxBaseSel(), vh=hxValorHora(t,base,fecha);
   if(!h){ box.style.display='none'; return; }
   box.style.display='block';
-  if(!vh){ box.innerHTML=`<span style="color:var(--red)">No hay sueldo base registrado en la pestaña Contrato.</span>`; return; }
+  if(!vh){ box.innerHTML=`<span style="color:var(--red)">No hay ${base==='liquido'?'sueldo líquido':'sueldo base'} registrado en la pestaña Contrato.</span>`; return; }
   const aviso = h>2 ? `<div style="color:var(--amber);font-size:11.5px;margin-top:4px">⚠ El Código del Trabajo permite máximo 2 horas extra por día.</div>` : '';
   const bruto=Math.round(h*vh), cot=Math.round(bruto*rrhhTasaCotiz(t));
-  box.innerHTML=`${pgNum(h)} h × ${fmt(vh)} = <b style="color:var(--teal);font-size:15px">${fmt(bruto)}</b> bruto
-    <div style="font-size:11.5px;color:var(--text3);margin-top:3px">Cotizaciones −${fmt(cot)} → líquido aprox. <b>${fmt(bruto-cot)}</b></div>${aviso}`;
+  box.innerHTML=`${pgNum(h)} h × ${fmt(vh)} = <b style="color:var(--teal);font-size:15px">${fmt(bruto)}</b> <span style="font-size:11.5px;color:var(--text3)">· ${base==='liquido'?'sobre líquido ÷ 20':'fórmula DT'}</span>${aviso}`;
 }
 async function hxRegistrar(){
   const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
   const fecha=$('hx_fecha').value, horas=parseFloat($('hx_horas').value)||0;
   if(!fecha||horas<=0){ showToast('Ingresa fecha y horas',true); return; }
-  const b=hxBaseDT(t,fecha), vh=hxValorHora(t,'base',fecha);
-  if(!vh){ showToast('Registra el sueldo base en Contrato',true); return; }
-  (t.horasExtra=t.horasExtra||[]).push({ id:'hx_'+Date.now(), fecha, horas, base:'base', jornada:b.jornada, baseCalculo:b.base, usaImm:b.usaImm, factor:b.factor, valorHora:vh, monto:Math.round(horas*vh), nota:($('hx_nota').value||'').trim(), creado:new Date().toISOString() });
+  const base=hxBaseSel(), b=hxBaseDT(t,fecha), vh=hxValorHora(t,base,fecha);
+  if(!vh){ showToast(base==='liquido'?'Registra el sueldo líquido en Contrato':'Registra el sueldo base en Contrato',true); return; }
+  (t.horasExtra=t.horasExtra||[]).push({ id:'hx_'+Date.now(), fecha, horas, base, jornada:b.jornada, baseCalculo: base==='liquido'?rrhhLiquidoDe(t):b.base, usaImm: base==='base'&&b.usaImm, factor:b.factor, valorHora:vh, monto:Math.round(horas*vh), nota:($('hx_nota').value||'').trim(), creado:new Date().toISOString() });
   if(await pgGuardar(t,'Horas extra registradas',hxMesKey(fecha))){ $('hx_horas').value=''; $('hx_nota').value=''; hxPreview(); }
 }
 function hxEliminar(id){ pgEliminar('horasExtra', id, 'este registro de horas extra'); }
@@ -7538,7 +7561,7 @@ function hxRenderLista(t, r){
   if(!list.length){ $('hx-lista').innerHTML=`<div class="pg-vacio">Sin horas extra en ${pgMesLabel(r.mes)}.</div>`; return; }
   $('hx-lista').innerHTML=pgTabla([{t:'Fecha'},{t:'Horas',r:1},{t:'Valor hora',r:1},{t:'Cálculo'},{t:'Monto bruto',r:1},{t:'Nota'}],
     list.map(h=>`<tr>${pgTd(fmtFecha(h.fecha))}${pgTd(pgNum(h.horas),'text-align:right;font-weight:600')}${pgTd(fmt(h.valorHora),'text-align:right')}
-      ${pgTd(`<span class="pg-tag ${h.base==='base'?'now':'warn'}" title="${h.base==='base'?'Fórmula DT sobre '+fmt(h.baseCalculo||0)+(h.usaImm?' (ingreso mínimo)':''):'Registro antiguo calculado sobre el líquido'}">${h.base==='base'?'DT':'Líquido'}</span>`)}
+      ${pgTd(`<span class="pg-tag ${h.base==='base'?'now':'warn'}" title="${h.base==='base'?'Fórmula DT sobre '+fmt(h.baseCalculo||0)+(h.usaImm?' (ingreso mínimo)':''):'Sobre líquido '+fmt(h.baseCalculo||0)+' ÷ 20'}">${h.base==='base'?'DT':'Líquido'}</span>`)}
       ${pgTd(fmt(h.monto),'text-align:right;font-weight:700;color:var(--teal)')}${pgTd(pgEsc(h.nota),'color:var(--text3);font-size:12px')}${pgDel(`hxEliminar('${h.id}')`)}</tr>`).join(''),
     pgPie([{v:'Total bruto'},{v:pgNum(r.hx.horas),r:1},{},{},{v:fmt(r.hx.monto),r:1,c:'var(--teal)'},{v:r.hx.cotiz?`Cotizaciones −${fmt(r.hx.cotiz)} · líquido ${fmt(r.hx.monto-r.hx.cotiz)}`:''}]));
 }
@@ -7630,9 +7653,11 @@ async function boRegistrar(){
 }
 function boRenderLista(r){
   if(!r.bonos.items.length){ $('bo-lista').innerHTML=`<div class="pg-vacio">Sin bonos en ${pgMesLabel(r.mes)}.</div>`; return; }
-  $('bo-lista').innerHTML=pgTabla([{t:'Concepto'},{t:'Monto',r:1}],
-    r.bonos.items.map(b=>`<tr>${pgTd(pgEsc(b.concepto),'font-weight:500')}${pgTd('+'+fmt(b.monto),'text-align:right;font-weight:700;color:var(--green)')}${pgDel(`pgEliminar('bonos','${b.id}','este bono')`)}</tr>`).join(''),
-    pgPie([{v:'Total'},{v:'+'+fmt(r.bonos.monto),r:1,c:'var(--green)'}]));
+  const pr=r.proporcional;
+  const cols=[{t:'Concepto'}].concat(pr?[{t:'Monto asignado',r:1},{t:'Proporcional',r:1}]:[]).concat([{t:'A pagar',r:1}]);
+  $('bo-lista').innerHTML=(pr?`<div class="pg-note" style="color:var(--amber)">Bonos proporcionales: ${r.dias} de 30 días${pgDiasDetalle(r)?' · '+pgEsc(pgDiasDetalle(r)):''} → monto ÷ 30 × ${r.dias}</div>`:'')+pgTabla(cols,
+    r.bonos.items.map(b=>`<tr>${pgTd(pgEsc(b.concepto),'font-weight:500')}${pr?pgTd(fmt(b.montoMes),'text-align:right;color:var(--text3)')+pgTd(r.dias+'/30','text-align:right;color:var(--amber)'):''}${pgTd('+'+fmt(b.monto),'text-align:right;font-weight:700;color:var(--green)')}${pgDel(`pgEliminar('bonos','${b.id}','este bono')`)}</tr>`).join(''),
+    pgPie([{v:'Total'}].concat(pr?[{v:fmt(r.bonos.items.reduce((s,b)=>s+b.montoMes,0)),r:1},{}]:[]).concat([{v:'+'+fmt(r.bonos.monto),r:1,c:'var(--green)'}])));
 }
 
 // ── Créditos ──
@@ -7754,9 +7779,10 @@ function pgComprobanteHTML(t, mes){
     : (r.liquidoEstimado?'Monto mensual (estimado)':'Monto mensual');
   let pagos=fila('Sueldo líquido', detLiq, fmt(r.liquido));
   if(r.hx.monto){ const vhs=[...new Set(r.hx.items.map(h=>h.valorHora))].map(v=>fmt(v)).join(' / ');
-    pagos+=fila('Horas extra', `${pgNum(r.hx.horas)} h × ${vhs} · fórmula DT, recargo 50% · `+fechas(r.hx.items,h=>`${fmtFecha(h.fecha).slice(0,5)}: ${pgNum(h.horas)} h`), fmt(r.hx.monto)); }
+    const met=[...new Set(r.hx.items.map(h=>h.base==='liquido'?'sobre líquido ÷ 20':'fórmula DT'))].join(' / ');
+    pagos+=fila('Horas extra', `${pgNum(r.hx.horas)} h × ${vhs} · ${met}, recargo 50% · `+fechas(r.hx.items,h=>`${fmtFecha(h.fecha).slice(0,5)}: ${pgNum(h.horas)} h`), fmt(r.hx.monto)); }
   if(r.dx.monto) pagos+=fila('Días extra', `${pgDias(r.dx.dias)} · `+fechas(r.dx.items,d=>`${fmtFecha(d.fecha).slice(0,5)}: ${pgNum(d.dias)} × ${fmt(d.valorDia)}${d.nota?' '+e(d.nota):''}`), fmt(r.dx.monto));
-  r.bonos.items.forEach(b=>{ pagos+=fila('Bono', e(b.concepto), fmt(b.monto)); });
+  r.bonos.items.forEach(b=>{ pagos+=fila('Bono', e(b.concepto)+(r.proporcional?` · proporcional ${fmt(b.montoMes)} ÷ 30 × ${r.dias} días`:''), fmt(b.monto)); });
   let desc='';
   if(r.hx.cotiz) desc+=fila('Cotizaciones s/ horas extra', `AFP + salud + cesantía ${pgPct(r.tasaCotiz)}% sobre ${fmt(r.hx.imponible)}`, '−'+fmt(r.hx.cotiz),'neg');
   if(r.au.monto) desc+=fila('Ausencias', `${pgDias(r.au.dias)} × ${fmt(r.au.items[0].valorDia)} · `+fechas(r.au.items,a=>`${fmtFecha(a.fecha).slice(0,5)} ${e(a.motivo)}`), '−'+fmt(r.au.monto),'neg');
