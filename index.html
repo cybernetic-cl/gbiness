@@ -2857,9 +2857,10 @@ body > *{flex-shrink:0}
           </select>
         </div>
         <div class="fw"><label class="fl">Fecha de Ingreso <span style="color:var(--red)">*</span></label><input type="date" id="t_ingreso" class="fi" onchange="calcularVaccInfo()"></div>
-        <div class="fw"><label class="fl">Fecha término contrato</label><input type="date" id="t_termino" class="fi"></div>
+        <div class="fw"><label class="fl">Fecha término contrato</label><input type="date" id="t_termino" class="fi" onchange="pgPropHint()"></div>
+        <div id="t_prop_hint" class="fw" style="grid-column:1/-1;display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2)"></div>
         <div class="fw"><label class="fl">Sueldo Base (CLP) <span style="color:var(--red)">*</span></label>
-          <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_sueldo" class="fi fi-money" placeholder="0" oninput="clpInput(this)"></div>
+          <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_sueldo" class="fi fi-money" placeholder="0" oninput="clpInput(this);pgPropHint()"></div>
         </div>
         <div class="fw"><label class="fl">Sueldo Líquido (CLP) <span style="color:var(--text3);font-weight:400">— si se deja vacío se estima</span></label>
           <div class="fi-clp"><span class="fi-clp-prefix">$ CLP</span><input type="text" inputmode="numeric" id="t_liquido" class="fi fi-money" placeholder="0" oninput="clpInput(this)"></div>
@@ -2905,7 +2906,8 @@ body > *{flex-shrink:0}
       <div id="pg-sin" class="pg-note" style="display:none">Guarda primero el trabajador para registrar sus pagos del mes.</div>
       <div id="pg-body">
         <div class="pg-top">
-          <div class="fw"><label class="fl">Mes</label><input type="month" id="pg_mes" class="fi" onchange="pgRender()"></div>
+          <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div class="fw"><label class="fl">Mes</label><input type="month" id="pg_mes" class="fi" onchange="pgRender()"></div>
+          <div class="fw"><label class="fl">Días a pagar <span style="color:var(--text3);font-weight:400">— vacío = automático</span></label><input type="number" id="pg_dias" class="fi" min="0" max="30" step="1" style="width:120px" onchange="pgDiasSet(this.value)"></div></div>
           <button class="btn-primary" onclick="pgExportarComprobante()">🧾 Exportar comprobante de pago</button>
         </div>
         <div id="pg-resumen"></div>
@@ -2921,14 +2923,9 @@ body > *{flex-shrink:0}
         <div class="pg-sec" id="pg-sec-hx">
           <div id="hx-info" class="pg-note"></div>
           <div class="pg-g2">
-            <div class="fw"><label class="fl">Fecha <span style="color:var(--red)">*</span></label><input type="date" id="hx_fecha" class="fi"></div>
+            <div class="fw"><label class="fl">Fecha <span style="color:var(--red)">*</span></label><input type="date" id="hx_fecha" class="fi" onchange="hxInfo(hxTrabActual());hxPreview()"></div>
             <div class="fw"><label class="fl">Horas extra <span style="color:var(--red)">*</span></label><input type="number" id="hx_horas" class="fi" min="0.5" max="12" step="0.5" placeholder="Ej: 2" oninput="hxPreview()"></div>
-            <div class="fw"><label class="fl">Calcular sobre</label>
-              <select id="hx_base" class="fi" onchange="hxPreview()">
-                <option value="liquido">Sueldo líquido registrado</option>
-                <option value="base">Sueldo base (fórmula Dirección del Trabajo)</option>
-              </select></div>
-            <div class="fw"><label class="fl">Motivo / nota</label><input type="text" id="hx_nota" class="fi" placeholder="Ej: Despacho urgente"></div>
+            <div class="fw" style="grid-column:1/-1"><label class="fl">Motivo / nota</label><input type="text" id="hx_nota" class="fi" placeholder="Ej: Despacho urgente"><input type="hidden" id="hx_base" value="base"></div>
           </div>
           <div id="hx-preview" class="pg-prev" style="display:none"></div>
           <button class="btn-primary pg-add" onclick="hxRegistrar()">+ Registrar horas extra</button>
@@ -7260,7 +7257,8 @@ function rrhhTotalPagarCell(t){
   const r=rrhhPagoMes(t, rrhhMesPago());
   if(!r.total && !r.liquido) return '<span style="color:var(--text3)">—</span>';
   const det=[];
-  if(r.hx.monto) det.push('Horas extra +'+fmt(r.hx.monto));
+  if(r.proporcional) det.push(`Sueldo proporcional ${r.dias}/30 días`+(pgDiasDetalle(r)?' ('+pgDiasDetalle(r)+')':''));
+  if(r.hx.monto) det.push('Horas extra +'+fmt(r.hx.monto)+(r.hx.cotiz?' (cotiz. −'+fmt(r.hx.cotiz)+')':''));
   if(r.dx.monto) det.push('Días extra +'+fmt(r.dx.monto));
   if(r.bonos.monto) det.push('Bonos +'+fmt(r.bonos.monto));
   if(r.au.monto) det.push('Ausencias −'+fmt(r.au.monto));
@@ -7277,17 +7275,93 @@ function rrhhLiquidoCellBase(t){
 }
 
 
-// ══ HORAS EXTRA (Código del Trabajo art. 32: recargo 50% sobre el valor hora ordinario) ══
-// Valor hora = (sueldo mensual / 30 × 28) / (4 × jornada semanal)  → equivale al factor DT
-// Hora extra = valor hora × 1,5.   Ej. 42h: factor 0,0083333 · 40h: 0,00875
-// Jornada legal máxima vigente: 42 horas semanales (Ley 21.561, desde abril 2026).
-// Fichas antiguas guardadas con 44 o 45 h se leen como 42.
+// ══ HORAS EXTRA · fórmula Dirección del Trabajo (art. 32 CT, recargo 50%) ══
+// Valor hora extra = sueldo base mensual × factor
+//   factor = 28 ÷ 30 ÷ (4 × jornada semanal) × 1,5
+//   45h 0,0077778 · 44h 0,0079545 · 42h 0,0083333 · 40h 0,0087500
+// • Se calcula sobre el SUELDO BASE (no sobre el líquido).
+// • Si el sueldo base es menor al ingreso mínimo (proporcional a la jornada), la DT
+//   ordena calcular sobre el ingreso mínimo mensual vigente a la fecha de la HE.
+// • Las horas extra son imponibles: se descuenta AFP, salud y seguro de cesantía.
+// Jornada legal máxima vigente: 42 h semanales (Ley 21.561, desde 26-04-2026).
 const JORNADA_LEGAL = 42;
+// Ingreso mínimo mensual (18 a 65 años) · [vigente desde, monto, ley]
+const IMM_TABLA = [
+  ['2026-05-01', 553553, 'Ley 21.830'],
+  ['2026-01-01', 539000, 'Ley 21.751'],
+  ['2025-05-01', 529000, 'Ley 21.751'],
+  ['2025-01-01', 510000, 'Ley 21.578'],
+  ['2024-07-01', 500000, 'Ley 21.578'],
+];
+function immVigente(fecha){ const f=fecha||pgHoy(); const x=IMM_TABLA.find(r=>f>=r[0]); return x ? x[1] : IMM_TABLA[IMM_TABLA.length-1][1]; }
 function hxJornada(t){ const j=parseFloat(t.jornada); return j>0 ? Math.min(j, JORNADA_LEGAL) : JORNADA_LEGAL; }
-function hxSueldoRef(t, base){ return base==='base' ? (Number(t.sueldo)||0) : (Number(t.liquido)||0); }
-function hxValorHora(t, base){
-  const s=hxSueldoRef(t, base); if(!s) return 0;
-  return Math.round(s/30*28/(4*hxJornada(t))*1.5);
+function hxFactor(j){ return 28/30/(4*j)*1.5; }
+function hxFactorTxt(j){ return hxFactor(j).toFixed(7).replace('.',','); }
+function hxBaseDT(t, fecha){
+  const sb=Number(t.sueldo)||0, j=hxJornada(t);
+  const imm=Math.round(immVigente(fecha)*j/JORNADA_LEGAL);   // part-time: mínimo proporcional
+  return { sueldo:sb, imm, jornada:j, factor:hxFactor(j), base: sb>0 ? Math.max(sb,imm) : 0, usaImm: sb>0 && sb<imm };
+}
+function hxSueldoRef(t, base, fecha){ return base==='liquido' ? (Number(t.liquido)||0) : hxBaseDT(t,fecha).base; }
+function hxValorHora(t, base, fecha){
+  const s=hxSueldoRef(t, base, fecha); if(!s) return 0;
+  return Math.round(s*hxFactor(hxJornada(t)));
+}
+// Tasa de cotizaciones del trabajador: AFP (10% + comisión) + salud 7% + cesantía 0,6% (indefinido)
+function rrhhTasaCotiz(t){
+  const afp = 10 + (RRHH_AFP_COMISION[t.afp] ?? 1.2);
+  const ces = (t.tipo_contrato==='Indefinido' || !t.tipo_contrato) ? 0.6 : 0;
+  return (afp + 7 + ces)/100;
+}
+function pgPct(x){ return String(Math.round(x*10000)/100).replace('.',','); }
+
+// ══ SUELDO PROPORCIONAL · ingreso o término a mitad de mes ══
+// Mes de 30 días (art. 44 CT: valor día = sueldo mensual ÷ 30).
+// Días a pagar = días calendario desde el ingreso (o el día 1) hasta el término (o fin de mes), máx. 30.
+// Ej.: ingreso 13-10 → del 13 al 31 = 19 días → sueldo × 19 ÷ 30.
+function pgDiasMes(t, mes){
+  const [y,m]=mes.split('-').map(Number), ult=new Date(y,m,0).getDate();
+  const ini=mes+'-01', fin=mes+'-'+String(ult).padStart(2,'0');
+  const ing=t.ingreso||'', ter=t.termino||'';
+  const desde = ing && ing>ini ? ing : ini, hasta = ter && ter<fin ? ter : fin;
+  const r={ dias:30, completo:true, desde, hasta, ingresoMes: !!ing && ing>ini && ing<=fin, terminoMes: !!ter && ter>=ini && ter<fin };
+  if((ing && ing>fin) || (ter && ter<ini)){ r.dias=0; r.completo=false; r.fuera=true; return r; }
+  if(desde===ini && hasta===fin) return r;
+  r.dias = Math.max(0, Math.min(30, (+hasta.slice(8)) - (+desde.slice(8)) + 1));
+  r.completo = r.dias>=30;
+  return r;
+}
+function pgDiasDetalle(r){
+  const p=r.prop, d=[];
+  if(r.diasManual) d.push('ajuste manual');
+  else if(p.fuera) d.push('fuera del período del contrato');
+  else {
+    if(p.ingresoMes) d.push('ingreso '+fmtFecha(p.desde));
+    if(p.terminoMes) d.push('término '+fmtFecha(p.hasta));
+  }
+  return d.join(' · ');
+}
+async function pgDiasSet(v){
+  const t=hxTrabActual(); if(!t) return;
+  const mes=pgMes(); t.diasPagados=t.diasPagados||{};
+  if(v===''||v==null) delete t.diasPagados[mes];
+  else t.diasPagados[mes]=Math.max(0,Math.min(30,Math.round(Number(v)||0)));
+  await pgGuardar(t, v===''?'Días a pagar: automático':'Días a pagar actualizados');
+}
+function pgPropHint(){
+  const box=$('t_prop_hint'); if(!box) return;
+  const ing=($('t_ingreso')||{}).value||'', ter=($('t_termino')||{}).value||'';
+  const sueldo=clpVal('t_sueldo'), msgs=[];
+  const linea=(mes, tipo)=>{
+    const p=pgDiasMes({ingreso:ing, termino:ter}, mes);
+    if(p.completo) return;
+    msgs.push(`<b>${tipo} ${pgMesLabel(mes)}:</b> se pagan <b>${p.dias} de 30 días</b> (del ${fmtFecha(p.desde).slice(0,5)} al ${fmtFecha(p.hasta).slice(0,5)})`
+      + (sueldo ? ` → sueldo base proporcional <b style="color:var(--teal)">${fmt(Math.round(sueldo*p.dias/30))}</b> = ${fmt(sueldo)} ÷ 30 × ${p.dias}` : ''));
+  };
+  if(ing && +ing.slice(8)>1) linea(ing.slice(0,7), 'Mes de ingreso ·');
+  if(ter && ter.slice(0,7)!==ing.slice(0,7)) linea(ter.slice(0,7), 'Mes de término ·');
+  box.style.display = msgs.length ? 'block' : 'none';
+  box.innerHTML = msgs.map(m=>`<div>📅 ${m}</div>`).join('');
 }
 function hxMesKey(d){ return (d||'').slice(0,7); }
 function hxMesActual(){ const n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0'); }
@@ -7333,15 +7407,22 @@ function rrhhPagoMes(t, mes){
   const hx=enMes(t.horasExtra), dx=enMes(t.diasExtra), auTodas=enMes(t.ausencias), au=auTodas.filter(a=>a.descuenta!==false);
   const bonos=(t.bonos||[]).filter(b=>b.mes===mes);
   const cr=(t.creditos||[]).map(c=>({c, q:crCuotaDelMes(c,mes)})).filter(x=>x.q);
-  const r={ mes, liquido:rrhhLiquidoDe(t), liquidoEstimado:!(Number(t.liquido)>0),
-    hx:{horas:sum(hx,'horas'), monto:sum(hx,'monto'), items:hx},
+  const prop=pgDiasMes(t, mes), ov=(t.diasPagados||{})[mes], diasManual = ov!=null && ov!=='';
+  const dias = diasManual ? Math.max(0,Math.min(30,Number(ov)||0)) : prop.dias;
+  const liqMes=rrhhLiquidoDe(t), sbMes=Number(t.sueldo)||0, tasa=rrhhTasaCotiz(t);
+  const r={ mes, dias, prop, diasManual, proporcional: dias<30,
+    liquidoMensual:liqMes, liquido: dias>=30 ? liqMes : Math.round(liqMes*dias/30),
+    sueldoBase: dias>=30 ? sbMes : Math.round(sbMes*dias/30), liquidoEstimado:!(Number(t.liquido)>0), tasaCotiz:tasa,
+    hx:{horas:sum(hx,'horas'), monto:sum(hx,'monto'), items:hx,
+        imponible: hx.filter(h=>h.base!=='liquido').reduce((s,h)=>s+(Number(h.monto)||0),0)},
     dx:{dias:sum(dx,'dias'), monto:sum(dx,'monto'), items:dx},
     bonos:{monto:sum(bonos,'monto'), items:bonos},
     au:{dias:sum(au,'dias'), monto:sum(au,'monto'), items:au, todas:auTodas},
     cr:{monto:cr.reduce((s,x)=>s+x.q.monto,0), items:cr} };
+  r.hx.cotiz = Math.round(r.hx.imponible*tasa);           // AFP + salud + cesantía sobre las HE
   r.extras = r.hx.monto + r.dx.monto + r.bonos.monto;
   r.haberes = r.liquido + r.extras;
-  r.descuentos = r.au.monto + r.cr.monto;
+  r.descuentos = r.au.monto + r.cr.monto + r.hx.cotiz;
   r.total = r.haberes - r.descuentos;
   return r;
 }
@@ -7354,7 +7435,7 @@ function pgInit(){
   if(!t) return;
   if(!$('pg_mes').value) $('pg_mes').value=hxMesActual();
   if(!$('cr_fecha').value){ $('cr_fecha').value=pgHoy(); }
-  $('hx_base').value = Number(t.liquido)>0 ? 'liquido' : 'base';
+  $('hx_base').value = 'base';
   crAutoInicio();
   pgRender();
 }
@@ -7367,11 +7448,14 @@ function pgRender(){
   const mes=pgMes(), r=rrhhPagoMes(t,mes);
   ['hx_fecha','dx_fecha','au_fecha'].forEach(id=>{ const el=$(id); if(el && hxMesKey(el.value)!==mes) el.value=pgFechaDefault(); });
   $('pg-bo-mes').textContent=pgMesLabel(mes);
-  const it=(l,v,cls)=>`<div class="it ${cls}"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+  const it=(l,v,cls,sub)=>`<div class="it ${cls}"><div class="l">${l}</div><div class="v">${v}</div>${sub?`<div style="font-size:10.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sub}</div>`:''}</div>`;
   const signo=(v,s)=>v ? s+fmt(v) : '$0';
+  if($('pg_dias')){ $('pg_dias').value = r.diasManual ? r.dias : ''; $('pg_dias').placeholder = String(r.prop.dias); }
+  const subLiq = r.proporcional ? `<span style="color:var(--amber)" title="${pgEsc(pgDiasDetalle(r))}">${r.dias}/30 días · ${pgEsc(pgDiasDetalle(r))}</span>` : '';
+  const subHx = r.hx.cotiz ? `<span style="color:var(--red)" title="AFP + salud + cesantía ${pgPct(r.tasaCotiz)}% sobre ${fmt(r.hx.imponible)}">−${fmt(r.hx.cotiz)} cotiz.</span>` : '';
   $('pg-resumen').innerHTML=`<div class="pg-res">
-    ${it('Sueldo líquido'+(r.liquidoEstimado&&r.liquido?' ~':''), fmt(r.liquido), '')}
-    ${it('Horas extra', signo(r.hx.monto,'+'), r.hx.monto?'pos':'cero')}
+    ${it('Sueldo líquido'+(r.liquidoEstimado&&r.liquido?' ~':''), fmt(r.liquido), '', subLiq)}
+    ${it('Horas extra', signo(r.hx.monto,'+'), r.hx.monto?'pos':'cero', subHx)}
     ${it('Días extra', signo(r.dx.monto,'+'), r.dx.monto?'pos':'cero')}
     ${it('Bonos', signo(r.bonos.monto,'+'), r.bonos.monto?'pos':'cero')}
     ${it('Ausencias', signo(r.au.monto,'−'), r.au.monto?'neg':'cero')}
@@ -7411,41 +7495,52 @@ const pgPie=(celdas)=>`<tr style="background:var(--bg3)">${celdas.map(c=>`<td st
 
 // ── Horas extra ──
 function hxInfo(t){
-  const vl=hxValorHora(t,'liquido'), vb=hxValorHora(t,'base');
-  $('hx-info').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
-    <div><div style="color:var(--text3);font-size:11px">Jornada semanal</div><div style="font-weight:700;font-size:15px">${hxJornada(t)} horas</div></div>
-    <div><div style="color:var(--text3);font-size:11px">Valor HE sobre líquido</div><div style="font-weight:700;font-size:15px;color:var(--teal)">${vl?fmt(vl):'<span style="color:var(--text3);font-size:12px">Sin líquido registrado</span>'}</div></div>
-    <div><div style="color:var(--text3);font-size:11px">Valor HE sobre sueldo base</div><div style="font-weight:700;font-size:15px">${vb?fmt(vb):'—'}</div></div>
+  if(!t || !$('hx-info')) return;
+  const fecha=($('hx_fecha')&&$('hx_fecha').value)||pgFechaDefault();
+  const b=hxBaseDT(t,fecha), vh=hxValorHora(t,'base',fecha), tasa=rrhhTasaCotiz(t);
+  const c=(l,v,st)=>`<div><div style="color:var(--text3);font-size:11px">${l}</div><div style="font-weight:700;font-size:15px;${st||''}">${v}</div></div>`;
+  if(!b.sueldo){ $('hx-info').innerHTML=`<span style="color:var(--red)">Registra el sueldo base en la pestaña Contrato para calcular las horas extra con la fórmula de la Dirección del Trabajo.</span>`; return; }
+  const tabla=[45,44,42,40].map(j=>`<span style="${j===b.jornada?'color:var(--teal);font-weight:700':''}">${j} h → ${hxFactorTxt(j)}</span>`).join(' · ');
+  $('hx-info').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
+    ${c('Jornada semanal', b.jornada+' horas')}
+    ${c('Base de cálculo', fmt(b.base)+`<div style="font-weight:400;font-size:11px;color:${b.usaImm?'var(--amber)':'var(--text3)'}">${b.usaImm?'ingreso mínimo':'sueldo base'}</div>`)}
+    ${c('Factor DT', hxFactorTxt(b.jornada))}
+    ${c('Valor hora extra', fmt(vh), 'color:var(--teal)')}
   </div>
-  <div style="font-size:11px;color:var(--text3);margin-top:8px">Fórmula: sueldo ÷ 30 × 28 ÷ (4 × jornada) × 1,5 (recargo 50%, art. 32 CT). Máximo legal: 2 horas extra por día.</div>`;
+  ${b.usaImm?`<div style="color:var(--amber);font-size:11.5px;margin-top:8px">⚠ El sueldo base (${fmt(b.sueldo)}) es menor al ingreso mínimo ${b.jornada<JORNADA_LEGAL?'proporcional a '+b.jornada+' h ':''}(${fmt(b.imm)}). Según la DT, las horas extra se calculan sobre el ingreso mínimo.</div>`:''}
+  <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">Fórmula Dirección del Trabajo: sueldo base × 28 ÷ 30 ÷ (4 × jornada) × 1,5 (recargo 50%, art. 32 CT).<br>
+  Factores: ${tabla}<br>
+  Las horas extra son imponibles: se descuenta AFP + salud + cesantía (${pgPct(tasa)}%). Máximo 2 horas extra por día, pactadas por escrito.</div>`;
 }
 function hxPreview(){
   const t=hxTrabActual(), box=$('hx-preview'); if(!t||!box) return;
-  const h=parseFloat($('hx_horas').value)||0, base=$('hx_base').value, vh=hxValorHora(t,base);
+  const h=parseFloat($('hx_horas').value)||0, fecha=$('hx_fecha').value||pgFechaDefault(), vh=hxValorHora(t,'base',fecha);
   if(!h){ box.style.display='none'; return; }
   box.style.display='block';
-  if(!vh){ box.innerHTML=`<span style="color:var(--red)">No hay ${base==='base'?'sueldo base':'sueldo líquido'} registrado en la pestaña Contrato.</span>`; return; }
+  if(!vh){ box.innerHTML=`<span style="color:var(--red)">No hay sueldo base registrado en la pestaña Contrato.</span>`; return; }
   const aviso = h>2 ? `<div style="color:var(--amber);font-size:11.5px;margin-top:4px">⚠ El Código del Trabajo permite máximo 2 horas extra por día.</div>` : '';
-  box.innerHTML=`${pgNum(h)} h × ${fmt(vh)} = <b style="color:var(--teal);font-size:15px">${fmt(Math.round(h*vh))}</b>${aviso}`;
+  const bruto=Math.round(h*vh), cot=Math.round(bruto*rrhhTasaCotiz(t));
+  box.innerHTML=`${pgNum(h)} h × ${fmt(vh)} = <b style="color:var(--teal);font-size:15px">${fmt(bruto)}</b> bruto
+    <div style="font-size:11.5px;color:var(--text3);margin-top:3px">Cotizaciones −${fmt(cot)} → líquido aprox. <b>${fmt(bruto-cot)}</b></div>${aviso}`;
 }
 async function hxRegistrar(){
   const t=hxTrabActual(); if(!t){ showToast('Guarda primero el trabajador',true); return; }
-  const fecha=$('hx_fecha').value, horas=parseFloat($('hx_horas').value)||0, base=$('hx_base').value;
+  const fecha=$('hx_fecha').value, horas=parseFloat($('hx_horas').value)||0;
   if(!fecha||horas<=0){ showToast('Ingresa fecha y horas',true); return; }
-  const vh=hxValorHora(t,base);
-  if(!vh){ showToast(base==='base'?'Registra el sueldo base en Contrato':'Registra el sueldo líquido en Contrato',true); return; }
-  (t.horasExtra=t.horasExtra||[]).push({ id:'hx_'+Date.now(), fecha, horas, base, jornada:hxJornada(t), valorHora:vh, monto:Math.round(horas*vh), nota:($('hx_nota').value||'').trim(), creado:new Date().toISOString() });
+  const b=hxBaseDT(t,fecha), vh=hxValorHora(t,'base',fecha);
+  if(!vh){ showToast('Registra el sueldo base en Contrato',true); return; }
+  (t.horasExtra=t.horasExtra||[]).push({ id:'hx_'+Date.now(), fecha, horas, base:'base', jornada:b.jornada, baseCalculo:b.base, usaImm:b.usaImm, factor:b.factor, valorHora:vh, monto:Math.round(horas*vh), nota:($('hx_nota').value||'').trim(), creado:new Date().toISOString() });
   if(await pgGuardar(t,'Horas extra registradas',hxMesKey(fecha))){ $('hx_horas').value=''; $('hx_nota').value=''; hxPreview(); }
 }
 function hxEliminar(id){ pgEliminar('horasExtra', id, 'este registro de horas extra'); }
 function hxRenderLista(t, r){
   const list=[...r.hx.items].sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!list.length){ $('hx-lista').innerHTML=`<div class="pg-vacio">Sin horas extra en ${pgMesLabel(r.mes)}.</div>`; return; }
-  $('hx-lista').innerHTML=pgTabla([{t:'Fecha'},{t:'Horas',r:1},{t:'Valor hora',r:1},{t:'Base'},{t:'Monto',r:1},{t:'Nota'}],
+  $('hx-lista').innerHTML=pgTabla([{t:'Fecha'},{t:'Horas',r:1},{t:'Valor hora',r:1},{t:'Cálculo'},{t:'Monto bruto',r:1},{t:'Nota'}],
     list.map(h=>`<tr>${pgTd(fmtFecha(h.fecha))}${pgTd(pgNum(h.horas),'text-align:right;font-weight:600')}${pgTd(fmt(h.valorHora),'text-align:right')}
-      ${pgTd(`<span class="pg-tag ${h.base==='base'?'warn':'now'}">${h.base==='base'?'Base':'Líquido'}</span>`)}
+      ${pgTd(`<span class="pg-tag ${h.base==='base'?'now':'warn'}" title="${h.base==='base'?'Fórmula DT sobre '+fmt(h.baseCalculo||0)+(h.usaImm?' (ingreso mínimo)':''):'Registro antiguo calculado sobre el líquido'}">${h.base==='base'?'DT':'Líquido'}</span>`)}
       ${pgTd(fmt(h.monto),'text-align:right;font-weight:700;color:var(--teal)')}${pgTd(pgEsc(h.nota),'color:var(--text3);font-size:12px')}${pgDel(`hxEliminar('${h.id}')`)}</tr>`).join(''),
-    pgPie([{v:'Total'},{v:pgNum(r.hx.horas),r:1},{},{},{v:fmt(r.hx.monto),r:1,c:'var(--teal)'},{}]));
+    pgPie([{v:'Total bruto'},{v:pgNum(r.hx.horas),r:1},{},{},{v:fmt(r.hx.monto),r:1,c:'var(--teal)'},{v:r.hx.cotiz?`Cotizaciones −${fmt(r.hx.cotiz)} · líquido ${fmt(r.hx.monto-r.hx.cotiz)}`:''}]));
 }
 
 // ── Días extra y ausencias (valor día = líquido ÷ 20) ──
@@ -7624,7 +7719,7 @@ function rrhhRenderTotales(list, tbody){
   const vig = list.filter(t=>t.estado!=='inactivo');
   if(!list.length){ tf.innerHTML=''; return; }
   const mes=rrhhMesPago(), rs=vig.map(t=>rrhhPagoMes(t,mes));
-  const base = vig.reduce((s,t)=>s+(Number(t.sueldo)||0),0);
+  const base = rs.reduce((s,r)=>s+r.sueldoBase,0);
   const liq=rs.reduce((s,r)=>s+r.liquido,0), ext=rs.reduce((s,r)=>s+r.extras,0), des=rs.reduce((s,r)=>s+r.descuentos,0), tot=rs.reduce((s,r)=>s+r.total,0);
   const est = rs.some(r=>r.liquidoEstimado && r.liquido);
   const excl = list.length - vig.length;
@@ -7654,11 +7749,16 @@ function pgComprobanteHTML(t, mes){
   const r=rrhhPagoMes(t,mes), e=pgEsc;
   const fechas=(items,f)=>items.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(f).join(' · ');
   const fila=(c,d,m,cls)=>`<tr><td>${c}</td><td class="d">${d||''}</td><td class="r ${cls||''}">${m}</td></tr>`;
-  let pagos=fila('Sueldo líquido', r.liquidoEstimado?'Monto mensual (estimado)':'Monto mensual', fmt(r.liquido));
-  if(r.hx.monto) pagos+=fila('Horas extra', `${pgNum(r.hx.horas)} h con recargo 50% · `+fechas(r.hx.items,h=>`${fmtFecha(h.fecha).slice(0,5)}: ${pgNum(h.horas)} h`), fmt(r.hx.monto));
+  const detLiq = r.proporcional
+    ? `Proporcional ${r.dias} de 30 días${pgDiasDetalle(r)?' · '+pgDiasDetalle(r):''} · ${fmt(r.liquidoMensual)} ÷ 30 × ${r.dias}${r.liquidoEstimado?' (estimado)':''}`
+    : (r.liquidoEstimado?'Monto mensual (estimado)':'Monto mensual');
+  let pagos=fila('Sueldo líquido', detLiq, fmt(r.liquido));
+  if(r.hx.monto){ const vhs=[...new Set(r.hx.items.map(h=>h.valorHora))].map(v=>fmt(v)).join(' / ');
+    pagos+=fila('Horas extra', `${pgNum(r.hx.horas)} h × ${vhs} · fórmula DT, recargo 50% · `+fechas(r.hx.items,h=>`${fmtFecha(h.fecha).slice(0,5)}: ${pgNum(h.horas)} h`), fmt(r.hx.monto)); }
   if(r.dx.monto) pagos+=fila('Días extra', `${pgDias(r.dx.dias)} · `+fechas(r.dx.items,d=>`${fmtFecha(d.fecha).slice(0,5)}: ${pgNum(d.dias)} × ${fmt(d.valorDia)}${d.nota?' '+e(d.nota):''}`), fmt(r.dx.monto));
   r.bonos.items.forEach(b=>{ pagos+=fila('Bono', e(b.concepto), fmt(b.monto)); });
   let desc='';
+  if(r.hx.cotiz) desc+=fila('Cotizaciones s/ horas extra', `AFP + salud + cesantía ${pgPct(r.tasaCotiz)}% sobre ${fmt(r.hx.imponible)}`, '−'+fmt(r.hx.cotiz),'neg');
   if(r.au.monto) desc+=fila('Ausencias', `${pgDias(r.au.dias)} × ${fmt(r.au.items[0].valorDia)} · `+fechas(r.au.items,a=>`${fmtFecha(a.fecha).slice(0,5)} ${e(a.motivo)}`), '−'+fmt(r.au.monto),'neg');
   r.cr.items.forEach(({c,q})=>{ const saldo=crSaldoTras(c,mes); desc+=fila('Crédito · '+e(c.concepto), `Cuota ${q.k} de ${q.n} · monto original ${fmt(c.monto)} · saldo después de este pago ${fmt(saldo)}`, '−'+fmt(q.monto),'neg'); });
   const sinDesc=r.au.todas.filter(a=>a.descuenta===false);
@@ -7780,6 +7880,7 @@ function calcDiasHabiles(inicio, fin) {
 }
 
 function calcularVaccInfo() {
+  try{ pgPropHint(); }catch(e){}
   const ingreso=$('t_ingreso')?$('t_ingreso').value:'';
   const box=$('vacc-info-box'); if(!box) return;
   if(!ingreso){box.innerHTML='Ingresa la fecha de ingreso en la pestaña Contrato para calcular vacaciones.';return;}
